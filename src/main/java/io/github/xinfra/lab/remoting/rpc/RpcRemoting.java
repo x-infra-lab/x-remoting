@@ -38,10 +38,6 @@ public class RpcRemoting extends BaseRemoting {
         Connection connection = connectionManager.getConnection(endpoint);
         // TODO check connection ??
 
-        return syncCall(requestMessage, connection, timeoutMills);
-    }
-
-    public <R> R syncCall(RpcRequestMessage requestMessage, Connection connection, int timeoutMills) throws InterruptedException {
         // TODO FIXME
         RpcResponseMessage responseMessage = (RpcResponseMessage) super.syncCall(requestMessage, connection, timeoutMills);
         if (responseMessage.getStatus() != RpcStatusCode.SUCCESS) {
