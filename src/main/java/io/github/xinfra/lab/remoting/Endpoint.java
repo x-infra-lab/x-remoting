@@ -1,7 +1,6 @@
 package io.github.xinfra.lab.remoting;
 
 
-import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -19,11 +18,8 @@ public class Endpoint {
 
     private int connectTimeoutMills;
 
-    private ProtocolType protocolType;
-
     private int connNum = 1;
 
     private boolean connWarmup;
 
-    private Properties properties;
 }

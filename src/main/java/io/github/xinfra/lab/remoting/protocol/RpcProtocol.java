@@ -19,10 +19,17 @@ import io.github.xinfra.lab.remoting.message.RpcMessageFactory;
  */
 public class RpcProtocol implements Protocol {
 
+    private Encoder rpcEncoder;
+    private Decoder rpcDecoder;
+    private MessageHandler rpcMessageHandler;
     private RpcMessageFactory rpcMessageFactory;
+    private HeartbeatTrigger rpcHeartbeatTrigger;
 
     public RpcProtocol() {
         this.rpcMessageFactory = new RpcMessageFactory();
+        // TODO
+//        this.rpcEncoder = null;
+//        this.rpcDecoder = null;
     }
 
     @Override

@@ -1,11 +1,11 @@
 package io.github.xinfra.lab.remoting.exception;
 
-public class RemotingException extends RuntimeException {
-    public RemotingException(Throwable t) {
-        super(t);
-    }
-
+public class RemotingException extends Exception {
     public RemotingException(String message) {
         super(message);
+    }
+
+    public RemotingException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

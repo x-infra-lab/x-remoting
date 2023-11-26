@@ -8,7 +8,6 @@ import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.message.RpcMessageFactory;
 import io.github.xinfra.lab.remoting.message.RpcRequestMessage;
 import io.github.xinfra.lab.remoting.message.RpcResponseMessage;
-import io.github.xinfra.lab.remoting.message.RpcStatusCode;
 import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.github.xinfra.lab.remoting.protocol.RpcProtocol;
@@ -30,7 +29,8 @@ public class RpcRemoting extends BaseRemoting {
         this.connectionManager = connectionManager;
     }
 
-    public <R> R syncCall(Object request, Endpoint endpoint, int timeoutMills) throws InterruptedException {
+    public <R> R syncCall(Object request, Endpoint endpoint, int timeoutMills) throws InterruptedException,
+            RemotingException {
         RpcRequestMessage requestMessage = rpcMessageFactory.createRequestMessage();
         requestMessage.setContent(request);
         requestMessage.setContentType(RpcRequestMessage.class.getName());
@@ -38,15 +38,7 @@ public class RpcRemoting extends BaseRemoting {
         Connection connection = connectionManager.getConnection(endpoint);
         // TODO check connection ??
 
-        // TODO FIXME
         RpcResponseMessage responseMessage = (RpcResponseMessage) super.syncCall(requestMessage, connection, timeoutMills);
-        if (responseMessage.getStatus() != RpcStatusCode.SUCCESS) {
-            Object result = responseMessage.getContent();
-            if (result instanceof Throwable) {
-                throw new RemotingException((Throwable) result);
-            }
-            throw new RemotingException("Remoting fail. unknown exception");
-        }
-        return (R) responseMessage.getContent();
+        return RpcResponseResolver.getResponseObject(responseMessage, connection.getChannel().remoteAddress());
     }
 }

@@ -2,7 +2,7 @@ package io.github.xinfra.lab.remoting.connection;
 
 
 import io.github.xinfra.lab.remoting.Endpoint;
-
+import io.github.xinfra.lab.remoting.exception.RemotingException;
 
 
 public class DefaultConnectionManager implements ConnectionManager {
@@ -10,19 +10,14 @@ public class DefaultConnectionManager implements ConnectionManager {
     private ConnectionFactory connectionFactory;
 
 
-    public DefaultConnectionManager() {
-        this.connectionFactory = new DefaultConnectionFactory();
+    public DefaultConnectionManager(ConnectionFactory connectionFactory) {
+        this.connectionFactory = connectionFactory;
     }
 
 
     @Override
-    public Connection getConnection(Endpoint endpoint) {
+    public Connection getConnection(Endpoint endpoint) throws RemotingException {
         // TODO
-
-        try {
-            return connectionFactory.create(endpoint);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        return connectionFactory.create(endpoint);
     }
 }
