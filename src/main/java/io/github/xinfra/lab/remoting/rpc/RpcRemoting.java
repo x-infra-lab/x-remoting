@@ -36,7 +36,7 @@ public class RpcRemoting extends BaseRemoting {
         requestMessage.setContentType(RpcRequestMessage.class.getName());
 
         Connection connection = connectionManager.getConnection(endpoint);
-        // TODO check connection ??
+        connectionManager.check(connection);
 
         RpcResponseMessage responseMessage = (RpcResponseMessage) super.syncCall(requestMessage, connection, timeoutMills);
         return RpcResponseResolver.getResponseObject(responseMessage, connection.getChannel().remoteAddress());

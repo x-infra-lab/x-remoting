@@ -8,4 +8,7 @@ public interface ConnectionManager {
 
     Connection getConnection(Endpoint endpoint) throws RemotingException;
 
+    void check(Connection connection) throws RemotingException;
+
+    void remove(Connection connection) throws RemotingException;
 }

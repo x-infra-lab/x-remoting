@@ -1,5 +1,6 @@
 package io.github.xinfra.lab.remoting.connection;
 
+import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.netty.channel.Channel;
@@ -20,8 +21,12 @@ public class Connection {
     @Getter
     private Channel channel;
 
+    @Getter
+    private Endpoint endpoint;
 
-    public Connection(Channel channel, ProtocolType protocolType) {
+
+    public Connection(Endpoint endpoint, Channel channel, ProtocolType protocolType) {
+        this.endpoint = endpoint;
         this.channel = channel;
         this.channel.attr(PROTOCOL).set(protocolType);
         this.channel.attr(CONNECTION).set(this);
@@ -38,5 +43,9 @@ public class Connection {
 
     public SocketAddress remoteAddress() {
         return channel.remoteAddress();
+    }
+
+    public void close() {
+        // TODO
     }
 }

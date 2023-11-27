@@ -2,7 +2,6 @@ package io.github.xinfra.lab.remoting.connection;
 
 
 import io.github.xinfra.lab.remoting.Endpoint;
-import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.netty.bootstrap.Bootstrap;
@@ -22,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 
 @Slf4j
-public abstract class AbstractConnectionFactory extends AbstractLifeCycle implements ConnectionFactory {
+public abstract class AbstractConnectionFactory implements ConnectionFactory {
     private ProtocolType protocolType;
     private ChannelHandler encoder;
     private ChannelHandler decoder;
@@ -42,11 +41,6 @@ public abstract class AbstractConnectionFactory extends AbstractLifeCycle implem
         this.decoder = decoder;
         this.heartbeatHandler = heartbeatHandler;
         this.handler = handler;
-    }
-
-    @Override
-    public void startup() {
-        super.startup();
 
         bootstrap = new Bootstrap();
         bootstrap.handler(new ChannelInitializer<SocketChannel>() {
@@ -87,6 +81,6 @@ public abstract class AbstractConnectionFactory extends AbstractLifeCycle implem
             throw new RemotingException(errMsg, future.cause());
         }
         Channel channel = future.channel();
-        return new Connection(channel, protocolType);
+        return new Connection(endpoint, channel, protocolType);
     }
 }
