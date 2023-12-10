@@ -1,6 +1,7 @@
 package io.github.xinfra.lab.remoting;
 
 
+import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,6 +11,8 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Endpoint {
+
+    private ProtocolType protocolType;
 
     private String ip;
 

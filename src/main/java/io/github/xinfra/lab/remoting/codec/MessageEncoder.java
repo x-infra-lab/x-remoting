@@ -4,6 +4,6 @@ import io.github.xinfra.lab.remoting.message.Message;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 
-public interface Encoder {
+public interface MessageEncoder {
     void encode(ChannelHandlerContext ctx, Message msg, ByteBuf out);
 }

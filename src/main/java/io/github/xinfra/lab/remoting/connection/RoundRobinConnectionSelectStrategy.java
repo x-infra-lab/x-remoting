@@ -9,8 +9,15 @@ public class RoundRobinConnectionSelectStrategy implements ConnectionSelectStrat
 
     @Override
     public Connection select(List<Connection> connections) {
-        int i = Math.abs(counter.getAndIncrement());
+        if (connections.isEmpty()) {
+            return null;
+        }
 
+        if (connections.size() == 1) {
+            return connections.get(0);
+        }
+
+        int i = Math.abs(counter.getAndIncrement());
         return connections.get(i % connections.size());
     }
 }

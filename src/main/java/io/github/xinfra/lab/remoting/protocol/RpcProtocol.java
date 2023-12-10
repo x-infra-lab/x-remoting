@@ -1,10 +1,11 @@
 package io.github.xinfra.lab.remoting.protocol;
 
-import io.github.xinfra.lab.remoting.codec.Decoder;
-import io.github.xinfra.lab.remoting.codec.Encoder;
+import io.github.xinfra.lab.remoting.codec.MessageDecoder;
+import io.github.xinfra.lab.remoting.codec.MessageEncoder;
 import io.github.xinfra.lab.remoting.message.HeartbeatTrigger;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
 import io.github.xinfra.lab.remoting.message.RpcMessageFactory;
+import io.github.xinfra.lab.remoting.rpc.RpcMessageEncoder;
 
 /**
  * x-protocol
@@ -19,27 +20,28 @@ import io.github.xinfra.lab.remoting.message.RpcMessageFactory;
  */
 public class RpcProtocol implements Protocol {
 
-    private Encoder rpcEncoder;
-    private Decoder rpcDecoder;
+    private MessageEncoder rpcMessageEncoder;
+    private MessageDecoder rpcMessageDecoder;
     private MessageHandler rpcMessageHandler;
     private RpcMessageFactory rpcMessageFactory;
     private HeartbeatTrigger rpcHeartbeatTrigger;
 
     public RpcProtocol() {
         this.rpcMessageFactory = new RpcMessageFactory();
+
+        this.rpcMessageEncoder = new RpcMessageEncoder();
+
         // TODO
-//        this.rpcEncoder = null;
-//        this.rpcDecoder = null;
+//        this.rpcMessageDecoder = null;
     }
 
     @Override
-    public Encoder encoder() {
-        // TODO
-        return null;
+    public MessageEncoder encoder() {
+        return this.rpcMessageEncoder;
     }
 
     @Override
-    public Decoder decoder() {
+    public MessageDecoder decoder() {
         // TODO
         return null;
     }

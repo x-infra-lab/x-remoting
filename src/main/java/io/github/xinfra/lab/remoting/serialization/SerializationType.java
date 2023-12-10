@@ -8,7 +8,7 @@ public enum SerializationType {
         return (byte) this.ordinal();
     }
 
-    public SerializationType valueOf(byte data) {
+    public static SerializationType valueOf(byte data) {
         return SerializationType.values()[data];
     }
 }

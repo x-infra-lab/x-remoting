@@ -12,7 +12,7 @@ public enum MessageType {
         return (byte) this.ordinal();
     }
 
-    public MessageType valueOf(byte data) {
+    public static MessageType valueOf(byte data) {
         return MessageType.values()[data];
     }
 }

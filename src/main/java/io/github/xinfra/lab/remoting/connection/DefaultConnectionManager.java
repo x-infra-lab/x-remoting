@@ -17,8 +17,8 @@ public class DefaultConnectionManager implements ConnectionManager {
     private ConnectionSelectStrategy connectionSelectStrategy = new RoundRobinConnectionSelectStrategy();
 
 
-    public DefaultConnectionManager(ConnectionFactory connectionFactory) {
-        this.connectionFactory = connectionFactory;
+    public DefaultConnectionManager() {
+        this.connectionFactory = new DefaultConnectionFactory(this);
     }
 
 
@@ -70,12 +70,12 @@ public class DefaultConnectionManager implements ConnectionManager {
 
     private ConnectionPool createConnectionPool(Endpoint endpoint) throws RemotingException {
         ConnectionPool connectionPool = new ConnectionPool(connectionSelectStrategy);
-        createConnection(endpoint, connectionPool);
+        createConnectionForPool(endpoint, connectionPool);
         pools.put(endpoint, connectionPool);
         return connectionPool;
     }
 
-    private void createConnection(Endpoint endpoint, ConnectionPool connectionPool) throws RemotingException {
+    private void createConnectionForPool(Endpoint endpoint, ConnectionPool connectionPool) throws RemotingException {
         for (int i = 0; i < endpoint.getConnNum(); i++) {
             Connection connection = connectionFactory.create(endpoint);
             connectionPool.add(connection);

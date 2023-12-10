@@ -5,6 +5,6 @@ import io.netty.channel.ChannelHandlerContext;
 
 import java.util.List;
 
-public interface Decoder {
+public interface MessageDecoder {
     void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out);
 }

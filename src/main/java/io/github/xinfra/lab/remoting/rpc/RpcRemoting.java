@@ -5,6 +5,7 @@ import io.github.xinfra.lab.remoting.client.BaseRemoting;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.connection.ConnectionManager;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
+import io.github.xinfra.lab.remoting.exception.SerializeException;
 import io.github.xinfra.lab.remoting.message.RpcMessageFactory;
 import io.github.xinfra.lab.remoting.message.RpcRequestMessage;
 import io.github.xinfra.lab.remoting.message.RpcResponseMessage;
@@ -31,14 +32,21 @@ public class RpcRemoting extends BaseRemoting {
 
     public <R> R syncCall(Object request, Endpoint endpoint, int timeoutMills) throws InterruptedException,
             RemotingException {
-        RpcRequestMessage requestMessage = rpcMessageFactory.createRequestMessage();
-        requestMessage.setContent(request);
-        requestMessage.setContentType(RpcRequestMessage.class.getName());
+        RpcRequestMessage requestMessage = buildRequestMessage(request);
 
         Connection connection = connectionManager.getConnection(endpoint);
         connectionManager.check(connection);
 
         RpcResponseMessage responseMessage = (RpcResponseMessage) super.syncCall(requestMessage, connection, timeoutMills);
         return RpcResponseResolver.getResponseObject(responseMessage, connection.getChannel().remoteAddress());
+    }
+
+    private RpcRequestMessage buildRequestMessage(Object request) throws SerializeException {
+        RpcRequestMessage requestMessage = rpcMessageFactory.createRequestMessage();
+        requestMessage.setContent(request);
+        requestMessage.setContentType(request.getClass().getName());
+
+        requestMessage.serialize();
+        return requestMessage;
     }
 }

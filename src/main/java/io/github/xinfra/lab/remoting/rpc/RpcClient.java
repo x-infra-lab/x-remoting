@@ -3,10 +3,8 @@ package io.github.xinfra.lab.remoting.rpc;
 import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.client.InvokeCallBack;
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
-import io.github.xinfra.lab.remoting.connection.ConnectionFactory;
 import io.github.xinfra.lab.remoting.connection.ConnectionManager;
 import io.github.xinfra.lab.remoting.connection.DefaultConnectionManager;
-import io.github.xinfra.lab.remoting.connection.RpcConnectionFactory;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 
 import java.util.concurrent.Future;
@@ -15,13 +13,11 @@ public class RpcClient extends AbstractLifeCycle {
 
     private RpcRemoting rpcRemoting;
     private ConnectionManager connectionManager;
-    private ConnectionFactory connectionFactory;
 
     @Override
     public void startup() {
         super.startup();
-        connectionFactory = new RpcConnectionFactory();
-        connectionManager = new DefaultConnectionManager(connectionFactory);
+        connectionManager = new DefaultConnectionManager();
         rpcRemoting = new RpcRemoting(connectionManager);
     }
 

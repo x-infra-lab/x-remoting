@@ -3,7 +3,6 @@ package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
-import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -22,7 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public abstract class AbstractConnectionFactory implements ConnectionFactory {
-    private ProtocolType protocolType;
+    private ChannelHandler connectionEventHandler;
     private ChannelHandler encoder;
     private ChannelHandler decoder;
     private ChannelHandler heartbeatHandler;
@@ -31,12 +30,13 @@ public abstract class AbstractConnectionFactory implements ConnectionFactory {
     private Bootstrap bootstrap;
 
 
-    public AbstractConnectionFactory(ProtocolType protocolType,
-                                     ChannelHandler encoder,
-                                     ChannelHandler decoder,
-                                     ChannelHandler heartbeatHandler,
-                                     ChannelHandler handler) {
-        this.protocolType = protocolType;
+    public AbstractConnectionFactory(
+            ChannelHandler connectionEventHandler,
+            ChannelHandler encoder,
+            ChannelHandler decoder,
+            ChannelHandler heartbeatHandler,
+            ChannelHandler handler) {
+        this.connectionEventHandler = connectionEventHandler;
         this.encoder = encoder;
         this.decoder = decoder;
         this.heartbeatHandler = heartbeatHandler;
@@ -48,6 +48,7 @@ public abstract class AbstractConnectionFactory implements ConnectionFactory {
             @Override
             protected void initChannel(SocketChannel ch) throws Exception {
                 ChannelPipeline pipeline = ch.pipeline();
+                pipeline.addLast("connectionEventHandler", connectionEventHandler);
                 pipeline.addLast("encoder", encoder);
                 pipeline.addLast("decoder", decoder);
 
@@ -81,6 +82,6 @@ public abstract class AbstractConnectionFactory implements ConnectionFactory {
             throw new RemotingException(errMsg, future.cause());
         }
         Channel channel = future.channel();
-        return new Connection(endpoint, channel, protocolType);
+        return new Connection(endpoint, channel, endpoint.getProtocolType());
     }
 }

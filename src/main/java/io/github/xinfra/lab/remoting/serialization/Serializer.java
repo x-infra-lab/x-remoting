@@ -1,9 +1,12 @@
 package io.github.xinfra.lab.remoting.serialization;
 
-public interface Serializer<T> {
+import io.github.xinfra.lab.remoting.exception.DeserializeException;
+import io.github.xinfra.lab.remoting.exception.SerializeException;
 
-    byte[] serialize(T t);
+public interface Serializer {
+
+    byte[] serialize(Object obj) throws SerializeException;
 
 
-    T deserialize(byte[] data);
+    <T> T deserialize(byte[] data, String clazz) throws DeserializeException;
 }
