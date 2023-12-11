@@ -10,6 +10,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import static io.github.xinfra.lab.remoting.connection.Connection.PROTOCOL;
+
 public class ProtocolDecoder extends ByteToMessageDecoder {
 
 
@@ -30,6 +32,7 @@ public class ProtocolDecoder extends ByteToMessageDecoder {
                 in.resetReaderIndex();
 
                 if (Arrays.equals(protocolCode, protocolType.protocolCode())) {
+                    ctx.channel().attr(PROTOCOL).set(protocolType);
                     ProtocolManager.getProtocol(protocolType).decoder().decode(ctx, in, out);
                 }
             }

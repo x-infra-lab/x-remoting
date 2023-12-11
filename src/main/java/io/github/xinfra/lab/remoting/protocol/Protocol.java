@@ -18,4 +18,5 @@ public interface Protocol {
     MessageFactory messageFactory();
 
     HeartbeatTrigger heartbeatTrigger();
+
 }
