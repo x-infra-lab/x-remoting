@@ -28,11 +28,14 @@ public class InvokeFuture {
 
     private InvokeCallBack invokeCallBack;
 
-    private AtomicBoolean callBackExecuted = new AtomicBoolean(false);
+    private final AtomicBoolean callBackExecuted = new AtomicBoolean(false);
+
+    private ClassLoader classLoader;
 
     public InvokeFuture(int requestId) {
         this.requestId = requestId;
         this.countDownLatch = new CountDownLatch(1);
+        this.classLoader = Thread.currentThread().getContextClassLoader();
     }
 
     public void addTimeout(Timeout timeout) {
@@ -50,6 +53,7 @@ public class InvokeFuture {
                     try {
                         // TODO  ClassLoader??
                         // FIXME ClassLoader??
+                        // FIXME Executor??
                         ProtocolType protocolType = result.protocolType();
                         Protocol protocol = ProtocolManager.getProtocol(protocolType);
                         Executor executor = protocol.messageHandler().executor();

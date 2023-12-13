@@ -52,7 +52,7 @@ public class RpcMessageHandler implements MessageHandler {
             remotingProcessors.get(rpcMessage.messageType())
                     .handleMessage(remotingContext, rpcMessage);
         } catch (Throwable t) {
-            // todo
+            // TODO sendResponse
         }
     }
 

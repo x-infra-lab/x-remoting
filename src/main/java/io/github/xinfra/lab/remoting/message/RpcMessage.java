@@ -1,5 +1,6 @@
 package io.github.xinfra.lab.remoting.message;
 
+import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.github.xinfra.lab.remoting.serialization.SerializationManager;
@@ -124,4 +125,42 @@ public abstract class RpcMessage implements Message {
         this.contentLength = bytes.length;
         this.contentData = bytes;
     }
+
+    @Override
+    public void deserialize() throws DeserializeException {
+        deserializeContentType();
+        deserializeHeader();
+        deserializeContent();
+    }
+
+    public void deserialize(RpcDeserializeLevel level) throws DeserializeException {
+        if (level.ordinal() == RpcDeserializeLevel.content_type.ordinal()) {
+            deserializeContentType();
+        } else if (level.ordinal() == RpcDeserializeLevel.header.ordinal()) {
+            deserializeContentType();
+            deserializeHeader();
+        } else {
+            deserialize();
+        }
+    }
+
+    private void deserializeContent() throws DeserializeException {
+        if (content == null && contentData != null) {
+            this.content = SerializationManager.getSerializer(serializationType).deserialize(contentData, contentType);
+        }
+    }
+
+    private void deserializeHeader() {
+        if (header == null && headerData != null) {
+            // TODO
+        }
+    }
+
+    private void deserializeContentType() {
+        if (contentType == null && contentTypeData != null) {
+            this.contentType = new String(contentTypeData, StandardCharsets.UTF_8);
+        }
+    }
+
+
 }
