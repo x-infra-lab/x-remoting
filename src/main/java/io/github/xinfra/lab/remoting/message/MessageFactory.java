@@ -10,5 +10,7 @@ public interface MessageFactory {
 
     Message createTimeoutResponseMessage(SocketAddress remoteAddress);
 
-     Message createRequestMessage();
+    Message createRequestMessage();
+
+    Message createExceptionResponse(int id, ResponseStatus status, Throwable t);
 }

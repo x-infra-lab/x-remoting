@@ -15,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
+import static io.github.xinfra.lab.remoting.message.MessageType.onewayRequest;
+
 
 @Slf4j
 public class RpcMessageDecoder implements MessageDecoder {
@@ -51,6 +53,8 @@ public class RpcMessageDecoder implements MessageDecoder {
                 RpcMessage rpcMessage;
                 switch (messageType) {
                     case request -> rpcMessage = new RpcRequestMessage(requestId, serializationType);
+                    case onewayRequest ->
+                            rpcMessage = new RpcRequestMessage(requestId, onewayRequest, serializationType);
                     case response -> {
                         RpcResponseMessage rpcResponseMessage = new RpcResponseMessage(requestId, serializationType);
                         rpcResponseMessage.setStatus(status);

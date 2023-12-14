@@ -4,22 +4,19 @@ import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.exception.SendMessageException;
 import io.github.xinfra.lab.remoting.exception.TimeoutException;
 import io.github.xinfra.lab.remoting.message.RpcResponseMessage;
-import io.github.xinfra.lab.remoting.message.RpcStatusCode;
+import io.github.xinfra.lab.remoting.message.ResponseStatus;
 
 import java.net.SocketAddress;
 import java.util.Objects;
 
-import static io.github.xinfra.lab.remoting.message.RpcStatusCode.CLIENT_SEND_ERROR;
-import static io.github.xinfra.lab.remoting.message.RpcStatusCode.TIMEOUT;
 
 public class RpcResponseResolver {
     public static <R> R getResponseObject(RpcResponseMessage responseMessage, SocketAddress remoteAddress) throws RemotingException {
+        ResponseStatus status = ResponseStatus.valueOf(responseMessage.getStatus());
 
-        if (Objects.equals(responseMessage.getStatus(), RpcStatusCode.SUCCESS)) {
+        if (Objects.equals(status, ResponseStatus.SUCCESS)) {
             return (R) responseMessage.getContent();
         }
-
-        int status = responseMessage.getStatus();
 
         switch (status) {
             case TIMEOUT ->

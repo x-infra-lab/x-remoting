@@ -23,4 +23,8 @@ public class RpcRequestMessage extends RpcMessage {
     public RpcRequestMessage(int id, SerializationType serializationType) {
         super(id, MessageType.request, serializationType);
     }
+
+    public RpcRequestMessage(int id, MessageType messageType, SerializationType serializationType) {
+        super(id, messageType, serializationType);
+    }
 }
