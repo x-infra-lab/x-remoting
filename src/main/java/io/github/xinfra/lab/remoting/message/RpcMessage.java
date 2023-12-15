@@ -85,8 +85,10 @@ public abstract class RpcMessage implements Message {
     }
 
     public void serializeContentType() throws SerializeException {
-        byte[] bytes = contentType.getBytes(StandardCharsets.UTF_8);
-        setContentTypeData(bytes);
+        if (contentType != null) {
+            byte[] bytes = contentType.getBytes(StandardCharsets.UTF_8);
+            setContentTypeData(bytes);
+        }
     }
 
     public void setContentTypeData(byte[] bytes) {
@@ -116,9 +118,11 @@ public abstract class RpcMessage implements Message {
     }
 
     public void serializeContent() throws SerializeException {
-        Serializer serializer = SerializationManager.getSerializer(serializationType);
-        byte[] bytes = serializer.serialize(content);
-        setContentData(bytes);
+        if (content != null) {
+            Serializer serializer = SerializationManager.getSerializer(serializationType);
+            byte[] bytes = serializer.serialize(content);
+            setContentData(bytes);
+        }
     }
 
     public void setContentData(byte[] bytes) {

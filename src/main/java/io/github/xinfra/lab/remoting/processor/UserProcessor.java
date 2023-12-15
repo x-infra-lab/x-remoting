@@ -7,7 +7,14 @@ public interface UserProcessor<T> {
 
     Object handRequest(T request);
 
-    Executor select(String contentType , Object header);
+    ExecutorSelector executorSelector();
+
+    Executor executor();
 
     ClassLoader getBizClassLoader();
+
+
+    interface ExecutorSelector {
+        Executor select(String requestClass, Object requestHeader);
+    }
 }

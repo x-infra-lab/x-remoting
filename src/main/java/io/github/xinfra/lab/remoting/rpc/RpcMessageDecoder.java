@@ -3,7 +3,6 @@ package io.github.xinfra.lab.remoting.rpc;
 import io.github.xinfra.lab.remoting.codec.MessageDecoder;
 import io.github.xinfra.lab.remoting.message.MessageType;
 import io.github.xinfra.lab.remoting.message.RpcHeartbeatRequestMessage;
-import io.github.xinfra.lab.remoting.message.RpcHeartbeatResponseMessage;
 import io.github.xinfra.lab.remoting.message.RpcMessage;
 import io.github.xinfra.lab.remoting.message.RpcRequestMessage;
 import io.github.xinfra.lab.remoting.message.RpcResponseMessage;
@@ -52,21 +51,24 @@ public class RpcMessageDecoder implements MessageDecoder {
             if (remainLength <= in.readableBytes()) {
                 RpcMessage rpcMessage;
                 switch (messageType) {
-                    case request -> rpcMessage = new RpcRequestMessage(requestId, serializationType);
-                    case onewayRequest ->
-                            rpcMessage = new RpcRequestMessage(requestId, onewayRequest, serializationType);
-                    case response -> {
+                    case request:
+                        rpcMessage = new RpcRequestMessage(requestId, serializationType);
+                        break;
+                    case onewayRequest:
+                        rpcMessage = new RpcRequestMessage(requestId, onewayRequest, serializationType);
+                        break;
+                    case response:
                         RpcResponseMessage rpcResponseMessage = new RpcResponseMessage(requestId, serializationType);
                         rpcResponseMessage.setStatus(status);
                         rpcMessage = rpcResponseMessage;
-                    }
-                    case heartbeatRequest -> rpcMessage = new RpcHeartbeatRequestMessage(requestId, serializationType);
-                    case heartbeatResponse ->
-                            rpcMessage = new RpcHeartbeatResponseMessage(requestId, serializationType);
-                    default -> {
+                        break;
+                    case heartbeatRequest:
+                        rpcMessage = new RpcHeartbeatRequestMessage(requestId, serializationType);
+                        break;
+                    default:
                         log.warn("MessageType not support:{}", messageType);
                         throw new RuntimeException("MessageType not support:" + messageType);
-                    }
+
                 }
 
                 if (contentTypeLength > 0) {

@@ -22,8 +22,6 @@ public class RpcResponseMessage extends RpcMessage {
 
     private Throwable cause;
 
-    private SocketAddress remoteAddress;
-
     public RpcResponseMessage(int id) {
         this(id, SerializationType.HESSION);
     }

@@ -5,7 +5,6 @@ public enum MessageType {
     response,
     onewayRequest,
     heartbeatRequest,
-    heartbeatResponse,
     ;
 
     public byte data() {

@@ -25,7 +25,7 @@ public class RpcMessageFactory implements MessageFactory {
 
 
     @Override
-    public RpcResponseMessage createExceptionResponse(int id, ResponseStatus status, Throwable t) {
+    public RpcResponseMessage createExceptionResponse(int id, Throwable t, ResponseStatus status) {
         RpcResponseMessage rpcResponseMessage = new RpcResponseMessage(id);
         rpcResponseMessage.setStatus(status.getCode());
 
@@ -35,5 +35,36 @@ public class RpcMessageFactory implements MessageFactory {
         rpcResponseMessage.setContentType(t.getClass().getName());
         // TODO
         return null;
+    }
+
+    @Override
+    public RpcResponseMessage createExceptionResponse(int id, Throwable t, String errorMsg) {
+        return null;
+    }
+
+    @Override
+    public RpcResponseMessage createExceptionResponse(int id, String errorMsg) {
+        return null;
+    }
+
+    @Override
+    public RpcResponseMessage createExceptionResponse(int id, Throwable t) {
+        return null;
+    }
+
+    @Override
+    public RpcResponseMessage createExceptionResponse(int id, ResponseStatus status) {
+        return null;
+    }
+
+    @Override
+    public RpcResponseMessage createResponse(int id, Object responseContent) {
+        RpcResponseMessage responseMessage = new RpcResponseMessage(id);
+        responseMessage.setStatus(ResponseStatus.SUCCESS.getCode());
+        if (responseContent != null) {
+            responseMessage.setContent(responseContent);
+            responseMessage.setContentType(responseContent.getClass().getName());
+        }
+        return responseMessage;
     }
 }

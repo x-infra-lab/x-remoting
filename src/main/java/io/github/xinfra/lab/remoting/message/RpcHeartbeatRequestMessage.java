@@ -2,7 +2,7 @@ package io.github.xinfra.lab.remoting.message;
 
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
 
-public class RpcHeartbeatRequestMessage extends RpcMessage {
+public class RpcHeartbeatRequestMessage extends RpcRequestMessage {
     public RpcHeartbeatRequestMessage(int id) {
         super(id, MessageType.heartbeatRequest, SerializationType.HESSION);
     }

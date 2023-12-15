@@ -12,5 +12,15 @@ public interface MessageFactory {
 
     Message createRequestMessage();
 
-    Message createExceptionResponse(int id, ResponseStatus status, Throwable t);
+    Message createExceptionResponse(int id, Throwable t, ResponseStatus status);
+
+    Message createExceptionResponse(int id, Throwable t, String errorMsg);
+
+    Message createExceptionResponse(int id, String errorMsg);
+
+    Message createExceptionResponse(int id, Throwable t);
+
+    Message createExceptionResponse(int id, ResponseStatus status);
+
+    Message createResponse(int id, Object responseContent);
 }

@@ -15,7 +15,9 @@ public enum ResponseStatus {
 
     SERVER_EXCEPTION((short) 6),
 
-    ;
+    SERVER_SERIAL_EXCEPTION((short) 7),
+
+    SERVER_DESERIAL_EXCEPTION((short) 8);
     private short code;
 
     ResponseStatus(short code) {

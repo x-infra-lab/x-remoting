@@ -38,7 +38,7 @@ public class RpcRemoting extends BaseRemoting {
         connectionManager.check(connection);
 
         RpcResponseMessage responseMessage = (RpcResponseMessage) super.syncCall(requestMessage, connection, timeoutMills);
-        return RpcResponseResolver.getResponseObject(responseMessage, connection.getChannel().remoteAddress());
+        return RpcResponses.getResponseObject(responseMessage, connection.getChannel().remoteAddress());
     }
 
     private RpcRequestMessage buildRequestMessage(Object request) throws SerializeException {
