@@ -46,26 +46,48 @@ public class InvokeFuture {
         this.invokeCallBack = invokeCallBack;
     }
 
+    public void asyncExecuteCallBack() {
+        try {
+            ProtocolType protocolType = result.protocolType();
+            Protocol protocol = ProtocolManager.getProtocol(protocolType);
+            Executor executor = protocol.messageHandler().executor();
+
+            executor.execute(() -> {
+                ClassLoader contextClassLoader = null;
+                try {
+                    ClassLoader appClassLoader = getAppClassLoader();
+                    if (appClassLoader != null) {
+                        contextClassLoader = Thread.currentThread().getContextClassLoader();
+                        Thread.currentThread().setContextClassLoader(appClassLoader);
+                    }
+
+                    executeCallBack();
+                } catch (Throwable t) {
+                    log.error("executeCallBack fail. id:{}", result.id(), t);
+                } finally {
+                    if (contextClassLoader != null) {
+                        Thread.currentThread().setContextClassLoader(contextClassLoader);
+                    }
+                }
+            });
+        } catch (Exception e) {
+            log.error("asyncExecuteCallBack fail. id:{}", result.id(), e);
+        }
+    }
+
     public void executeCallBack() {
         if (invokeCallBack != null) {
             if (isDone()) {
                 if (callBackExecuted.compareAndSet(false, true)) {
-                    try {
-                        // TODO  ClassLoader??
-                        // FIXME ClassLoader??
-                        // FIXME Executor??
-                        ProtocolType protocolType = result.protocolType();
-                        Protocol protocol = ProtocolManager.getProtocol(protocolType);
-                        Executor executor = protocol.messageHandler().executor();
-                        executor.execute(() -> {
-                            invokeCallBack.complete(result);
-                        });
-                    } catch (Throwable t) {
-                        log.error("execute callback fail. id:{}", result.id());
-                    }
+                    // FIXME
+                    invokeCallBack.complete(result);
                 }
             }
         }
+    }
+
+    public ClassLoader getAppClassLoader() {
+        return classLoader;
     }
 
     public void finish(Message result) {

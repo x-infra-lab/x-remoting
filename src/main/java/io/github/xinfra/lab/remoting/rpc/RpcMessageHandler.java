@@ -30,7 +30,7 @@ public class RpcMessageHandler implements MessageHandler {
     private RpcMessageFactory rpcMessageFactory;
 
     // TODO: use config
-    private Executor defaultExecutor = new ThreadPoolExecutor(20, 400, 60,
+    private Executor executor = new ThreadPoolExecutor(20, 400, 60,
             TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(1024),
             new NamedThreadFactory("RPC-MESSAGE-HANDLER-")
     );
@@ -39,12 +39,12 @@ public class RpcMessageHandler implements MessageHandler {
         this.rpcMessageFactory = rpcMessageFactory;
 
         RpcRequestMessageProcessor rpcRequestMessageProcessor = new RpcRequestMessageProcessor(rpcMessageFactory,
-                defaultExecutor, userProcessors);
+                executor, userProcessors);
 
         remotingProcessors.put(request, rpcRequestMessageProcessor);
         remotingProcessors.put(MessageType.onewayRequest, rpcRequestMessageProcessor);
 
-        remotingProcessors.put(MessageType.response, new RpcResponseMessageProcessor());
+        remotingProcessors.put(MessageType.response, new RpcResponseMessageProcessor(executor));
 
         RpcHeartbeatMessageProcessor rpcHeartbeatMessageProcessor = new RpcHeartbeatMessageProcessor(rpcMessageFactory);
         remotingProcessors.put(MessageType.heartbeatRequest, rpcHeartbeatMessageProcessor);
@@ -52,7 +52,7 @@ public class RpcMessageHandler implements MessageHandler {
 
     @Override
     public Executor executor() {
-        return defaultExecutor;
+        return executor;
     }
 
     @Override

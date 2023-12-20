@@ -21,12 +21,12 @@ public class RpcRequestMessageProcessor implements RemotingProcessor<RpcMessage>
     private RpcMessageFactory rpcMessageFactory;
     private Map<String, UserProcessor<?>> userProcessors;
 
-    private Executor defaultExecutor;
+    private Executor executor;
 
     public RpcRequestMessageProcessor(RpcMessageFactory rpcMessageFactory,
-                                      Executor defaultExecutor, Map<String, UserProcessor<?>> userProcessors) {
+                                      Executor executor, Map<String, UserProcessor<?>> userProcessors) {
         this.rpcMessageFactory = rpcMessageFactory;
-        this.defaultExecutor = defaultExecutor;
+        this.executor = executor;
         this.userProcessors = userProcessors;
     }
 
@@ -48,24 +48,24 @@ public class RpcRequestMessageProcessor implements RemotingProcessor<RpcMessage>
             return;
         }
 
-        Executor executor;
+        Executor userProcessorExecutor;
         if (userProcessor.executorSelector() != null) {
 
             if (!deserialize(remotingContext, requestMessage, RpcDeserializeLevel.header)) {
                 return;
             }
 
-            executor = userProcessor.executorSelector()
+            userProcessorExecutor = userProcessor.executorSelector()
                     .select(requestMessage.getContentType(), requestMessage.getHeader());
         } else {
-            executor = userProcessor.executor();
+            userProcessorExecutor = userProcessor.executor();
         }
 
-        if (executor == null) {
-            executor = defaultExecutor;
+        if (userProcessorExecutor == null) {
+            userProcessorExecutor = this.executor;
         }
 
-        executor.execute(new ProcessTask(userProcessor, requestMessage, remotingContext));
+        userProcessorExecutor.execute(new ProcessTask(userProcessor, requestMessage, remotingContext));
     }
 
     private void process(RemotingContext remotingContext,
@@ -74,11 +74,11 @@ public class RpcRequestMessageProcessor implements RemotingProcessor<RpcMessage>
         // TODO async
 
 
-        ClassLoader originalClassLoader = null;
+        ClassLoader contextClassLoader = null;
         try {
 
             if (userProcessor.getBizClassLoader() != null) {
-                originalClassLoader = Thread.currentThread().getContextClassLoader();
+                contextClassLoader = Thread.currentThread().getContextClassLoader();
                 Thread.currentThread().setContextClassLoader(userProcessor.getBizClassLoader());
             }
 
@@ -88,8 +88,8 @@ public class RpcRequestMessageProcessor implements RemotingProcessor<RpcMessage>
                     rpcMessageFactory.createResponse(requestMessage.id(), responseContent)
             );
         } finally {
-            if (originalClassLoader != null) {
-                Thread.currentThread().setContextClassLoader(originalClassLoader);
+            if (contextClassLoader != null) {
+                Thread.currentThread().setContextClassLoader(contextClassLoader);
             }
         }
 

@@ -11,12 +11,9 @@ public class NamedThreadFactory implements ThreadFactory {
     private final String               namePrefix;
     private final boolean              isDaemon;
 
-    public NamedThreadFactory() {
-        this("ThreadPool");
-    }
 
-    public NamedThreadFactory(String name) {
-        this(name, false);
+    public NamedThreadFactory(String prefix) {
+        this(prefix, false);
     }
 
     public NamedThreadFactory(String prefix, boolean daemon) {

@@ -105,7 +105,7 @@ public abstract class BaseRemoting {
             if (future != null) {
                 Message result = messageFactory.createTimeoutResponseMessage(connection.remoteAddress());
                 future.finish(result);
-                future.executeCallBack();
+                future.asyncExecuteCallBack();
             }
             log.warn("Wait result timeout. id:{}", requestId);
         }, timeoutMills, TimeUnit.MILLISECONDS);
@@ -122,7 +122,7 @@ public abstract class BaseRemoting {
                                 future.cancelTimeout();
                                 future.finish(messageFactory.createSendFailResponseMessage(connection.remoteAddress(),
                                         channelFuture.cause()));
-                                future.executeCallBack();
+                                future.asyncExecuteCallBack();
                             }
                             log.error("Send message fail. id:{}", requestId, channelFuture.cause());
                         }
@@ -133,7 +133,7 @@ public abstract class BaseRemoting {
             if (future != null) {
                 future.cancelTimeout();
                 future.finish(messageFactory.createSendFailResponseMessage(connection.remoteAddress(), t));
-                future.executeCallBack();
+                future.asyncExecuteCallBack();
             }
             log.error("Invoke sending message fail. id:{}", requestId, t);
         }

@@ -22,6 +22,7 @@ import java.util.Objects;
 public class RpcResponses {
     public static <R> R getResponseObject(RpcResponseMessage responseMessage, SocketAddress remoteAddress) throws RemotingException {
         ResponseStatus status = ResponseStatus.valueOf(responseMessage.getStatus());
+        responseMessage.deserialize();
 
         if (Objects.equals(status, ResponseStatus.SUCCESS)) {
             return (R) responseMessage.getContent();
