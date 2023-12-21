@@ -7,11 +7,17 @@ public interface UserProcessor<T> {
 
     Object handRequest(T request);
 
-    ExecutorSelector executorSelector();
+    default ExecutorSelector executorSelector() {
+        return null;
+    }
 
-    Executor executor();
+    default Executor executor() {
+        return null;
+    }
 
-    ClassLoader getBizClassLoader();
+    default ClassLoader getBizClassLoader() {
+        return null;
+    }
 
 
     interface ExecutorSelector {

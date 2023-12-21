@@ -22,7 +22,7 @@ public class InvokeFuture {
 
     private final CountDownLatch countDownLatch;
 
-    private Message result;
+    private Message message;
 
     private Timeout timeout;
 
@@ -48,30 +48,20 @@ public class InvokeFuture {
 
     public void asyncExecuteCallBack() {
         try {
-            ProtocolType protocolType = result.protocolType();
+            ProtocolType protocolType = message.protocolType();
             Protocol protocol = ProtocolManager.getProtocol(protocolType);
             Executor executor = protocol.messageHandler().executor();
 
             executor.execute(() -> {
-                ClassLoader contextClassLoader = null;
                 try {
-                    ClassLoader appClassLoader = getAppClassLoader();
-                    if (appClassLoader != null) {
-                        contextClassLoader = Thread.currentThread().getContextClassLoader();
-                        Thread.currentThread().setContextClassLoader(appClassLoader);
-                    }
-
                     executeCallBack();
                 } catch (Throwable t) {
-                    log.error("executeCallBack fail. id:{}", result.id(), t);
-                } finally {
-                    if (contextClassLoader != null) {
-                        Thread.currentThread().setContextClassLoader(contextClassLoader);
-                    }
+                    log.error("executeCallBack fail. id:{}", message.id(), t);
                 }
             });
+
         } catch (Exception e) {
-            log.error("asyncExecuteCallBack fail. id:{}", result.id(), e);
+            log.error("asyncExecuteCallBack fail. id:{}", message.id(), e);
         }
     }
 
@@ -79,8 +69,22 @@ public class InvokeFuture {
         if (invokeCallBack != null) {
             if (isDone()) {
                 if (callBackExecuted.compareAndSet(false, true)) {
-                    // FIXME
-                    invokeCallBack.complete(result);
+                    ClassLoader contextClassLoader = null;
+                    try {
+                        ClassLoader appClassLoader = getAppClassLoader();
+                        if (appClassLoader != null) {
+                            contextClassLoader = Thread.currentThread().getContextClassLoader();
+                            Thread.currentThread().setContextClassLoader(appClassLoader);
+                        }
+
+                        // FIXME
+                        invokeCallBack.complete(message);
+
+                    } finally {
+                        if (contextClassLoader != null) {
+                            Thread.currentThread().setContextClassLoader(contextClassLoader);
+                        }
+                    }
                 }
             }
         }
@@ -91,7 +95,7 @@ public class InvokeFuture {
     }
 
     public void finish(Message result) {
-        this.result = result;
+        this.message = result;
         countDownLatch.countDown();
     }
 
@@ -101,7 +105,7 @@ public class InvokeFuture {
 
     public Message await() throws InterruptedException {
         countDownLatch.await();
-        return result;
+        return message;
     }
 
     /**
@@ -115,7 +119,7 @@ public class InvokeFuture {
         if (!finished) {
             return null;
         }
-        return result;
+        return message;
     }
 
     public boolean cancelTimeout() {

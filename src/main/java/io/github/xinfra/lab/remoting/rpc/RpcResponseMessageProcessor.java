@@ -33,19 +33,11 @@ public class RpcResponseMessageProcessor implements RemotingProcessor<RpcMessage
         if (future != null) {
             future.cancelTimeout();
             future.finish(responseMessage);
-
-            ClassLoader contextClassLoader = null;
             try {
-                ClassLoader appClassLoader = future.getAppClassLoader();
-                if (appClassLoader != null) {
-                    contextClassLoader = Thread.currentThread().getContextClassLoader();
-                    Thread.currentThread().setContextClassLoader(appClassLoader);
-                }
                 future.executeCallBack();
-            } finally {
-                if (contextClassLoader != null) {
-                    Thread.currentThread().setContextClassLoader(contextClassLoader);
-                }
+            } catch (Throwable t) {
+                log.error("executeCallBack fail. id:{}", responseMessage.id(), t);
+                throw t;
             }
         } else {
             log.warn("can not find InvokeFuture maybe timeout. id:{} status:{} from:{}",
@@ -68,8 +60,11 @@ public class RpcResponseMessageProcessor implements RemotingProcessor<RpcMessage
             try {
                 doProcess(remotingContext, responseMessage);
             } catch (Throwable t) {
-                log.error("process response fail. id:{}, status:{}", responseMessage.id(),
-                        responseMessage.getStatus(), t);
+                log.error("process response fail. id:{}, status:{} from:{}",
+                        responseMessage.id(),
+                        responseMessage.getStatus(),
+                        remotingContext.getChannelContext().channel().remoteAddress()
+                        , t);
             }
         }
     }

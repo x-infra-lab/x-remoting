@@ -76,7 +76,6 @@ public class RpcRequestMessageProcessor implements RemotingProcessor<RpcMessage>
 
         ClassLoader contextClassLoader = null;
         try {
-
             if (userProcessor.getBizClassLoader() != null) {
                 contextClassLoader = Thread.currentThread().getContextClassLoader();
                 Thread.currentThread().setContextClassLoader(userProcessor.getBizClassLoader());
