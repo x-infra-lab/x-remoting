@@ -21,8 +21,8 @@ import java.util.Objects;
 @Slf4j
 public class RpcResponses {
     public static <R> R getResponseObject(RpcResponseMessage responseMessage, SocketAddress remoteAddress) throws RemotingException {
-        ResponseStatus status = ResponseStatus.valueOf(responseMessage.getStatus());
         responseMessage.deserialize();
+        ResponseStatus status = ResponseStatus.valueOf(responseMessage.getStatus());
 
         if (Objects.equals(status, ResponseStatus.SUCCESS)) {
             return (R) responseMessage.getContent();

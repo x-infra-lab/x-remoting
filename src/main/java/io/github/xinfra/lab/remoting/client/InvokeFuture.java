@@ -1,12 +1,15 @@
 package io.github.xinfra.lab.remoting.client;
 
 
+import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.netty.util.Timeout;
+import lombok.Data;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.CountDownLatch;
@@ -19,6 +22,10 @@ public class InvokeFuture {
 
     @Getter
     private int requestId;
+
+    @Getter
+    @Setter
+    private Connection connection;
 
     private final CountDownLatch countDownLatch;
 
@@ -76,10 +83,7 @@ public class InvokeFuture {
                             contextClassLoader = Thread.currentThread().getContextClassLoader();
                             Thread.currentThread().setContextClassLoader(appClassLoader);
                         }
-
-                        // FIXME
-                        invokeCallBack.complete(message);
-
+                        invokeCallBack.complete(this);
                     } finally {
                         if (contextClassLoader != null) {
                             Thread.currentThread().setContextClassLoader(contextClassLoader);

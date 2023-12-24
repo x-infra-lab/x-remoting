@@ -12,5 +12,4 @@ public class RemotingContext {
         this.channelContext = ctx;
     }
 
-
 }

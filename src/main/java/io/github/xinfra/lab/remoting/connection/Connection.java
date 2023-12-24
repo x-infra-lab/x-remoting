@@ -34,6 +34,7 @@ public class Connection {
 
 
     public void addInvokeFuture(InvokeFuture invokeFuture) {
+        invokeFuture.setConnection(this);
         invokeMap.put(invokeFuture.getRequestId(), invokeFuture);
     }
 
