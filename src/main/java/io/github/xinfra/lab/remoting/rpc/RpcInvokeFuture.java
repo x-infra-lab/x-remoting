@@ -2,7 +2,6 @@ package io.github.xinfra.lab.remoting.rpc;
 
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
-import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.RpcResponseMessage;
 
 import java.net.SocketAddress;

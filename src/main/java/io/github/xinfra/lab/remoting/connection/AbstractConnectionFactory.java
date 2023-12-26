@@ -26,7 +26,6 @@ public abstract class AbstractConnectionFactory implements ConnectionFactory {
     private ChannelHandler decoder;
     private ChannelHandler heartbeatHandler;
     private ChannelHandler handler;
-
     private Bootstrap bootstrap;
 
 
