@@ -32,7 +32,7 @@ public class RpcMessageHandler implements MessageHandler {
     // TODO: use config
     private Executor executor = new ThreadPoolExecutor(20, 400, 60,
             TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(1024),
-            new NamedThreadFactory("RPC-MESSAGE-HANDLER-")
+            new NamedThreadFactory("Rpc-Message-Handler")
     );
 
     public RpcMessageHandler(RpcMessageFactory rpcMessageFactory) {

@@ -1,13 +1,11 @@
 package io.github.xinfra.lab.remoting.rpc;
 
 import io.github.xinfra.lab.remoting.Endpoint;
-import io.github.xinfra.lab.remoting.client.InvokeCallBack;
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.connection.ConnectionManager;
 import io.github.xinfra.lab.remoting.connection.DefaultConnectionManager;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 
-import java.util.concurrent.Future;
 
 public class RpcClient extends AbstractLifeCycle {
 
@@ -24,7 +22,6 @@ public class RpcClient extends AbstractLifeCycle {
     @Override
     public void shutdown() {
         super.shutdown();
-        // TODO
     }
 
     public <R> R syncCall(Object request, Endpoint endpoint, int timeoutMills)
@@ -33,17 +30,18 @@ public class RpcClient extends AbstractLifeCycle {
         return rpcRemoting.syncCall(request, endpoint, timeoutMills);
     }
 
-    public <R> Future<R> asyncCall(Object request, Endpoint endpoint) {
-        // todo
-        return null;
+    public <R> RpcInvokeFuture<R> asyncCall(Object request, Endpoint endpoint, int timeoutMills)
+            throws RemotingException {
+        return rpcRemoting.asyncCall(request, endpoint, timeoutMills);
     }
 
-    public <R> void asyncCall(Object request, Endpoint endpoint, InvokeCallBack invokeCallBack) {
-        // todo
+    public <R> void asyncCall(Object request, Endpoint endpoint, int timeoutMills,
+                              RpcInvokeCallBack<R> rpcInvokeCallBack) throws RemotingException {
+        rpcRemoting.asyncCall(request, endpoint, timeoutMills, rpcInvokeCallBack);
     }
 
-    public void oneway(Object request, Endpoint endpoint) {
-        // todo
+    public void oneway(Object request, Endpoint endpoint) throws RemotingException {
+        rpcRemoting.oneway(request, endpoint);
     }
 
 }

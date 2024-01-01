@@ -2,6 +2,7 @@ package io.github.xinfra.lab.remoting.connection;
 
 
 import io.github.xinfra.lab.remoting.Endpoint;
+import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
@@ -10,6 +11,10 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.epoll.Epoll;
+import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +33,12 @@ public abstract class AbstractConnectionFactory implements ConnectionFactory {
     private ChannelHandler handler;
     private Bootstrap bootstrap;
 
+    private static final EventLoopGroup workerGroup = Epoll.isAvailable() ?
+            new EpollEventLoopGroup(Runtime.getRuntime().availableProcessors(),
+                    new NamedThreadFactory("Remoting-Server-Worker")) :
+            new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(),
+                    new NamedThreadFactory("Remoting-Server-Worker"));
+
 
     public AbstractConnectionFactory(
             ChannelHandler connectionEventHandler,
@@ -42,20 +53,21 @@ public abstract class AbstractConnectionFactory implements ConnectionFactory {
         this.handler = handler;
 
         bootstrap = new Bootstrap();
-        bootstrap.handler(new ChannelInitializer<SocketChannel>() {
+        bootstrap.group(workerGroup)
+                .handler(new ChannelInitializer<SocketChannel>() {
 
-            @Override
-            protected void initChannel(SocketChannel ch) throws Exception {
-                ChannelPipeline pipeline = ch.pipeline();
-                pipeline.addLast("connectionEventHandler", connectionEventHandler);
-                pipeline.addLast("encoder", encoder);
-                pipeline.addLast("decoder", decoder);
+                    @Override
+                    protected void initChannel(SocketChannel ch) throws Exception {
+                        ChannelPipeline pipeline = ch.pipeline();
+                        pipeline.addLast("connectionEventHandler", connectionEventHandler);
+                        pipeline.addLast("encoder", encoder);
+                        pipeline.addLast("decoder", decoder);
 
-                pipeline.addLast("idleStateHandler", new IdleStateHandler(1500, 1500, 0, TimeUnit.MILLISECONDS));
-                pipeline.addLast("heartbeatHandler", heartbeatHandler);
-                pipeline.addLast("handler", handler);
-            }
-        });
+                        pipeline.addLast("idleStateHandler", new IdleStateHandler(1500, 1500, 0, TimeUnit.MILLISECONDS));
+                        pipeline.addLast("heartbeatHandler", heartbeatHandler);
+                        pipeline.addLast("handler", handler);
+                    }
+                });
     }
 
 
