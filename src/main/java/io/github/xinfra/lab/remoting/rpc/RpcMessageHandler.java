@@ -8,11 +8,10 @@ import io.github.xinfra.lab.remoting.message.RpcMessage;
 import io.github.xinfra.lab.remoting.message.RpcMessageFactory;
 import io.github.xinfra.lab.remoting.message.RpcResponseMessage;
 import io.github.xinfra.lab.remoting.processor.RemotingProcessor;
-import io.github.xinfra.lab.remoting.processor.UserProcessor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -23,9 +22,7 @@ import static io.github.xinfra.lab.remoting.message.MessageType.request;
 @Slf4j
 public class RpcMessageHandler implements MessageHandler {
 
-    private Map<MessageType, RemotingProcessor<RpcMessage>> remotingProcessors;
-
-    private Map<String, UserProcessor<?>> userProcessors;
+    private ConcurrentHashMap<MessageType, RemotingProcessor<RpcMessage>> remotingProcessors = new ConcurrentHashMap<>();
 
     private RpcMessageFactory rpcMessageFactory;
 
@@ -39,7 +36,7 @@ public class RpcMessageHandler implements MessageHandler {
         this.rpcMessageFactory = rpcMessageFactory;
 
         RpcRequestMessageProcessor rpcRequestMessageProcessor = new RpcRequestMessageProcessor(rpcMessageFactory,
-                executor, userProcessors);
+                executor);
 
         remotingProcessors.put(request, rpcRequestMessageProcessor);
         remotingProcessors.put(MessageType.onewayRequest, rpcRequestMessageProcessor);
@@ -76,8 +73,4 @@ public class RpcMessageHandler implements MessageHandler {
         }
     }
 
-    @Override
-    public void registerUserProcessor(UserProcessor<?> userProcessor) {
-
-    }
 }

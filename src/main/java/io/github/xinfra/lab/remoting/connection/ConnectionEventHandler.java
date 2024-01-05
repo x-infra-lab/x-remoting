@@ -12,5 +12,8 @@ public class ConnectionEventHandler extends ChannelDuplexHandler {
         this.connectionManager = connectionManager;
     }
 
+    public ConnectionEventHandler() {
+    }
+
     // TODO
 }

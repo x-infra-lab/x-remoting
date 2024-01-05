@@ -18,7 +18,7 @@ import io.github.xinfra.lab.remoting.protocol.RpcProtocol;
 public class RpcRemoting extends BaseRemoting {
 
     static {
-        ProtocolManager.registerProtocol(ProtocolType.RPC, new RpcProtocol());
+        ProtocolManager.registerProtocolIfAbsent(ProtocolType.RPC, new RpcProtocol());
     }
 
     private RpcMessageFactory rpcMessageFactory;

@@ -12,22 +12,19 @@ import io.github.xinfra.lab.remoting.processor.RemotingProcessor;
 import io.github.xinfra.lab.remoting.processor.UserProcessor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Map;
 import java.util.concurrent.Executor;
 
 
 @Slf4j
 public class RpcRequestMessageProcessor implements RemotingProcessor<RpcMessage> {
     private RpcMessageFactory rpcMessageFactory;
-    private Map<String, UserProcessor<?>> userProcessors;
 
     private Executor executor;
 
     public RpcRequestMessageProcessor(RpcMessageFactory rpcMessageFactory,
-                                      Executor executor, Map<String, UserProcessor<?>> userProcessors) {
+                                      Executor executor) {
         this.rpcMessageFactory = rpcMessageFactory;
         this.executor = executor;
-        this.userProcessors = userProcessors;
     }
 
     @Override
@@ -38,7 +35,7 @@ public class RpcRequestMessageProcessor implements RemotingProcessor<RpcMessage>
             return;
         }
 
-        UserProcessor<?> userProcessor = userProcessors.get(message.getContentType());
+        UserProcessor<?> userProcessor = remotingContext.getUserProcessor(message.getContentType());
         if (userProcessor == null) {
             String errorMsg = String.format("No userProcessor for content-type: %s", message.getContentType());
             log.error(errorMsg);

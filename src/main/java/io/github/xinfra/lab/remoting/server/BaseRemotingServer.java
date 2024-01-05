@@ -2,6 +2,10 @@ package io.github.xinfra.lab.remoting.server;
 
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
+import io.github.xinfra.lab.remoting.connection.ConnectionEventHandler;
+import io.github.xinfra.lab.remoting.connection.ProtocolDecoder;
+import io.github.xinfra.lab.remoting.connection.ProtocolEncoder;
+import io.github.xinfra.lab.remoting.connection.ProtocolHandler;
 import io.github.xinfra.lab.remoting.processor.UserProcessor;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -13,15 +17,20 @@ import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.SocketAddress;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class BaseRemotingServer extends AbstractLifeCycle implements RemotingServer {
 
     private SocketAddress localAddress;
     private ServerBootstrap serverBootstrap;
+
+    private ConcurrentHashMap<String, UserProcessor<?>> userProcessors = new ConcurrentHashMap<>();
 
     private final EventLoopGroup bossGroup = Epoll.isAvailable() ?
             new EpollEventLoopGroup(1, new NamedThreadFactory("Remoting-Server-Boss")) :
@@ -37,29 +46,21 @@ public class BaseRemotingServer extends AbstractLifeCycle implements RemotingSer
     private ChannelHandler encoder;
     private ChannelHandler decoder;
     private ChannelHandler handler;
+    private ChannelHandler serverIdleHandler = new ServerIdleHandler();
 
-    public BaseRemotingServer(
-            ChannelHandler connectionEventHandler,
-            ChannelHandler encoder,
-            ChannelHandler decoder,
-            ChannelHandler handler) {
-        this.connectionEventHandler = connectionEventHandler;
-        this.encoder = encoder;
-        this.decoder = decoder;
-        this.handler = handler;
+
+
+    public BaseRemotingServer(SocketAddress localAddress) {
+        this.connectionEventHandler = new ConnectionEventHandler();
+        this.encoder = new ProtocolEncoder();
+        this.decoder = new ProtocolDecoder();
+        this.handler = new ProtocolHandler(userProcessors);
+
+        this.localAddress = localAddress;
     }
 
-    public BaseRemotingServer(SocketAddress localAddress,
-                              ChannelHandler connectionEventHandler,
-                              ChannelHandler encoder,
-                              ChannelHandler decoder,
-                              ChannelHandler handler) {
-        this.localAddress = localAddress;
-
-        this.connectionEventHandler = connectionEventHandler;
-        this.encoder = encoder;
-        this.decoder = decoder;
-        this.handler = handler;
+    public BaseRemotingServer() {
+        this(null);
     }
 
 
@@ -79,6 +80,10 @@ public class BaseRemotingServer extends AbstractLifeCycle implements RemotingSer
                                 pipeline.addLast("connectionEventHandler", connectionEventHandler);
                                 pipeline.addLast("encoder", encoder);
                                 pipeline.addLast("decoder", decoder);
+
+                                // todo: use config
+                                pipeline.addLast("idleStateHandler", new IdleStateHandler(1500, 1500, 0, TimeUnit.MILLISECONDS));
+                                pipeline.addLast("serverIdleHandler", serverIdleHandler);
                                 pipeline.addLast("handler", handler);
                             }
                         }
@@ -115,6 +120,9 @@ public class BaseRemotingServer extends AbstractLifeCycle implements RemotingSer
 
     @Override
     public void registerUserProcessor(UserProcessor<?> userProcessor) {
-        // TODO
+        UserProcessor<?> oldUserProcessor = userProcessors.put(userProcessor.interest(), userProcessor);
+        if (oldUserProcessor != null) {
+            log.warn("registered userProcessor change from:{} to:{}", oldUserProcessor, userProcessor);
+        }
     }
 }

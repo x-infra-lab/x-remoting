@@ -1,11 +1,10 @@
 package io.github.xinfra.lab.remoting.protocol;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ProtocolManager {
-    private static Map<ProtocolType, Protocol> protocols = new HashMap<>();
+    private static ConcurrentHashMap<ProtocolType, Protocol> protocols = new ConcurrentHashMap<>();
 
 
     public static Set<ProtocolType> getProtocolTypes() {
@@ -17,8 +16,8 @@ public class ProtocolManager {
     }
 
 
-    public static void registerProtocol(ProtocolType protocolType,
-                                        Protocol protocol) {
-        protocols.put(protocolType, protocol);
+    public static void registerProtocolIfAbsent(ProtocolType protocolType,
+                                                Protocol protocol) {
+        protocols.putIfAbsent(protocolType, protocol);
     }
 }
