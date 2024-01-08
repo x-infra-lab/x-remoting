@@ -13,21 +13,24 @@ import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
+import io.netty.channel.ServerChannel;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.epoll.EpollServerSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
 
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class BaseRemotingServer extends AbstractLifeCycle implements RemotingServer {
 
-    private SocketAddress localAddress;
+    private InetSocketAddress localAddress;
     private ServerBootstrap serverBootstrap;
 
     private ConcurrentHashMap<String, UserProcessor<?>> userProcessors = new ConcurrentHashMap<>();
@@ -42,6 +45,9 @@ public class BaseRemotingServer extends AbstractLifeCycle implements RemotingSer
             new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2,
                     new NamedThreadFactory("Remoting-Server-Worker"));
 
+    private static final Class<? extends ServerChannel> serverChannelClass = Epoll.isAvailable() ?
+            EpollServerSocketChannel.class : NioServerSocketChannel.class;
+
     private ChannelHandler connectionEventHandler;
     private ChannelHandler encoder;
     private ChannelHandler decoder;
@@ -49,8 +55,7 @@ public class BaseRemotingServer extends AbstractLifeCycle implements RemotingSer
     private ChannelHandler serverIdleHandler = new ServerIdleHandler();
 
 
-
-    public BaseRemotingServer(SocketAddress localAddress) {
+    public BaseRemotingServer(InetSocketAddress localAddress) {
         this.connectionEventHandler = new ConnectionEventHandler();
         this.encoder = new ProtocolEncoder();
         this.decoder = new ProtocolDecoder();
@@ -59,8 +64,8 @@ public class BaseRemotingServer extends AbstractLifeCycle implements RemotingSer
         this.localAddress = localAddress;
     }
 
-    public BaseRemotingServer() {
-        this(null);
+    public BaseRemotingServer(int port) {
+        this(new InetSocketAddress(port));
     }
 
 
@@ -71,6 +76,7 @@ public class BaseRemotingServer extends AbstractLifeCycle implements RemotingSer
 
         this.serverBootstrap
                 .group(bossGroup, workerGroup)
+                .channel(serverChannelClass)
                 .childHandler(
                         new ChannelInitializer<SocketChannel>() {
                             @Override
@@ -91,17 +97,10 @@ public class BaseRemotingServer extends AbstractLifeCycle implements RemotingSer
 
 
         try {
-            ChannelFuture channelFuture;
-            if (localAddress == null) {
-                channelFuture = this.serverBootstrap.bind().sync();
-            } else {
-                channelFuture = this.serverBootstrap.bind(localAddress).sync();
-            }
+            ChannelFuture channelFuture = this.serverBootstrap.bind(localAddress).sync();
 
             if (!channelFuture.isSuccess()) {
                 throw channelFuture.cause();
-            } else if (localAddress == null) {
-                this.localAddress = channelFuture.channel().localAddress();
             }
         } catch (Throwable throwable) {
             throw new RuntimeException("serverBootstrap bind fail. ", throwable);
@@ -114,7 +113,7 @@ public class BaseRemotingServer extends AbstractLifeCycle implements RemotingSer
     }
 
     @Override
-    public SocketAddress localAddress() {
+    public InetSocketAddress localAddress() {
         return this.localAddress;
     }
 

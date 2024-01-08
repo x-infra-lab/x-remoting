@@ -24,4 +24,9 @@ public class Endpoint {
 
     private boolean connWarmup;
 
+    public Endpoint(ProtocolType protocolType, String ip, int port) {
+        this.protocolType = protocolType;
+        this.ip = ip;
+        this.port = port;
+    }
 }

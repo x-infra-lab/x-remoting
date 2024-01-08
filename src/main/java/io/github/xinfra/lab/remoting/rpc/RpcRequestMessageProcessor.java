@@ -68,6 +68,11 @@ public class RpcRequestMessageProcessor implements RemotingProcessor<RpcMessage>
     private void process(RemotingContext remotingContext,
                          UserProcessor userProcessor,
                          RpcRequestMessage requestMessage) {
+
+        if (!deserialize(remotingContext, requestMessage, RpcDeserializeLevel.all)) {
+            return;
+        }
+
         // TODO async
 
 

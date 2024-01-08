@@ -9,4 +9,8 @@ public class RpcServer extends BaseRemotingServer {
     static {
         ProtocolManager.registerProtocolIfAbsent(ProtocolType.RPC, new RpcProtocol());
     }
+
+    public RpcServer(int port) {
+        super(port);
+    }
 }

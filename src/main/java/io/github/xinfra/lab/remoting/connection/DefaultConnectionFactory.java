@@ -14,8 +14,10 @@ import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.epoll.Epoll;
 import io.netty.channel.epoll.EpollEventLoopGroup;
+import io.netty.channel.epoll.EpollSocketChannel;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,6 +40,9 @@ public class DefaultConnectionFactory implements ConnectionFactory {
                     new NamedThreadFactory("Remoting-Server-Worker")) :
             new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(),
                     new NamedThreadFactory("Remoting-Server-Worker"));
+
+    private static final Class<? extends SocketChannel> channelClass= Epoll.isAvailable()?
+            EpollSocketChannel.class : NioSocketChannel.class;
 
     private ConnectionManager connectionManager;
 
@@ -65,6 +70,7 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 
         bootstrap = new Bootstrap();
         bootstrap.group(workerGroup)
+                .channel(channelClass)
                 .handler(new ChannelInitializer<SocketChannel>() {
 
                     @Override
