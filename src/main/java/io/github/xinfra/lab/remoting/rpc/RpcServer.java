@@ -13,4 +13,9 @@ public class RpcServer extends BaseRemotingServer {
     public RpcServer(int port) {
         super(port);
     }
+
+    @Override
+    public ProtocolType protocolType() {
+        return ProtocolType.RPC;
+    }
 }

@@ -3,6 +3,8 @@ package io.github.xinfra.lab.remoting.server;
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.connection.ConnectionEventHandler;
+import io.github.xinfra.lab.remoting.connection.ConnectionManager;
+import io.github.xinfra.lab.remoting.connection.DefaultConnectionManager;
 import io.github.xinfra.lab.remoting.connection.ProtocolDecoder;
 import io.github.xinfra.lab.remoting.connection.ProtocolEncoder;
 import io.github.xinfra.lab.remoting.connection.ProtocolHandler;
@@ -28,7 +30,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public class BaseRemotingServer extends AbstractLifeCycle implements RemotingServer {
+public abstract class BaseRemotingServer extends AbstractLifeCycle implements RemotingServer {
 
     private InetSocketAddress localAddress;
     private ServerBootstrap serverBootstrap;
@@ -54,18 +56,36 @@ public class BaseRemotingServer extends AbstractLifeCycle implements RemotingSer
     private ChannelHandler handler;
     private ChannelHandler serverIdleHandler = new ServerIdleHandler();
 
+    private boolean manageConnection;
+    private ConnectionManager connectionManager;
 
-    public BaseRemotingServer(InetSocketAddress localAddress) {
+    public BaseRemotingServer(InetSocketAddress localAddress,
+                              boolean manageConnection) {
         this.connectionEventHandler = new ConnectionEventHandler();
         this.encoder = new ProtocolEncoder();
         this.decoder = new ProtocolDecoder();
         this.handler = new ProtocolHandler(userProcessors);
 
         this.localAddress = localAddress;
+
+        this.manageConnection = manageConnection;
+        if (this.manageConnection){
+            // TODO
+//            connectionManager = new DefaultConnectionManager();
+        }
     }
 
     public BaseRemotingServer(int port) {
-        this(new InetSocketAddress(port));
+        this(new InetSocketAddress(port), false);
+    }
+
+    /**
+     *
+     * @param port
+     * @param manageConnection
+     */
+    public BaseRemotingServer(int port, boolean manageConnection) {
+        this(new InetSocketAddress(port), manageConnection);
     }
 
 

@@ -5,17 +5,23 @@ import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.connection.ConnectionManager;
 import io.github.xinfra.lab.remoting.connection.DefaultConnectionManager;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
+import io.github.xinfra.lab.remoting.processor.UserProcessor;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.concurrent.ConcurrentHashMap;
 
 
+@Slf4j
 public class RpcClient extends AbstractLifeCycle {
 
     private RpcRemoting rpcRemoting;
     private ConnectionManager connectionManager;
+    private ConcurrentHashMap<String, UserProcessor<?>> userProcessors = new ConcurrentHashMap<>();
 
     @Override
     public void startup() {
         super.startup();
-        connectionManager = new DefaultConnectionManager();
+        connectionManager = new DefaultConnectionManager(userProcessors);
         rpcRemoting = new RpcRemoting(connectionManager);
     }
 
@@ -44,4 +50,10 @@ public class RpcClient extends AbstractLifeCycle {
         rpcRemoting.oneway(request, endpoint);
     }
 
+    public void registerUserProcessor(UserProcessor<?> userProcessor) {
+        UserProcessor<?> oldUserProcessor = userProcessors.put(userProcessor.interest(), userProcessor);
+        if (oldUserProcessor != null) {
+            log.warn("registered userProcessor change from:{} to:{}", oldUserProcessor, userProcessor);
+        }
+    }
 }

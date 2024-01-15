@@ -35,7 +35,7 @@ public class RpcRemoting extends BaseRemoting {
             throws InterruptedException, RemotingException {
         RpcRequestMessage requestMessage = buildRequestMessage(request);
 
-        Connection connection = connectionManager.getConnection(endpoint);
+        Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
         connectionManager.check(connection);
 
         RpcResponseMessage responseMessage = (RpcResponseMessage) super.syncCall(requestMessage, connection, timeoutMills);
@@ -46,7 +46,7 @@ public class RpcRemoting extends BaseRemoting {
             throws RemotingException {
         RpcRequestMessage requestMessage = buildRequestMessage(request);
 
-        Connection connection = connectionManager.getConnection(endpoint);
+        Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
         connectionManager.check(connection);
         InvokeFuture invokeFuture = super.asyncCall(requestMessage, connection, timeoutMills);
 
@@ -58,7 +58,7 @@ public class RpcRemoting extends BaseRemoting {
                               RpcInvokeCallBack<R> rpcInvokeCallBack) throws RemotingException {
         RpcRequestMessage requestMessage = buildRequestMessage(request);
 
-        Connection connection = connectionManager.getConnection(endpoint);
+        Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
         connectionManager.check(connection);
 
         super.asyncCall(requestMessage, connection, timeoutMills, rpcInvokeCallBack);
@@ -67,7 +67,7 @@ public class RpcRemoting extends BaseRemoting {
     public void oneway(Object request, Endpoint endpoint) throws RemotingException {
         RpcRequestMessage requestMessage = buildRequestMessage(request);
 
-        Connection connection = connectionManager.getConnection(endpoint);
+        Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
         connectionManager.check(connection);
 
         super.oneway(requestMessage, connection);

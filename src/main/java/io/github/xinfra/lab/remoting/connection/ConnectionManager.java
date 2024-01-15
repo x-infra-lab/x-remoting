@@ -6,7 +6,7 @@ import io.github.xinfra.lab.remoting.exception.RemotingException;
 
 public interface ConnectionManager {
 
-    Connection getConnection(Endpoint endpoint) throws RemotingException;
+    Connection getOrCreateIfAbsent(Endpoint endpoint) throws RemotingException;
 
     void check(Connection connection) throws RemotingException;
 

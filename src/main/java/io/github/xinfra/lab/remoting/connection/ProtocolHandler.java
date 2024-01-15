@@ -19,8 +19,6 @@ public class ProtocolHandler extends ChannelDuplexHandler {
 
     private ConcurrentHashMap<String, UserProcessor<?>> userProcessors;
 
-    public ProtocolHandler() {
-    }
 
     public ProtocolHandler(ConcurrentHashMap<String, UserProcessor<?>> userProcessors) {
         this.userProcessors = userProcessors;

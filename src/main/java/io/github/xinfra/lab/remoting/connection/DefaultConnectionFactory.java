@@ -4,6 +4,7 @@ package io.github.xinfra.lab.remoting.connection;
 import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
+import io.github.xinfra.lab.remoting.processor.UserProcessor;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -23,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 
@@ -46,12 +48,13 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 
     private ConnectionManager connectionManager;
 
-    public DefaultConnectionFactory(ConnectionManager connectionManager) {
+    public DefaultConnectionFactory(ConnectionManager connectionManager,
+                                    ConcurrentHashMap<String, UserProcessor<?>> userProcessors) {
         this(new ConnectionEventHandler(connectionManager),
                 new ProtocolEncoder(),
                 new ProtocolDecoder(),
                 new ProtocolHeartBeatHandler(),
-                new ProtocolHandler()
+                new ProtocolHandler(userProcessors)
         );
         this.connectionManager = connectionManager;
     }

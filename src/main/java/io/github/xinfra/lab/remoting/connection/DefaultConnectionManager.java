@@ -3,6 +3,7 @@ package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
+import io.github.xinfra.lab.remoting.processor.UserProcessor;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -17,13 +18,13 @@ public class DefaultConnectionManager implements ConnectionManager {
     private ConnectionSelectStrategy connectionSelectStrategy = new RoundRobinConnectionSelectStrategy();
 
 
-    public DefaultConnectionManager() {
-        this.connectionFactory = new DefaultConnectionFactory(this);
+    public DefaultConnectionManager(ConcurrentHashMap<String, UserProcessor<?>> userProcessors) {
+        this.connectionFactory = new DefaultConnectionFactory(this, userProcessors);
     }
 
 
     @Override
-    public Connection getConnection(Endpoint endpoint) throws RemotingException {
+    public Connection getOrCreateIfAbsent(Endpoint endpoint) throws RemotingException {
         ConnectionPool connectionPool = pools.get(endpoint);
         if (connectionPool == null) {
             synchronized (this) {
