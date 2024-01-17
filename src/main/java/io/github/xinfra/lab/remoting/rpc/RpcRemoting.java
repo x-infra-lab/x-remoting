@@ -1,6 +1,5 @@
 package io.github.xinfra.lab.remoting.rpc;
 
-import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.client.BaseRemoting;
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
 import io.github.xinfra.lab.remoting.connection.Connection;
@@ -21,9 +20,9 @@ public class RpcRemoting extends BaseRemoting {
         ProtocolManager.registerProtocolIfAbsent(ProtocolType.RPC, new RpcProtocol());
     }
 
-    private RpcMessageFactory rpcMessageFactory;
+    protected RpcMessageFactory rpcMessageFactory;
 
-    private ConnectionManager connectionManager;
+    protected ConnectionManager connectionManager;
 
     public RpcRemoting(ConnectionManager connectionManager) {
         super(ProtocolManager.getProtocol(ProtocolType.RPC).messageFactory());
@@ -31,44 +30,32 @@ public class RpcRemoting extends BaseRemoting {
         this.connectionManager = connectionManager;
     }
 
-    public <R> R syncCall(Object request, Endpoint endpoint, int timeoutMills)
+    public <R> R syncCall(Object request, Connection connection, int timeoutMills)
             throws InterruptedException, RemotingException {
         RpcRequestMessage requestMessage = buildRequestMessage(request);
-
-        Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
-        connectionManager.check(connection);
 
         RpcResponseMessage responseMessage = (RpcResponseMessage) super.syncCall(requestMessage, connection, timeoutMills);
         return RpcResponses.getResponseObject(responseMessage, connection.getChannel().remoteAddress());
     }
 
-    public <R> RpcInvokeFuture<R> asyncCall(Object request, Endpoint endpoint, int timeoutMills)
+    public <R> RpcInvokeFuture<R> asyncCall(Object request, Connection connection, int timeoutMills)
             throws RemotingException {
         RpcRequestMessage requestMessage = buildRequestMessage(request);
 
-        Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
-        connectionManager.check(connection);
         InvokeFuture invokeFuture = super.asyncCall(requestMessage, connection, timeoutMills);
-
         return new RpcInvokeFuture<R>(invokeFuture);
     }
 
-    public <R> void asyncCall(Object request, Endpoint endpoint,
+    public <R> void asyncCall(Object request, Connection connection,
                               int timeoutMills,
                               RpcInvokeCallBack<R> rpcInvokeCallBack) throws RemotingException {
         RpcRequestMessage requestMessage = buildRequestMessage(request);
 
-        Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
-        connectionManager.check(connection);
-
         super.asyncCall(requestMessage, connection, timeoutMills, rpcInvokeCallBack);
     }
 
-    public void oneway(Object request, Endpoint endpoint) throws RemotingException {
+    public void oneway(Object request, Connection connection) throws RemotingException {
         RpcRequestMessage requestMessage = buildRequestMessage(request);
-
-        Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
-        connectionManager.check(connection);
 
         super.oneway(requestMessage, connection);
     }

@@ -1,26 +1,18 @@
 package io.github.xinfra.lab.remoting.connection;
 
-
 import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
-import io.github.xinfra.lab.remoting.processor.UserProcessor;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-
-public class DefaultConnectionManager implements ConnectionManager {
+public abstract class AbstractConnectionManager implements ConnectionManager {
 
     private Map<Endpoint, ConnectionPool> pools = new ConcurrentHashMap<>();
 
-    private ConnectionFactory connectionFactory;
+    protected ConnectionFactory connectionFactory;
 
     private ConnectionSelectStrategy connectionSelectStrategy = new RoundRobinConnectionSelectStrategy();
-
-
-    public DefaultConnectionManager(ConcurrentHashMap<String, UserProcessor<?>> userProcessors) {
-        this.connectionFactory = new DefaultConnectionFactory(this, userProcessors);
-    }
 
 
     @Override
@@ -31,6 +23,7 @@ public class DefaultConnectionManager implements ConnectionManager {
                 connectionPool = pools.get(endpoint);
                 if (connectionPool == null) {
                     connectionPool = createConnectionPool(endpoint);
+                    createConnectionForPool(endpoint, connectionPool);
                 }
             }
         }
@@ -56,7 +49,7 @@ public class DefaultConnectionManager implements ConnectionManager {
     }
 
     @Override
-    public void remove(Connection connection) throws RemotingException {
+    public void remove(Connection connection)  {
         Endpoint endpoint = connection.getEndpoint();
         ConnectionPool connectionPool = pools.get(endpoint);
         if (connectionPool == null) {
@@ -69,9 +62,19 @@ public class DefaultConnectionManager implements ConnectionManager {
         }
     }
 
+    @Override
+    public Connection get(Endpoint endpoint) {
+        // TODO
+        return null;
+    }
+
+    @Override
+    public void add(Connection connection) {
+        // TODO
+    }
+
     private ConnectionPool createConnectionPool(Endpoint endpoint) throws RemotingException {
         ConnectionPool connectionPool = new ConnectionPool(connectionSelectStrategy);
-        createConnectionForPool(endpoint, connectionPool);
         pools.put(endpoint, connectionPool);
         return connectionPool;
     }

@@ -1,13 +1,15 @@
 package io.github.xinfra.lab.remoting.server;
 
+import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
+import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.connection.ConnectionEventHandler;
 import io.github.xinfra.lab.remoting.connection.ConnectionManager;
-import io.github.xinfra.lab.remoting.connection.DefaultConnectionManager;
 import io.github.xinfra.lab.remoting.connection.ProtocolDecoder;
 import io.github.xinfra.lab.remoting.connection.ProtocolEncoder;
 import io.github.xinfra.lab.remoting.connection.ProtocolHandler;
+import io.github.xinfra.lab.remoting.connection.ServerConnectionManager;
 import io.github.xinfra.lab.remoting.processor.UserProcessor;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
@@ -56,8 +58,8 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
     private ChannelHandler handler;
     private ChannelHandler serverIdleHandler = new ServerIdleHandler();
 
-    private boolean manageConnection;
-    private ConnectionManager connectionManager;
+    protected boolean manageConnection;
+    protected ConnectionManager connectionManager;
 
     public BaseRemotingServer(InetSocketAddress localAddress,
                               boolean manageConnection) {
@@ -69,9 +71,8 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
         this.localAddress = localAddress;
 
         this.manageConnection = manageConnection;
-        if (this.manageConnection){
-            // TODO
-//            connectionManager = new DefaultConnectionManager();
+        if (this.manageConnection) {
+            this.connectionManager = new ServerConnectionManager();
         }
     }
 
@@ -80,7 +81,6 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
     }
 
     /**
-     *
      * @param port
      * @param manageConnection
      */
@@ -111,6 +111,8 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
                                 pipeline.addLast("idleStateHandler", new IdleStateHandler(1500, 1500, 0, TimeUnit.MILLISECONDS));
                                 pipeline.addLast("serverIdleHandler", serverIdleHandler);
                                 pipeline.addLast("handler", handler);
+
+                                createConnection(channel);
                             }
                         }
                 );
@@ -124,6 +126,15 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
             }
         } catch (Throwable throwable) {
             throw new RuntimeException("serverBootstrap bind fail. ", throwable);
+        }
+    }
+
+    private void createConnection(SocketChannel channel) {
+        InetSocketAddress inetSocketAddress = channel.remoteAddress();
+        Endpoint endpoint = new Endpoint(protocolType(), inetSocketAddress.getHostName(), inetSocketAddress.getPort());
+        Connection connection = new Connection(endpoint, channel, protocolType());
+        if (manageConnection) {
+            connectionManager.add(connection);
         }
     }
 

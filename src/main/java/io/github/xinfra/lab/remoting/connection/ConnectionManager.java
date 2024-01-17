@@ -8,7 +8,11 @@ public interface ConnectionManager {
 
     Connection getOrCreateIfAbsent(Endpoint endpoint) throws RemotingException;
 
+    Connection get(Endpoint endpoint);
+
     void check(Connection connection) throws RemotingException;
 
-    void remove(Connection connection) throws RemotingException;
+    void remove(Connection connection);
+
+    void add(Connection connection);
 }
