@@ -16,6 +16,9 @@ public class Connection {
 
     public static final AttributeKey<Connection> CONNECTION = AttributeKey.valueOf("connection");
 
+
+    public static final AttributeKey<Integer> HEARTBEAT_FAIL_COUNT = AttributeKey.valueOf("heartbeat_fail_count");
+
     private ConcurrentHashMap<Integer, InvokeFuture> invokeMap = new ConcurrentHashMap<>();
 
     @Getter
@@ -30,6 +33,7 @@ public class Connection {
         this.channel = channel;
         this.channel.attr(PROTOCOL).set(protocolType);
         this.channel.attr(CONNECTION).set(this);
+        this.channel.attr(HEARTBEAT_FAIL_COUNT).set(0);
     }
 
 

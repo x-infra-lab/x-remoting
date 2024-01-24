@@ -5,6 +5,7 @@ import io.github.xinfra.lab.remoting.codec.MessageEncoder;
 import io.github.xinfra.lab.remoting.message.HeartbeatTrigger;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
 import io.github.xinfra.lab.remoting.message.RpcMessageFactory;
+import io.github.xinfra.lab.remoting.rpc.RpcHeartbeatTrigger;
 import io.github.xinfra.lab.remoting.rpc.RpcMessageDecoder;
 import io.github.xinfra.lab.remoting.rpc.RpcMessageEncoder;
 import io.github.xinfra.lab.remoting.rpc.RpcMessageHandler;
@@ -33,6 +34,7 @@ public class RpcProtocol implements Protocol {
         this.rpcMessageEncoder = new RpcMessageEncoder();
         this.rpcMessageDecoder = new RpcMessageDecoder();
         this.rpcMessageHandler = new RpcMessageHandler(rpcMessageFactory);
+        this.rpcHeartbeatTrigger = new RpcHeartbeatTrigger(rpcMessageFactory);
     }
 
     @Override

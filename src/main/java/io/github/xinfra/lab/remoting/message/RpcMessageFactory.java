@@ -1,7 +1,6 @@
 package io.github.xinfra.lab.remoting.message;
 
 import io.github.xinfra.lab.remoting.common.IDGenerator;
-import io.github.xinfra.lab.remoting.rpc.exception.RpcServerException;
 
 import java.net.SocketAddress;
 
@@ -23,6 +22,10 @@ public class RpcMessageFactory implements MessageFactory {
         return new RpcRequestMessage(IDGenerator.nextRequestId());
     }
 
+    @Override
+    public Message createHeartbeatRequestMessage() {
+        return new RpcRequestMessage(IDGenerator.nextRequestId());
+    }
 
     @Override
     public RpcResponseMessage createExceptionResponse(int id, Throwable t, ResponseStatus status) {

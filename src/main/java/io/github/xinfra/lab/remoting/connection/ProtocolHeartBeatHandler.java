@@ -15,7 +15,7 @@ public class ProtocolHeartBeatHandler extends ChannelInboundHandlerAdapter {
             if (protocolType != null) {
                 ProtocolManager.getProtocol(protocolType)
                         .heartbeatTrigger()
-                        .triggerHeartBeat(ctx.channel());
+                        .triggerHeartBeat(ctx);
             }
         } else {
             super.userEventTriggered(ctx, evt);

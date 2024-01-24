@@ -12,6 +12,8 @@ public interface MessageFactory {
 
     Message createRequestMessage();
 
+    Message createHeartbeatRequestMessage();
+
     Message createExceptionResponse(int id, Throwable t, ResponseStatus status);
 
     Message createExceptionResponse(int id, Throwable t, String errorMsg);

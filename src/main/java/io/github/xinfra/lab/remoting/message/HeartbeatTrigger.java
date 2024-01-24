@@ -1,7 +1,7 @@
 package io.github.xinfra.lab.remoting.message;
 
-import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandlerContext;
 
 public interface HeartbeatTrigger {
-    void triggerHeartBeat(Channel channel);
+    void triggerHeartBeat(ChannelHandlerContext ctx);
 }
