@@ -21,7 +21,7 @@ import static io.github.xinfra.lab.remoting.message.MessageType.onewayRequest;
 public class RpcMessageDecoder implements MessageDecoder {
     private int protocolCodeLength = ProtocolType.RPC.protocolCode().length;
 
-
+    // FIXME
     private int minLength = protocolCodeLength + 1 + 4 + 1 + 2 + 2 + 2 + 4;
 
     @Override

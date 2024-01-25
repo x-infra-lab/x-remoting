@@ -59,7 +59,6 @@ public class RpcProtocol implements Protocol {
 
     @Override
     public HeartbeatTrigger heartbeatTrigger() {
-        // TODO
-        return null;
+        return rpcHeartbeatTrigger;
     }
 }

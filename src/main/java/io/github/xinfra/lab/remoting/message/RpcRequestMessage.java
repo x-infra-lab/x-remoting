@@ -3,6 +3,7 @@ package io.github.xinfra.lab.remoting.message;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * <p>
@@ -14,6 +15,7 @@ import lombok.Setter;
 
 @Setter
 @Getter
+@ToString
 public class RpcRequestMessage extends RpcMessage {
 
     public RpcRequestMessage(int id) {

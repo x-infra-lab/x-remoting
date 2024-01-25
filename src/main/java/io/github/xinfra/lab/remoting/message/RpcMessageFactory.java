@@ -2,19 +2,22 @@ package io.github.xinfra.lab.remoting.message;
 
 import io.github.xinfra.lab.remoting.common.IDGenerator;
 
-import java.net.SocketAddress;
 
 public class RpcMessageFactory implements MessageFactory {
     @Override
-    public RpcResponseMessage createSendFailResponseMessage(SocketAddress remoteAddress, Throwable cause) {
-        // TODO
-        return null;
+    public RpcResponseMessage createSendFailResponseMessage(int id, Throwable cause) {
+        RpcResponseMessage rpcResponseMessage = new RpcResponseMessage(id);
+        rpcResponseMessage.setStatus(ResponseStatus.CLIENT_SEND_ERROR.getCode());
+        rpcResponseMessage.setCause(cause);
+        return rpcResponseMessage;
     }
 
     @Override
-    public RpcResponseMessage createTimeoutResponseMessage(SocketAddress remoteAddress) {
-        // TODO
-        return null;
+    public RpcResponseMessage createTimeoutResponseMessage(int id) {
+        RpcResponseMessage rpcResponseMessage = new RpcResponseMessage(id);
+        rpcResponseMessage.setStatus(ResponseStatus.TIMEOUT.getCode());
+
+        return rpcResponseMessage;
     }
 
     @Override
@@ -24,7 +27,7 @@ public class RpcMessageFactory implements MessageFactory {
 
     @Override
     public Message createHeartbeatRequestMessage() {
-        return new RpcRequestMessage(IDGenerator.nextRequestId());
+        return new RpcHeartbeatRequestMessage(IDGenerator.nextRequestId());
     }
 
     @Override

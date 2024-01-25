@@ -36,13 +36,25 @@ public class RpcTest {
         try {
             String result = rpcClient.syncCall(new SimpleRequest("test"),
                     new Endpoint(RPC, remoteAddress.getHostName(), remoteAddress.getPort()),
-                    3000);
+                    1000);
             Assert.assertEquals("echo:test", result);
+
+            result = rpcClient.syncCall(new SimpleRequest("test"),
+                    new Endpoint(RPC, remoteAddress.getHostName(), remoteAddress.getPort()),
+                    1000);
+            Assert.assertEquals("echo:test", result);
+
+            result = rpcClient.syncCall(new SimpleRequest("test"),
+                    new Endpoint(RPC, remoteAddress.getHostName(), remoteAddress.getPort()),
+                    1000);
+            Assert.assertEquals("echo:test", result);
+
         } catch (RemotingException e) {
             Assert.fail(e.getMessage());
         } catch (InterruptedException e) {
             Assert.fail(e.getMessage());
         }
+
     }
 
 

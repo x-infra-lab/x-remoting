@@ -31,7 +31,7 @@ public  class BaseRemoting {
                     (ChannelFuture channelFuture) -> {
                         if (!channelFuture.isSuccess()) {
                             connection.removeInvokeFuture(requestId);
-                            invokeFuture.finish(messageFactory.createSendFailResponseMessage(connection.remoteAddress(),
+                            invokeFuture.finish(messageFactory.createSendFailResponseMessage(requestId,
                                     channelFuture.cause()));
                             log.error("Send message fail. id:{}", requestId, channelFuture.cause());
                         }
@@ -39,7 +39,7 @@ public  class BaseRemoting {
             );
         } catch (Throwable t) {
             connection.removeInvokeFuture(requestId);
-            invokeFuture.finish(messageFactory.createSendFailResponseMessage(connection.remoteAddress(), t));
+            invokeFuture.finish(messageFactory.createSendFailResponseMessage(requestId, t));
             log.error("Invoke sending message fail. id:{}", requestId, t);
         }
 
@@ -47,7 +47,7 @@ public  class BaseRemoting {
 
         if (result == null) {
             connection.removeInvokeFuture(requestId);
-            result = messageFactory.createTimeoutResponseMessage(connection.remoteAddress());
+            result = messageFactory.createTimeoutResponseMessage(requestId);
             log.warn("Wait result timeout. id:{}", requestId);
         }
         return result;
@@ -60,7 +60,7 @@ public  class BaseRemoting {
         Timeout timeout = timer.newTimeout((t) -> {
             InvokeFuture future = connection.removeInvokeFuture(requestId);
             if (future != null) {
-                Message result = messageFactory.createTimeoutResponseMessage(connection.remoteAddress());
+                Message result = messageFactory.createTimeoutResponseMessage(requestId);
                 future.finish(result);
             }
             log.warn("Wait result timeout. id:{}", requestId);
@@ -75,7 +75,7 @@ public  class BaseRemoting {
                             InvokeFuture future = connection.removeInvokeFuture(requestId);
                             if (future != null) {
                                 future.cancelTimeout();
-                                future.finish(messageFactory.createSendFailResponseMessage(connection.remoteAddress(),
+                                future.finish(messageFactory.createSendFailResponseMessage(requestId,
                                         channelFuture.cause()));
                             }
                             log.error("Send message fail. id:{}", requestId, channelFuture.cause());
@@ -86,7 +86,7 @@ public  class BaseRemoting {
             InvokeFuture future = connection.removeInvokeFuture(requestId);
             if (future != null) {
                 future.cancelTimeout();
-                future.finish(messageFactory.createSendFailResponseMessage(connection.remoteAddress(), t));
+                future.finish(messageFactory.createSendFailResponseMessage(requestId, t));
             }
             log.error("Invoke sending message fail. id:{}", requestId, t);
         }
@@ -103,7 +103,7 @@ public  class BaseRemoting {
         Timeout timeout = timer.newTimeout((t) -> {
             InvokeFuture future = connection.removeInvokeFuture(requestId);
             if (future != null) {
-                Message result = messageFactory.createTimeoutResponseMessage(connection.remoteAddress());
+                Message result = messageFactory.createTimeoutResponseMessage(requestId);
                 future.finish(result);
                 future.asyncExecuteCallBack();
             }
@@ -120,7 +120,7 @@ public  class BaseRemoting {
                             InvokeFuture future = connection.removeInvokeFuture(requestId);
                             if (future != null) {
                                 future.cancelTimeout();
-                                future.finish(messageFactory.createSendFailResponseMessage(connection.remoteAddress(),
+                                future.finish(messageFactory.createSendFailResponseMessage(requestId,
                                         channelFuture.cause()));
                                 future.asyncExecuteCallBack();
                             }
@@ -132,7 +132,7 @@ public  class BaseRemoting {
             InvokeFuture future = connection.removeInvokeFuture(requestId);
             if (future != null) {
                 future.cancelTimeout();
-                future.finish(messageFactory.createSendFailResponseMessage(connection.remoteAddress(), t));
+                future.finish(messageFactory.createSendFailResponseMessage(requestId, t));
                 future.asyncExecuteCallBack();
             }
             log.error("Invoke sending message fail. id:{}", requestId, t);
