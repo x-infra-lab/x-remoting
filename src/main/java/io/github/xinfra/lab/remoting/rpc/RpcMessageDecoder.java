@@ -7,6 +7,7 @@ import io.github.xinfra.lab.remoting.message.RpcMessage;
 import io.github.xinfra.lab.remoting.message.RpcRequestMessage;
 import io.github.xinfra.lab.remoting.message.RpcResponseMessage;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
+import io.github.xinfra.lab.remoting.protocol.RpcProtocol;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -21,8 +22,7 @@ import static io.github.xinfra.lab.remoting.message.MessageType.onewayRequest;
 public class RpcMessageDecoder implements MessageDecoder {
     private int protocolCodeLength = ProtocolType.RPC.protocolCode().length;
 
-    // FIXME
-    private int minLength = protocolCodeLength + 1 + 4 + 1 + 2 + 2 + 2 + 4;
+    private int minLength = Math.min(RpcProtocol.RESPONSE_HEADER_LEN, RpcProtocol.REQUEST_HEADER_LEN);
 
     @Override
     public void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
@@ -32,6 +32,13 @@ public class RpcMessageDecoder implements MessageDecoder {
 
             byte messageTypeCode = in.readByte();
             MessageType messageType = MessageType.valueOf(messageTypeCode);
+
+            // check for response
+            int alreadyRead = protocolCodeLength + 1;
+            if (messageType == MessageType.response && in.readableBytes() < RpcProtocol.RESPONSE_HEADER_LEN - alreadyRead) {
+                in.resetReaderIndex();
+                return;
+            }
 
             int requestId = in.readInt();
             byte serializationTypeCode = in.readByte();

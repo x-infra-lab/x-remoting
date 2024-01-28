@@ -1,6 +1,7 @@
 package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.RemotingContext;
+import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.processor.UserProcessor;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
@@ -26,10 +27,13 @@ public class ProtocolHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        ProtocolType protocolType = ctx.channel().attr(PROTOCOL).get();
-        Protocol protocol = ProtocolManager.getProtocol(protocolType);
+        if (msg instanceof Message) {
+            ProtocolType protocolType = ctx.channel().attr(PROTOCOL).get();
+            Protocol protocol = ProtocolManager.getProtocol(protocolType);
 
-        protocol.messageHandler().handleMessage(new RemotingContext(ctx, userProcessors), msg);
-        ctx.fireChannelRead(msg);
+            protocol.messageHandler().handleMessage(new RemotingContext(ctx, userProcessors), msg);
+        } else {
+            ctx.fireChannelRead(msg);
+        }
     }
 }

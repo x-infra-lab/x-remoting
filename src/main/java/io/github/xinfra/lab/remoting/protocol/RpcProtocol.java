@@ -23,6 +23,10 @@ import io.github.xinfra.lab.remoting.rpc.RpcMessageHandler;
  */
 public class RpcProtocol implements Protocol {
 
+    public static int RESPONSE_HEADER_LEN = 21;
+
+    public static int REQUEST_HEADER_LEN = 19;
+
     private MessageEncoder rpcMessageEncoder;
     private MessageDecoder rpcMessageDecoder;
     private MessageHandler rpcMessageHandler;

@@ -2,7 +2,10 @@ package io.github.xinfra.lab.remoting.rpc;
 
 import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.client.BaseRemoting;
+import io.github.xinfra.lab.remoting.client.InvokeCallBack;
+import io.github.xinfra.lab.remoting.client.InvokeFuture;
 import io.github.xinfra.lab.remoting.connection.ClientConnectionManager;
+import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.connection.ConnectionManager;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.message.Message;
@@ -36,15 +39,31 @@ public class HeartBeatTest {
         InetSocketAddress remoteAddress = rpcServer.localAddress();
 
 
-        ConnectionManager connectionManager = new ClientConnectionManager( null );
+        ConnectionManager connectionManager = new ClientConnectionManager(null);
         Protocol protocol = ProtocolManager.getProtocol(ProtocolType.RPC);
         MessageFactory messageFactory = protocol.messageFactory();
         BaseRemoting baseRemoting = new BaseRemoting(messageFactory);
         Message heartbeatRequestMessage = messageFactory.createHeartbeatRequestMessage();
 
-        Message heartbeatResponseMessage = baseRemoting.syncCall(heartbeatRequestMessage, connectionManager.getOrCreateIfAbsent(new Endpoint(RPC, remoteAddress.getHostName(), remoteAddress.getPort())),
-                1000000);
+        Connection connection = connectionManager.getOrCreateIfAbsent(new Endpoint(RPC, remoteAddress.getHostName(), remoteAddress.getPort()));
+
+        Message heartbeatResponseMessage = baseRemoting.syncCall(heartbeatRequestMessage, connection,
+                1000);
 
         System.out.println(heartbeatResponseMessage);
+
+        baseRemoting.asyncCall(heartbeatRequestMessage, connection, 1000,
+                new InvokeCallBack() {
+                    @Override
+                    public void complete(InvokeFuture future) {
+                        try {
+                            Message heartbeatResponseMessage = future.await();
+                            System.out.println(heartbeatResponseMessage);
+                        } catch (InterruptedException e) {
+                            throw new RuntimeException(e);
+                        }
+
+                    }
+                });
     }
 }

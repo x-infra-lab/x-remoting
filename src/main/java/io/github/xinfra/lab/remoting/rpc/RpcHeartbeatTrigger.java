@@ -55,6 +55,7 @@ public class RpcHeartbeatTrigger implements HeartbeatTrigger {
                     }
 
                     if (heartbeatResponseMessage.getStatus() == ResponseStatus.SUCCESS.getCode()) {
+                        log.debug("heartbeat success. remote address:{}", remoteAddress);
                         ctx.channel().attr(HEARTBEAT_FAIL_COUNT).set(0);
                     } else {
                         Integer failCount = ctx.channel().attr(HEARTBEAT_FAIL_COUNT).get();
