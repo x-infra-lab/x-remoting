@@ -15,18 +15,23 @@ import java.util.concurrent.ConcurrentHashMap;
 public class RpcClient extends AbstractLifeCycle {
 
     private RpcClientRemoting rpcClientRemoting;
-    private ConnectionManager connectionManager;
+    private ClientConnectionManager connectionManager;
     private ConcurrentHashMap<String, UserProcessor<?>> userProcessors = new ConcurrentHashMap<>();
 
-    @Override
-    public void startup() {
-        super.startup();
-        connectionManager = new ClientConnectionManager(userProcessors);
+
+    public RpcClient() {
+        this.connectionManager = new ClientConnectionManager(userProcessors);
         rpcClientRemoting = new RpcClientRemoting(connectionManager);
     }
 
     @Override
+    public void startup() {
+        super.startup();
+    }
+
+    @Override
     public void shutdown() {
+        // todo close connectionManager
         super.shutdown();
     }
 

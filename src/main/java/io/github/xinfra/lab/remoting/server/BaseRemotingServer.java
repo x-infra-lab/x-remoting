@@ -59,7 +59,7 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
     private ChannelHandler serverIdleHandler = new ServerIdleHandler();
 
     protected boolean manageConnection;
-    protected ConnectionManager connectionManager;
+    protected ServerConnectionManager connectionManager;
 
     public BaseRemotingServer(InetSocketAddress localAddress,
                               boolean manageConnection) {

@@ -5,5 +5,6 @@ import io.github.xinfra.lab.remoting.exception.RemotingException;
 
 
 public interface ConnectionFactory  {
-    Connection create(Endpoint endpoint) throws RemotingException;
+    Connection create(Endpoint endpoint, ConnectionConfig config) throws RemotingException;
+
 }

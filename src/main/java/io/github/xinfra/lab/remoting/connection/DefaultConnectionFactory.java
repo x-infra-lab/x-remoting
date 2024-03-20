@@ -30,6 +30,7 @@ import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class DefaultConnectionFactory implements ConnectionFactory {
+
     private ChannelHandler connectionEventHandler;
     private ChannelHandler encoder;
     private ChannelHandler decoder;
@@ -93,9 +94,9 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 
 
     @Override
-    public Connection create(Endpoint endpoint) throws RemotingException {
+    public Connection create(Endpoint endpoint, ConnectionConfig config) throws RemotingException {
         SocketAddress address = new InetSocketAddress(endpoint.getIp(), endpoint.getPort());
-        bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, endpoint.getConnectTimeoutMills());
+        bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, config.getConnectTimeoutMills());
         ChannelFuture future = bootstrap.connect(address);
         future.awaitUninterruptibly();
         if (!future.isDone()) {
@@ -116,4 +117,5 @@ public class DefaultConnectionFactory implements ConnectionFactory {
         Channel channel = future.channel();
         return new Connection(endpoint, channel, endpoint.getProtocolType());
     }
+
 }

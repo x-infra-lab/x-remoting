@@ -1,15 +1,13 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class ConnectionPool {
+public class ConnectionHolder {
 
     private CopyOnWriteArrayList<Connection> connections = new CopyOnWriteArrayList<>();
     private ConnectionSelectStrategy connectionSelectStrategy;
 
-    public ConnectionPool(ConnectionSelectStrategy connectionSelectStrategy) {
+    public ConnectionHolder(ConnectionSelectStrategy connectionSelectStrategy) {
         this.connectionSelectStrategy = connectionSelectStrategy;
     }
 

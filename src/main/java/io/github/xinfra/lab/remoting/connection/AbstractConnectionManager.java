@@ -8,27 +8,32 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AbstractConnectionManager implements ConnectionManager {
 
-    private Map<Endpoint, ConnectionPool> pools = new ConcurrentHashMap<>();
+    private ConnectionConfig config;
+
+    private Map<Endpoint, ConnectionHolder> connections = new ConcurrentHashMap<>();
 
     protected ConnectionFactory connectionFactory;
 
     private ConnectionSelectStrategy connectionSelectStrategy = new RoundRobinConnectionSelectStrategy();
 
+    public AbstractConnectionManager() {
+        this.config = new ConnectionConfig();
+    }
 
     @Override
     public Connection getOrCreateIfAbsent(Endpoint endpoint) throws RemotingException {
-        ConnectionPool connectionPool = pools.get(endpoint);
-        if (connectionPool == null) {
+        ConnectionHolder connectionHolder = connections.get(endpoint);
+        if (connectionHolder == null) {
             synchronized (this) {
-                connectionPool = pools.get(endpoint);
-                if (connectionPool == null) {
-                    connectionPool = createConnectionPool(endpoint);
-                    createConnectionForPool(endpoint, connectionPool);
+                connectionHolder = connections.get(endpoint);
+                if (connectionHolder == null) {
+                    connectionHolder = createConnectionPool(endpoint);
+                    createConnectionForPool(endpoint, connectionHolder);
                 }
             }
         }
 
-        return connectionPool.get();
+        return connectionHolder.get();
     }
 
     @Override
@@ -49,15 +54,15 @@ public abstract class AbstractConnectionManager implements ConnectionManager {
     }
 
     @Override
-    public void remove(Connection connection)  {
+    public void remove(Connection connection) {
         Endpoint endpoint = connection.getEndpoint();
-        ConnectionPool connectionPool = pools.get(endpoint);
-        if (connectionPool == null) {
+        ConnectionHolder connectionHolder = connections.get(endpoint);
+        if (connectionHolder == null) {
             connection.close();
         } else {
-            connectionPool.remove(connection);
-            if (connectionPool.isEmpty()) {
-                pools.remove(endpoint);
+            connectionHolder.remove(connection);
+            if (connectionHolder.isEmpty()) {
+                connections.remove(endpoint);
             }
         }
     }
@@ -73,16 +78,16 @@ public abstract class AbstractConnectionManager implements ConnectionManager {
         // TODO
     }
 
-    private ConnectionPool createConnectionPool(Endpoint endpoint) throws RemotingException {
-        ConnectionPool connectionPool = new ConnectionPool(connectionSelectStrategy);
-        pools.put(endpoint, connectionPool);
-        return connectionPool;
+    private ConnectionHolder createConnectionPool(Endpoint endpoint) throws RemotingException {
+        ConnectionHolder connectionHolder = new ConnectionHolder(connectionSelectStrategy);
+        connections.put(endpoint, connectionHolder);
+        return connectionHolder;
     }
 
-    private void createConnectionForPool(Endpoint endpoint, ConnectionPool connectionPool) throws RemotingException {
-        for (int i = 0; i < endpoint.getConnNum(); i++) {
-            Connection connection = connectionFactory.create(endpoint);
-            connectionPool.add(connection);
+    private void createConnectionForPool(Endpoint endpoint, ConnectionHolder connectionHolder) throws RemotingException {
+        for (int i = 0; i < config.getConnNum(); i++) {
+            Connection connection = connectionFactory.create(endpoint, config);
+            connectionHolder.add(connection);
         }
     }
 }

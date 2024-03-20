@@ -13,6 +13,7 @@ import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -50,7 +51,7 @@ public class HeartBeatTest {
         Message heartbeatResponseMessage = baseRemoting.syncCall(heartbeatRequestMessage, connection,
                 1000);
 
-        System.out.println(heartbeatResponseMessage);
+        Assert.assertNotNull(heartbeatResponseMessage);
 
         baseRemoting.asyncCall(heartbeatRequestMessage, connection, 1000,
                 new InvokeCallBack() {
@@ -58,7 +59,7 @@ public class HeartBeatTest {
                     public void complete(InvokeFuture future) {
                         try {
                             Message heartbeatResponseMessage = future.await();
-                            System.out.println(heartbeatResponseMessage);
+                            Assert.assertNotNull(heartbeatResponseMessage);
                         } catch (InterruptedException e) {
                             throw new RuntimeException(e);
                         }
