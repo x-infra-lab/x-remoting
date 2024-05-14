@@ -28,10 +28,10 @@ public class Connection {
     private Endpoint endpoint;
 
 
-    public Connection(Endpoint endpoint, Channel channel, ProtocolType protocolType) {
+    public Connection(Endpoint endpoint, Channel channel) {
         this.endpoint = endpoint;
         this.channel = channel;
-        this.channel.attr(PROTOCOL).set(protocolType);
+        this.channel.attr(PROTOCOL).set(endpoint.getProtocolType());
         this.channel.attr(CONNECTION).set(this);
         this.channel.attr(HEARTBEAT_FAIL_COUNT).set(0);
     }

@@ -115,7 +115,7 @@ public class DefaultConnectionFactory implements ConnectionFactory {
             throw new RemotingException(errMsg, future.cause());
         }
         Channel channel = future.channel();
-        return new Connection(endpoint, channel, endpoint.getProtocolType());
+        return new Connection(endpoint, channel);
     }
 
 }

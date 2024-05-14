@@ -18,6 +18,10 @@ public class ConnectionEventHandler extends ChannelDuplexHandler {
     public ConnectionEventHandler() {
     }
 
+    @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+        super.channelActive(ctx);
+    }
 
     @Override
     public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
