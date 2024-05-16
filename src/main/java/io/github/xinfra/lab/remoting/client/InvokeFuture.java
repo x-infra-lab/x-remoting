@@ -10,6 +10,7 @@ import io.netty.util.Timeout;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Validate;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
@@ -98,6 +99,7 @@ public class InvokeFuture {
     }
 
     public void finish(Message result) {
+        Validate.isTrue(this.message == null , "requestId: %s InvokeFuture already finished.",  requestId);
         this.message = result;
         countDownLatch.countDown();
     }

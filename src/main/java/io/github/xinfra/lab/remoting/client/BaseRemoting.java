@@ -30,25 +30,31 @@ public  class BaseRemoting {
             connection.getChannel().writeAndFlush(message).addListener(
                     (ChannelFuture channelFuture) -> {
                         if (!channelFuture.isSuccess()) {
-                            connection.removeInvokeFuture(requestId);
-                            invokeFuture.finish(messageFactory.createSendFailResponseMessage(requestId,
-                                    channelFuture.cause()));
-                            log.error("Send message fail. id:{}", requestId, channelFuture.cause());
+                            InvokeFuture future = connection.removeInvokeFuture(requestId);
+                            if (future != null) {
+                                future.finish(messageFactory.createSendFailResponseMessage(requestId,
+                                        channelFuture.cause()));
+                                log.error("Send message fail. id:{}", requestId, channelFuture.cause());
+                            }
                         }
                     }
             );
         } catch (Throwable t) {
-            connection.removeInvokeFuture(requestId);
-            invokeFuture.finish(messageFactory.createSendFailResponseMessage(requestId, t));
-            log.error("Invoke sending message fail. id:{}", requestId, t);
+            InvokeFuture future = connection.removeInvokeFuture(requestId);
+            if (future!=null) {
+                future.finish(messageFactory.createSendFailResponseMessage(requestId, t));
+                log.error("Invoke sending message fail. id:{}", requestId, t);
+            }
         }
 
         Message result = invokeFuture.await(timeoutMills, TimeUnit.MILLISECONDS);
 
         if (result == null) {
-            connection.removeInvokeFuture(requestId);
-            result = messageFactory.createTimeoutResponseMessage(requestId);
-            log.warn("Wait result timeout. id:{}", requestId);
+            InvokeFuture future = connection.removeInvokeFuture(requestId);
+            if (future != null) {
+                result = messageFactory.createTimeoutResponseMessage(requestId);
+                log.warn("Wait result timeout. id:{}", requestId);
+            }
         }
         return result;
     }

@@ -28,15 +28,6 @@ public class RpcResponses {
             return (R) responseMessage.getContent();
         }
 
-        switch (status) {
-            case TIMEOUT:
-                throw new TimeoutException("rpc invoke timeout. remote address:" + remoteAddress);
-            case CLIENT_SEND_ERROR:
-                throw new SendMessageException("rpc send message fail. remote address:" + remoteAddress,
-                        responseMessage.getCause());
-                // TODO
-        }
-
         if (responseMessage.getCause() != null) {
             throw new RemotingException("rpc invoke fail. remote address:" + remoteAddress,
                     responseMessage.getCause());
