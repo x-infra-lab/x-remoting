@@ -46,7 +46,7 @@ public class RpcHeartbeatTrigger implements HeartbeatTrigger {
                 future -> {
 
                     RpcResponseMessage heartbeatResponseMessage;
-                    SocketAddress remoteAddress = future.getConnection().getChannel().remoteAddress();
+                    SocketAddress remoteAddress = future.getConnection().remoteAddress();
                     try {
                         heartbeatResponseMessage = (RpcResponseMessage) future.await();
                     } catch (InterruptedException e) {

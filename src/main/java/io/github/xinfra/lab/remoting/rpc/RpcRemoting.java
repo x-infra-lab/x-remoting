@@ -35,7 +35,7 @@ public class RpcRemoting extends BaseRemoting {
         RpcRequestMessage requestMessage = buildRequestMessage(request);
 
         RpcResponseMessage responseMessage = (RpcResponseMessage) super.syncCall(requestMessage, connection, timeoutMills);
-        return RpcResponses.getResponseObject(responseMessage, connection.getChannel().remoteAddress());
+        return RpcResponses.getResponseObject(responseMessage);
     }
 
     public <R> RpcInvokeFuture<R> asyncCall(Object request, Connection connection, int timeoutMills)

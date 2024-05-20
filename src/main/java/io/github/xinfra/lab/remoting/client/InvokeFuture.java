@@ -8,7 +8,7 @@ import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.netty.util.Timeout;
 import lombok.Getter;
-import lombok.Setter;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
 
@@ -24,7 +24,6 @@ public class InvokeFuture {
     private int requestId;
 
     @Getter
-    @Setter
     private Connection connection;
 
     private final CountDownLatch countDownLatch;
@@ -39,8 +38,9 @@ public class InvokeFuture {
 
     private ClassLoader classLoader;
 
-    public InvokeFuture(int requestId) {
+    public InvokeFuture(int requestId, Connection connection) {
         this.requestId = requestId;
+        this.connection = connection;
         this.countDownLatch = new CountDownLatch(1);
         this.classLoader = Thread.currentThread().getContextClassLoader();
     }

@@ -9,7 +9,7 @@ import org.junit.Test;
 public class EndpointTest {
 
     @Test
-    public void testNewEndpoint_Normally() {
+    public void testNewEndpointNormally() {
         String host = "localhost";
         int port = 1234;
         Endpoint endpoint = new Endpoint(ProtocolType.RPC, host, port);
@@ -24,7 +24,7 @@ public class EndpointTest {
     }
 
     @Test
-    public void testNewEndpoint_Error() {
+    public void testNewEndpointError() {
         Assert.assertThrows(NullPointerException.class, () -> {
             new Endpoint(null, "", -1);
         });

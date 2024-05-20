@@ -19,10 +19,9 @@ public interface RpcInvokeCallBack<R> extends InvokeCallBack {
     default void complete(InvokeFuture future) {
         Runnable task = () -> {
             RpcResponseMessage responseMessage = null;
-            SocketAddress remoteAddress = future.getConnection().getChannel().remoteAddress();
+            SocketAddress remoteAddress = future.getConnection().remoteAddress();
 
             try {
-
                 try {
                     responseMessage = (RpcResponseMessage) future.await();
                 } catch (Throwable t) {
@@ -31,7 +30,6 @@ public interface RpcInvokeCallBack<R> extends InvokeCallBack {
                     throw new RemotingException(msg, t);
                 }
 
-                Object responseObject = RpcResponses.getResponseObject(responseMessage, remoteAddress);
 
                 ClassLoader contextClassLoader = null;
                 try {
@@ -39,6 +37,7 @@ public interface RpcInvokeCallBack<R> extends InvokeCallBack {
                         contextClassLoader = Thread.currentThread().getContextClassLoader();
                         Thread.currentThread().setContextClassLoader(future.getAppClassLoader());
                     }
+                    Object responseObject = RpcResponses.getResponseObject(responseMessage);
                     onResponse((R) responseObject);
                 } catch (Throwable t) {
                     LOGGER.error("call back execute onResponse fail.", t);

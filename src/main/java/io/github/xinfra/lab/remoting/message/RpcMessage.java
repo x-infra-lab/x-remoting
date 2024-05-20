@@ -9,6 +9,7 @@ import io.github.xinfra.lab.remoting.serialization.Serializer;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
 
 public abstract class RpcMessage implements Message {
@@ -49,6 +50,10 @@ public abstract class RpcMessage implements Message {
 
     @Getter
     private int contentLength;
+
+    @Getter
+    @Setter
+    private SocketAddress remoteAddress;
 
     public RpcMessage(int id, MessageType messageType, SerializationType serializationType) {
         this.id = id;

@@ -24,7 +24,7 @@ public  class BaseRemoting {
 
     public Message syncCall(Message message, Connection connection, int timeoutMills) throws InterruptedException {
         int requestId = message.id();
-        InvokeFuture invokeFuture = new InvokeFuture(requestId);
+        InvokeFuture invokeFuture = new InvokeFuture(requestId, connection);
         try {
             connection.addInvokeFuture(invokeFuture);
             connection.getChannel().writeAndFlush(message).addListener(
@@ -61,7 +61,7 @@ public  class BaseRemoting {
 
     public InvokeFuture asyncCall(Message message, Connection connection, int timeoutMills) {
         int requestId = message.id();
-        InvokeFuture invokeFuture = new InvokeFuture(requestId);
+        InvokeFuture invokeFuture = new InvokeFuture(requestId, connection);
 
         Timeout timeout = timer.newTimeout((t) -> {
             InvokeFuture future = connection.removeInvokeFuture(requestId);
@@ -104,7 +104,7 @@ public  class BaseRemoting {
                           int timeoutMills,
                           InvokeCallBack invokeCallBack) {
         int requestId = message.id();
-        InvokeFuture invokeFuture = new InvokeFuture(requestId);
+        InvokeFuture invokeFuture = new InvokeFuture(requestId, connection);
 
         Timeout timeout = timer.newTimeout((t) -> {
             InvokeFuture future = connection.removeInvokeFuture(requestId);

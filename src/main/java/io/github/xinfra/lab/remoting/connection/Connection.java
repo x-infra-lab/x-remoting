@@ -45,7 +45,6 @@ public class Connection {
 
 
     public void addInvokeFuture(InvokeFuture invokeFuture) {
-        invokeFuture.setConnection(this);
         InvokeFuture prevFuture = invokeMap.put(invokeFuture.getRequestId(), invokeFuture);
         Validate.isTrue(prevFuture == null, "requestId: %s already invoked", invokeFuture.getRequestId());
     }
@@ -58,8 +57,8 @@ public class Connection {
         return channel.remoteAddress();
     }
 
-    public void close() {
-        channel.close().addListener(new ChannelFutureListener() {
+    public ChannelFuture close() {
+        return channel.close().addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
                 log.info("close connection to remote address:{} success:{} fail cause:{}",

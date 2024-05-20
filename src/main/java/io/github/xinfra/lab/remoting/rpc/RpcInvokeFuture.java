@@ -17,13 +17,11 @@ public class RpcInvokeFuture<T> {
 
     public <T> T get() throws InterruptedException, RemotingException {
         RpcResponseMessage responseMessage = (RpcResponseMessage) invokeFuture.await();
-        SocketAddress remoteAddress = invokeFuture.getConnection().getChannel().remoteAddress();
-        return RpcResponses.getResponseObject(responseMessage, remoteAddress);
+        return RpcResponses.getResponseObject(responseMessage);
     }
 
     public <T> T get(long timeout, TimeUnit unit) throws InterruptedException, RemotingException {
         RpcResponseMessage responseMessage = (RpcResponseMessage) invokeFuture.await(timeout, unit);
-        SocketAddress remoteAddress = invokeFuture.getConnection().getChannel().remoteAddress();
-        return RpcResponses.getResponseObject(responseMessage, remoteAddress);
+        return RpcResponses.getResponseObject(responseMessage);
     }
 }
