@@ -1,6 +1,7 @@
 package io.github.xinfra.lab.remoting.client;
 
 
+import io.github.xinfra.lab.remoting.annotation.OnlyForTest;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
@@ -30,6 +31,8 @@ public class InvokeFuture {
 
     private Message message;
 
+    @OnlyForTest
+    @Getter
     private Timeout timeout;
 
     private InvokeCallBack invokeCallBack;
@@ -46,10 +49,12 @@ public class InvokeFuture {
     }
 
     public void addTimeout(Timeout timeout) {
+        Validate.isTrue(this.timeout == null, "repeat add timeout for InvokeFuture");
         this.timeout = timeout;
     }
 
     public void addCallBack(InvokeCallBack invokeCallBack) {
+        Validate.isTrue(this.invokeCallBack == null, "repeat add invokeCallBack for InvokeFuture");
         this.invokeCallBack = invokeCallBack;
     }
 
@@ -132,5 +137,11 @@ public class InvokeFuture {
             return timeout.cancel();
         }
         return false;
+    }
+
+    public Message createConnectionClosedMessage() {
+        ProtocolType protocolType = connection.getEndpoint().getProtocolType();
+        Protocol protocol = ProtocolManager.getProtocol(protocolType);
+        return protocol.messageFactory().createConnectionClosedMessage(requestId);
     }
 }

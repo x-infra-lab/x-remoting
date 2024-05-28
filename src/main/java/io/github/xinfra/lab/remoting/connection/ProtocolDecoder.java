@@ -1,5 +1,6 @@
 package io.github.xinfra.lab.remoting.connection;
 
+import io.github.xinfra.lab.remoting.exception.CodecException;
 import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.netty.buffer.ByteBuf;
@@ -27,8 +28,10 @@ public class ProtocolDecoder extends ByteToMessageDecoder {
             in.resetReaderIndex();
 
             if (Arrays.equals(protocolCode, protocolType.protocolCode())) {
-                ctx.channel().attr(PROTOCOL).set(protocolType);
                 ProtocolManager.getProtocol(protocolType).decoder().decode(ctx, in, out);
+            } else {
+                throw new CodecException("unknown protocol code:" + Arrays.toString(protocolCode)
+                        + " for protocolType:" + protocolType);
             }
         }
     }

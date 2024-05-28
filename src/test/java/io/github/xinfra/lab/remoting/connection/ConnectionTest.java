@@ -20,7 +20,6 @@ import java.util.concurrent.TimeUnit;
 import static io.github.xinfra.lab.remoting.connection.Connection.CONNECTION;
 import static io.github.xinfra.lab.remoting.connection.Connection.HEARTBEAT_FAIL_COUNT;
 import static io.github.xinfra.lab.remoting.connection.Connection.PROTOCOL;
-import static org.mockito.Mockito.mock;
 
 public class ConnectionTest {
     private Connection connection;
@@ -90,13 +89,12 @@ public class ConnectionTest {
             requestIds.add(requestId);
             connection.addInvokeFuture(new InvokeFuture(requestId, connection));
         }
+        Assert.assertEquals(requestIds.size(), times);
+
 
         ProtocolManager.registerProtocolIfAbsent(ProtocolType.RPC, new RpcProtocol());
         connection.onClose();
 
-        Assert.assertEquals(requestIds.size(), times);
-        for (Integer requestId : requestIds) {
-            Assert.assertNull(connection.removeInvokeFuture(requestId));
-        }
+        Assert.assertEquals(0, connection.getInvokeMap().size());
     }
 }

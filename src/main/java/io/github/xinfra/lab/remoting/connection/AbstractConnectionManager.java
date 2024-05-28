@@ -27,8 +27,8 @@ public abstract class AbstractConnectionManager implements ConnectionManager {
             synchronized (this) {
                 connectionHolder = connections.get(endpoint);
                 if (connectionHolder == null) {
-                    connectionHolder = createConnectionPool(endpoint);
-                    createConnectionForPool(endpoint, connectionHolder);
+                    connectionHolder = createConnectionHolder(endpoint);
+                    createConnectionForHolder(endpoint, connectionHolder);
                 }
             }
         }
@@ -78,13 +78,13 @@ public abstract class AbstractConnectionManager implements ConnectionManager {
         // TODO
     }
 
-    private ConnectionHolder createConnectionPool(Endpoint endpoint) throws RemotingException {
+    private ConnectionHolder createConnectionHolder(Endpoint endpoint) throws RemotingException {
         ConnectionHolder connectionHolder = new ConnectionHolder(connectionSelectStrategy);
         connections.put(endpoint, connectionHolder);
         return connectionHolder;
     }
 
-    private void createConnectionForPool(Endpoint endpoint, ConnectionHolder connectionHolder) throws RemotingException {
+    private void createConnectionForHolder(Endpoint endpoint, ConnectionHolder connectionHolder) throws RemotingException {
         for (int i = 0; i < config.getConnNum(); i++) {
             Connection connection = connectionFactory.create(endpoint, config);
             connectionHolder.add(connection);

@@ -1,9 +1,8 @@
 package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.Endpoint;
+import io.github.xinfra.lab.remoting.annotation.OnlyForTest;
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
-import io.github.xinfra.lab.remoting.message.MessageFactory;
-import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -26,6 +25,8 @@ public class Connection {
 
     public static final AttributeKey<Integer> HEARTBEAT_FAIL_COUNT = AttributeKey.valueOf("heartbeat_fail_count");
 
+    @OnlyForTest
+    @Getter
     private ConcurrentHashMap<Integer, InvokeFuture> invokeMap = new ConcurrentHashMap<>();
 
     @Getter
@@ -68,12 +69,11 @@ public class Connection {
     }
 
     public void onClose() {
-        MessageFactory messageFactory = ProtocolManager.getProtocol(endpoint.getProtocolType()).messageFactory();
         for (int requestId : invokeMap.keySet()) {
             InvokeFuture invokeFuture = removeInvokeFuture(requestId);
             if (invokeFuture != null) {
                 invokeFuture.cancelTimeout();
-                invokeFuture.finish(messageFactory.createConnectionClosedMessage(requestId));
+                invokeFuture.finish(invokeFuture.createConnectionClosedMessage());
                 invokeFuture.asyncExecuteCallBack();
             }
         }
