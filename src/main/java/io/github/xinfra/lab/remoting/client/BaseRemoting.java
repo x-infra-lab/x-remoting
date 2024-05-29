@@ -12,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public  class BaseRemoting {
+public class BaseRemoting {
     private MessageFactory messageFactory;
 
     private Timer timer;
@@ -41,7 +41,7 @@ public  class BaseRemoting {
             );
         } catch (Throwable t) {
             InvokeFuture future = connection.removeInvokeFuture(requestId);
-            if (future!=null) {
+            if (future != null) {
                 future.finish(messageFactory.createSendFailResponseMessage(requestId, t));
                 log.error("Invoke sending message fail. id:{}", requestId, t);
             }
@@ -50,11 +50,9 @@ public  class BaseRemoting {
         Message result = invokeFuture.await(timeoutMills, TimeUnit.MILLISECONDS);
 
         if (result == null) {
-            InvokeFuture future = connection.removeInvokeFuture(requestId);
-            if (future != null) {
-                result = messageFactory.createTimeoutResponseMessage(requestId);
-                log.warn("Wait result timeout. id:{}", requestId);
-            }
+            connection.removeInvokeFuture(requestId);
+            result = messageFactory.createTimeoutResponseMessage(requestId);
+            log.warn("Wait result timeout. id:{}", requestId);
         }
         return result;
     }

@@ -104,7 +104,7 @@ public class InvokeFuture {
     }
 
     public void finish(Message result) {
-        Validate.isTrue(this.message == null , "requestId: %s InvokeFuture already finished.",  requestId);
+        Validate.isTrue(this.message == null, "requestId: %s InvokeFuture already finished.", requestId);
         this.message = result;
         countDownLatch.countDown();
     }
