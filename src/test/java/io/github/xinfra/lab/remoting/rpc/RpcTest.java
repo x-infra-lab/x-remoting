@@ -2,8 +2,10 @@ package io.github.xinfra.lab.remoting.rpc;
 
 import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.net.InetSocketAddress;
@@ -13,12 +15,12 @@ import static io.github.xinfra.lab.remoting.protocol.ProtocolType.RPC;
 
 public class RpcTest {
 
-    private RpcServer rpcServer;
+    private static RpcServer rpcServer;
 
-    private RpcClient rpcClient;
+    private static RpcClient rpcClient;
 
-    @Before
-    public void beforeClass() {
+    @BeforeClass
+    public static void beforeClass() {
         rpcServer = new RpcServer(findAvailableTcpPort());
         rpcServer.startup();
         rpcServer.registerUserProcessor(new SimpleUserProcessor());
@@ -26,6 +28,12 @@ public class RpcTest {
 
         rpcClient = new RpcClient();
         rpcClient.startup();
+    }
+
+    @AfterClass
+    public static void afterClass(){
+        rpcServer.shutdown();
+        rpcClient.shutdown();
     }
 
 

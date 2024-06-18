@@ -44,7 +44,7 @@ public class DefaultConnectionFactory implements ConnectionFactory {
             new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(),
                     new NamedThreadFactory("Remoting-Server-Worker"));
 
-    private static final Class<? extends SocketChannel> channelClass= Epoll.isAvailable()?
+    private static final Class<? extends SocketChannel> channelClass = Epoll.isAvailable() ?
             EpollSocketChannel.class : NioSocketChannel.class;
 
     private ConnectionManager connectionManager;

@@ -19,6 +19,9 @@ public class BaseRemoting {
 
     public BaseRemoting(MessageFactory messageFactory) {
         this.messageFactory = messageFactory;
+
+        // todo close it
+        // todo netty setup leakDetection
         this.timer = new HashedWheelTimer();
     }
 

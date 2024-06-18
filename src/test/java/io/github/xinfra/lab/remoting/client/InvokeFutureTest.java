@@ -4,6 +4,7 @@ import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.message.Message;
+import io.github.xinfra.lab.remoting.message.MessageType;
 import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.github.xinfra.lab.remoting.protocol.RpcProtocol;
@@ -172,5 +173,12 @@ public class InvokeFutureTest {
         countDownLatch.await();
         Assert.assertTrue(callbackExecuted.get());
         Assert.assertEquals(1, callBackExecuteTimes.get());
+    }
+
+    @Test
+    public void testCreateConnectionClosedMessage() {
+        Message message = invokeFuture.createConnectionClosedMessage();
+        Assert.assertNotNull(message);
+        Assert.assertEquals(message.messageType(), MessageType.response);
     }
 }
