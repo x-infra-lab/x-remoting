@@ -88,7 +88,7 @@ public class InvokeFuture {
                             contextClassLoader = Thread.currentThread().getContextClassLoader();
                             Thread.currentThread().setContextClassLoader(appClassLoader);
                         }
-                        invokeCallBack.complete(this);
+                        invokeCallBack.complete(message);
                     } finally {
                         if (contextClassLoader != null) {
                             Thread.currentThread().setContextClassLoader(contextClassLoader);

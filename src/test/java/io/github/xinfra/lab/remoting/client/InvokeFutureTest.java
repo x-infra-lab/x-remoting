@@ -119,7 +119,7 @@ public class InvokeFutureTest {
     public void testCallBackSync() {
         AtomicBoolean callbackExecuted = new AtomicBoolean(false);
         AtomicInteger callBackExecuteTimes = new AtomicInteger(0);
-        InvokeCallBack callBack = future -> {
+        InvokeCallBack callBack = message -> {
             callbackExecuted.set(true);
             callBackExecuteTimes.getAndIncrement();
         };
@@ -148,7 +148,7 @@ public class InvokeFutureTest {
         AtomicBoolean callbackExecuted = new AtomicBoolean(false);
         AtomicInteger callBackExecuteTimes = new AtomicInteger(0);
         CountDownLatch countDownLatch = new CountDownLatch(1);
-        InvokeCallBack callBack = future -> {
+        InvokeCallBack callBack = message -> {
             callbackExecuted.set(true);
             callBackExecuteTimes.getAndIncrement();
             countDownLatch.countDown();

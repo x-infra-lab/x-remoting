@@ -43,16 +43,9 @@ public class RpcHeartbeatTrigger implements HeartbeatTrigger {
 
         BaseRemoting baseRemoting = new BaseRemoting(messageFactory);
         baseRemoting.asyncCall(heartbeatRequestMessage, connection, heartbeatTimeoutMills,
-                future -> {
-
-                    RpcResponseMessage heartbeatResponseMessage;
-                    SocketAddress remoteAddress = future.getConnection().remoteAddress();
-                    try {
-                        heartbeatResponseMessage = (RpcResponseMessage) future.await();
-                    } catch (InterruptedException e) {
-                        log.error("fail get response from InvokeFuture. remote address:{}", remoteAddress, e);
-                        return;
-                    }
+                message -> {
+                    RpcResponseMessage heartbeatResponseMessage = (RpcResponseMessage) message;
+                    SocketAddress remoteAddress = heartbeatResponseMessage.getRemoteAddress();
 
                     if (heartbeatResponseMessage.getStatus() == ResponseStatus.SUCCESS.getCode()) {
                         log.debug("heartbeat success. remote address:{}", remoteAddress);

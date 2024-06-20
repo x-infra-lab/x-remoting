@@ -1,13 +1,11 @@
 package io.github.xinfra.lab.remoting.rpc;
 
 import io.github.xinfra.lab.remoting.client.InvokeCallBack;
-import io.github.xinfra.lab.remoting.client.InvokeFuture;
-import io.github.xinfra.lab.remoting.exception.RemotingException;
+import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.RpcResponseMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.SocketAddress;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 
@@ -16,37 +14,16 @@ public interface RpcInvokeCallBack<R> extends InvokeCallBack {
     Logger LOGGER = LoggerFactory.getLogger(RpcInvokeCallBack.class);
 
     @Override
-    default void complete(InvokeFuture future) {
+    default void complete(Message message) {
         Runnable task = () -> {
-            RpcResponseMessage responseMessage = null;
-            SocketAddress remoteAddress = future.getConnection().remoteAddress();
-
             try {
+                RpcResponseMessage responseMessage = (RpcResponseMessage) message;
+                Object responseObject = RpcResponses.getResponseObject(responseMessage);
                 try {
-                    responseMessage = (RpcResponseMessage) future.await();
-                } catch (Throwable t) {
-                    String msg = "fail get response from InvokeFuture. remote address:" + remoteAddress;
-                    LOGGER.error(msg, t);
-                    throw new RemotingException(msg, t);
-                }
-
-
-                ClassLoader contextClassLoader = null;
-                try {
-                    if (future.getAppClassLoader() != null) {
-                        contextClassLoader = Thread.currentThread().getContextClassLoader();
-                        Thread.currentThread().setContextClassLoader(future.getAppClassLoader());
-                    }
-                    Object responseObject = RpcResponses.getResponseObject(responseMessage);
                     onResponse((R) responseObject);
                 } catch (Throwable t) {
                     LOGGER.error("call back execute onResponse fail.", t);
-                } finally {
-                    if (contextClassLoader != null) {
-                        Thread.currentThread().setContextClassLoader(contextClassLoader);
-                    }
                 }
-
             } catch (Throwable t) {
                 try {
                     onException(t);
@@ -62,7 +39,7 @@ public interface RpcInvokeCallBack<R> extends InvokeCallBack {
             try {
                 executor.execute(task);
             } catch (RejectedExecutionException re) {
-                LOGGER.error("fail execute callback. id:{}", future.getRequestId(), re);
+                LOGGER.error("fail execute callback. id:{}", message.id(), re);
             }
         } else {
             task.run();

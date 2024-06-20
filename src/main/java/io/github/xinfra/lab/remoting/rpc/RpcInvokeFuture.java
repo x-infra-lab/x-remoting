@@ -4,7 +4,6 @@ import io.github.xinfra.lab.remoting.client.InvokeFuture;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.message.RpcResponseMessage;
 
-import java.net.SocketAddress;
 import java.util.concurrent.TimeUnit;
 
 public class RpcInvokeFuture<T> {

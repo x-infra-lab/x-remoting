@@ -3,7 +3,6 @@ package io.github.xinfra.lab.remoting.rpc;
 import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.client.BaseRemoting;
 import io.github.xinfra.lab.remoting.client.InvokeCallBack;
-import io.github.xinfra.lab.remoting.client.InvokeFuture;
 import io.github.xinfra.lab.remoting.connection.ClientConnectionManager;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.connection.ConnectionManager;
@@ -18,6 +17,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static io.github.xinfra.lab.remoting.common.TestSocketUtils.findAvailableTcpPort;
 import static io.github.xinfra.lab.remoting.protocol.ProtocolType.RPC;
@@ -53,18 +54,17 @@ public class HeartBeatTest {
 
         Assert.assertNotNull(heartbeatResponseMessage);
 
-        baseRemoting.asyncCall(heartbeatRequestMessage, connection, 1000,
-                new InvokeCallBack() {
-                    @Override
-                    public void complete(InvokeFuture future) {
-                        try {
-                            Message heartbeatResponseMessage = future.await();
-                            Assert.assertNotNull(heartbeatResponseMessage);
-                        } catch (InterruptedException e) {
-                            throw new RuntimeException(e);
-                        }
 
-                    }
-                });
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        AtomicReference<Message> messageAtomicReference = new AtomicReference<>();
+        baseRemoting.asyncCall(heartbeatRequestMessage, connection, 1000,
+                message -> {
+                    countDownLatch.countDown();
+                    messageAtomicReference.set(message);
+                }
+        );
+
+        countDownLatch.await();
+        Assert.assertNotNull(messageAtomicReference.get());
     }
 }
