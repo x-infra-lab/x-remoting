@@ -24,8 +24,6 @@ public class InvokeFuture {
     @Getter
     private int requestId;
 
-    @Getter
-    private Connection connection;
 
     private final CountDownLatch countDownLatch;
 
@@ -41,9 +39,8 @@ public class InvokeFuture {
 
     private ClassLoader classLoader;
 
-    public InvokeFuture(int requestId, Connection connection) {
+    public InvokeFuture(int requestId) {
         this.requestId = requestId;
-        this.connection = connection;
         this.countDownLatch = new CountDownLatch(1);
         this.classLoader = Thread.currentThread().getContextClassLoader();
     }
@@ -137,11 +134,5 @@ public class InvokeFuture {
             return timeout.cancel();
         }
         return false;
-    }
-
-    public Message createConnectionClosedMessage() {
-        ProtocolType protocolType = connection.getEndpoint().getProtocolType();
-        Protocol protocol = ProtocolManager.getProtocol(protocolType);
-        return protocol.messageFactory().createConnectionClosedMessage(requestId);
     }
 }

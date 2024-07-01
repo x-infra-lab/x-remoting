@@ -1,15 +1,10 @@
 package io.github.xinfra.lab.remoting.client;
 
-import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
-import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.message.Message;
-import io.github.xinfra.lab.remoting.message.MessageType;
 import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.github.xinfra.lab.remoting.protocol.RpcProtocol;
-import io.netty.channel.Channel;
-import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timeout;
 import org.junit.Assert;
@@ -33,12 +28,9 @@ public class InvokeFutureTest {
     private InvokeFuture invokeFuture;
 
     private InvokeFuture newInvokeFuture() {
-        Endpoint endpoint = new Endpoint(ProtocolType.RPC, "localhost", 0);
-        Channel channel = new EmbeddedChannel();
-        Connection connection = new Connection(endpoint, channel);
 
         final int requestId1 = IDGenerator.nextRequestId();
-        return new InvokeFuture(requestId1, connection);
+        return new InvokeFuture(requestId1);
     }
 
     @BeforeClass
@@ -173,12 +165,5 @@ public class InvokeFutureTest {
         countDownLatch.await();
         Assert.assertTrue(callbackExecuted.get());
         Assert.assertEquals(1, callBackExecuteTimes.get());
-    }
-
-    @Test
-    public void testCreateConnectionClosedMessage() {
-        Message message = invokeFuture.createConnectionClosedMessage();
-        Assert.assertNotNull(message);
-        Assert.assertEquals(message.messageType(), MessageType.response);
     }
 }

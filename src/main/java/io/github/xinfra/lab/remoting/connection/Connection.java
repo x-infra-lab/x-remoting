@@ -3,6 +3,9 @@ package io.github.xinfra.lab.remoting.connection;
 import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.annotation.OnlyForTest;
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
+import io.github.xinfra.lab.remoting.message.Message;
+import io.github.xinfra.lab.remoting.protocol.Protocol;
+import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -73,9 +76,14 @@ public class Connection {
             InvokeFuture invokeFuture = removeInvokeFuture(requestId);
             if (invokeFuture != null) {
                 invokeFuture.cancelTimeout();
-                invokeFuture.finish(invokeFuture.createConnectionClosedMessage());
+                invokeFuture.finish(createConnectionClosedMessage(requestId));
                 invokeFuture.asyncExecuteCallBack();
             }
         }
+    }
+
+    private Message createConnectionClosedMessage(int requestId) {
+        Protocol protocol = ProtocolManager.getProtocol(endpoint.getProtocolType());
+        return protocol.messageFactory().createConnectionClosedMessage(requestId);
     }
 }

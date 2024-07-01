@@ -52,14 +52,14 @@ public class ConnectionTest {
         final int requestId1 = IDGenerator.nextRequestId();
         Assert.assertNull(connection.removeInvokeFuture(requestId1));
 
-        connection.addInvokeFuture(new InvokeFuture(requestId1, connection));
+        connection.addInvokeFuture(new InvokeFuture(requestId1));
         Assert.assertThrows(IllegalArgumentException.class, () -> {
-            connection.addInvokeFuture(new InvokeFuture(requestId1, connection));
+            connection.addInvokeFuture(new InvokeFuture(requestId1));
         });
 
 
         final int requestId2 = IDGenerator.nextRequestId();
-        InvokeFuture invokeFuture = new InvokeFuture(requestId2, connection);
+        InvokeFuture invokeFuture = new InvokeFuture(requestId2);
         connection.addInvokeFuture(invokeFuture);
 
         Assert.assertEquals(invokeFuture, connection.removeInvokeFuture(requestId2));
@@ -87,7 +87,7 @@ public class ConnectionTest {
         for (int i = 0; i < times; i++) {
             Integer requestId = IDGenerator.nextRequestId();
             requestIds.add(requestId);
-            connection.addInvokeFuture(new InvokeFuture(requestId, connection));
+            connection.addInvokeFuture(new InvokeFuture(requestId));
         }
         Assert.assertEquals(requestIds.size(), times);
 
