@@ -1,6 +1,9 @@
 package io.github.xinfra.lab.remoting.message;
 
 import io.github.xinfra.lab.remoting.common.IDGenerator;
+import io.github.xinfra.lab.remoting.exception.ConnectionClosedException;
+import io.github.xinfra.lab.remoting.exception.SendMessageException;
+import io.github.xinfra.lab.remoting.exception.TimeoutException;
 
 
 public class RpcMessageFactory implements MessageFactory {
@@ -8,7 +11,7 @@ public class RpcMessageFactory implements MessageFactory {
     public RpcResponseMessage createSendFailResponseMessage(int id, Throwable cause) {
         RpcResponseMessage rpcResponseMessage = new RpcResponseMessage(id);
         rpcResponseMessage.setStatus(ResponseStatus.CLIENT_SEND_ERROR.getCode());
-        rpcResponseMessage.setCause(cause);
+        rpcResponseMessage.setCause(new SendMessageException(cause));
         return rpcResponseMessage;
     }
 
@@ -16,7 +19,7 @@ public class RpcMessageFactory implements MessageFactory {
     public RpcResponseMessage createTimeoutResponseMessage(int id) {
         RpcResponseMessage rpcResponseMessage = new RpcResponseMessage(id);
         rpcResponseMessage.setStatus(ResponseStatus.TIMEOUT.getCode());
-
+        rpcResponseMessage.setCause(new TimeoutException());
         return rpcResponseMessage;
     }
 
@@ -72,5 +75,13 @@ public class RpcMessageFactory implements MessageFactory {
             responseMessage.setContentType(responseContent.getClass().getName());
         }
         return responseMessage;
+    }
+
+    @Override
+    public Message createConnectionClosedMessage(int id) {
+        RpcResponseMessage rpcResponseMessage = new RpcResponseMessage(id);
+        rpcResponseMessage.setStatus(ResponseStatus.CONNECTION_CLOSED.getCode());
+        rpcResponseMessage.setCause(new ConnectionClosedException());
+        return rpcResponseMessage;
     }
 }

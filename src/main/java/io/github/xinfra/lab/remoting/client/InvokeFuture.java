@@ -1,6 +1,7 @@
 package io.github.xinfra.lab.remoting.client;
 
 
+import io.github.xinfra.lab.remoting.annotation.OnlyForTest;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
@@ -8,8 +9,9 @@ import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.netty.util.Timeout;
 import lombok.Getter;
-import lombok.Setter;
+
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Validate;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
@@ -22,14 +24,12 @@ public class InvokeFuture {
     @Getter
     private int requestId;
 
-    @Getter
-    @Setter
-    private Connection connection;
-
     private final CountDownLatch countDownLatch;
 
     private Message message;
 
+    @OnlyForTest
+    @Getter
     private Timeout timeout;
 
     private InvokeCallBack invokeCallBack;
@@ -45,10 +45,12 @@ public class InvokeFuture {
     }
 
     public void addTimeout(Timeout timeout) {
+        Validate.isTrue(this.timeout == null, "repeat add timeout for InvokeFuture");
         this.timeout = timeout;
     }
 
     public void addCallBack(InvokeCallBack invokeCallBack) {
+        Validate.isTrue(this.invokeCallBack == null, "repeat add invokeCallBack for InvokeFuture");
         this.invokeCallBack = invokeCallBack;
     }
 
@@ -82,7 +84,7 @@ public class InvokeFuture {
                             contextClassLoader = Thread.currentThread().getContextClassLoader();
                             Thread.currentThread().setContextClassLoader(appClassLoader);
                         }
-                        invokeCallBack.complete(this);
+                        invokeCallBack.complete(message);
                     } finally {
                         if (contextClassLoader != null) {
                             Thread.currentThread().setContextClassLoader(contextClassLoader);
@@ -98,6 +100,7 @@ public class InvokeFuture {
     }
 
     public void finish(Message result) {
+        Validate.isTrue(this.message == null, "requestId: %s InvokeFuture already finished.", requestId);
         this.message = result;
         countDownLatch.countDown();
     }

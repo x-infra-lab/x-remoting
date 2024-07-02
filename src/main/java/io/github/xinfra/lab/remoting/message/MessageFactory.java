@@ -24,4 +24,6 @@ public interface MessageFactory {
     Message createExceptionResponse(int id, ResponseStatus status);
 
     Message createResponse(int id, Object responseContent);
+
+    Message createConnectionClosedMessage(int id);
 }

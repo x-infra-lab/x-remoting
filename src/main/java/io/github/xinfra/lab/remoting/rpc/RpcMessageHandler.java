@@ -56,6 +56,7 @@ public class RpcMessageHandler implements MessageHandler {
     public void handleMessage(RemotingContext remotingContext, Object msg) {
         RpcMessage rpcMessage = (RpcMessage) msg;
         try {
+            rpcMessage.setRemoteAddress(remotingContext.getChannelContext().channel().remoteAddress());
             remotingProcessors.get(rpcMessage.messageType())
                     .handleMessage(remotingContext, rpcMessage);
         } catch (Throwable t) {

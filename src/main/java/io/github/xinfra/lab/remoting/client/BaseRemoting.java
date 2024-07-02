@@ -12,13 +12,16 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public  class BaseRemoting {
+public class BaseRemoting {
     private MessageFactory messageFactory;
 
     private Timer timer;
 
     public BaseRemoting(MessageFactory messageFactory) {
         this.messageFactory = messageFactory;
+
+        // todo close it
+        // todo netty setup leakDetection
         this.timer = new HashedWheelTimer();
     }
 
@@ -30,17 +33,21 @@ public  class BaseRemoting {
             connection.getChannel().writeAndFlush(message).addListener(
                     (ChannelFuture channelFuture) -> {
                         if (!channelFuture.isSuccess()) {
-                            connection.removeInvokeFuture(requestId);
-                            invokeFuture.finish(messageFactory.createSendFailResponseMessage(requestId,
-                                    channelFuture.cause()));
-                            log.error("Send message fail. id:{}", requestId, channelFuture.cause());
+                            InvokeFuture future = connection.removeInvokeFuture(requestId);
+                            if (future != null) {
+                                future.finish(messageFactory.createSendFailResponseMessage(requestId,
+                                        channelFuture.cause()));
+                                log.error("Send message fail. id:{}", requestId, channelFuture.cause());
+                            }
                         }
                     }
             );
         } catch (Throwable t) {
-            connection.removeInvokeFuture(requestId);
-            invokeFuture.finish(messageFactory.createSendFailResponseMessage(requestId, t));
-            log.error("Invoke sending message fail. id:{}", requestId, t);
+            InvokeFuture future = connection.removeInvokeFuture(requestId);
+            if (future != null) {
+                future.finish(messageFactory.createSendFailResponseMessage(requestId, t));
+                log.error("Invoke sending message fail. id:{}", requestId, t);
+            }
         }
 
         Message result = invokeFuture.await(timeoutMills, TimeUnit.MILLISECONDS);

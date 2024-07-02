@@ -132,7 +132,7 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
     private void createConnection(SocketChannel channel) {
         InetSocketAddress inetSocketAddress = channel.remoteAddress();
         Endpoint endpoint = new Endpoint(protocolType(), inetSocketAddress.getHostName(), inetSocketAddress.getPort());
-        Connection connection = new Connection(endpoint, channel, protocolType());
+        Connection connection = new Connection(endpoint, channel);
         if (manageConnection) {
             connectionManager.add(connection);
         }

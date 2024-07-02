@@ -20,21 +20,14 @@ import java.util.Objects;
 
 @Slf4j
 public class RpcResponses {
-    public static <R> R getResponseObject(RpcResponseMessage responseMessage, SocketAddress remoteAddress) throws RemotingException {
+    public static <R> R getResponseObject(RpcResponseMessage responseMessage) throws RemotingException {
+        SocketAddress remoteAddress = responseMessage.getRemoteAddress();
+        // fixme classloader problem
         responseMessage.deserialize();
         ResponseStatus status = ResponseStatus.valueOf(responseMessage.getStatus());
 
         if (Objects.equals(status, ResponseStatus.SUCCESS)) {
             return (R) responseMessage.getContent();
-        }
-
-        switch (status) {
-            case TIMEOUT:
-                throw new TimeoutException("rpc invoke timeout. remote address:" + remoteAddress);
-            case CLIENT_SEND_ERROR:
-                throw new SendMessageException("rpc send message fail. remote address:" + remoteAddress,
-                        responseMessage.getCause());
-                // TODO
         }
 
         if (responseMessage.getCause() != null) {

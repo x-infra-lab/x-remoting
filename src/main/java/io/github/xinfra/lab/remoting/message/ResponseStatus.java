@@ -1,5 +1,7 @@
 package io.github.xinfra.lab.remoting.message;
 
+import lombok.Getter;
+
 public enum ResponseStatus {
     SUCCESS((short) 0),
 
@@ -17,16 +19,20 @@ public enum ResponseStatus {
 
     SERVER_SERIAL_EXCEPTION((short) 7),
 
-    SERVER_DESERIAL_EXCEPTION((short) 8);
+    SERVER_DESERIAL_EXCEPTION((short) 8),
+
+    CLIENT_SERIAL_EXCEPTION((short) 9),
+
+    CLIENT_DESERIAL_EXCEPTION((short) 10),
+    ;
+
+    @Getter
     private short code;
 
     ResponseStatus(short code) {
         this.code = code;
     }
 
-    public short getCode() {
-        return code;
-    }
 
     public static ResponseStatus valueOf(short status) {
         for (ResponseStatus s : values()) {
