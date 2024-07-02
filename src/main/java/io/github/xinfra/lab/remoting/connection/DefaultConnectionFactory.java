@@ -40,8 +40,9 @@ public class DefaultConnectionFactory implements ConnectionFactory {
     private Bootstrap bootstrap;
 
     private ConnectionManager connectionManager;
-    private ConnectionFactoryConfig connectionFactoryConfig = new ConnectionFactoryConfig();
+    private ConnectionConfig connectionConfig;
 
+    // todo EpollUtils
     private static final EventLoopGroup workerGroup = Epoll.isAvailable() ?
             new EpollEventLoopGroup(Runtime.getRuntime().availableProcessors(),
                     new NamedThreadFactory("Remoting-Server-Worker")) :
@@ -53,6 +54,12 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 
     public DefaultConnectionFactory(ConnectionManager connectionManager,
                                     ConcurrentHashMap<String, UserProcessor<?>> userProcessors) {
+        this(connectionManager, userProcessors, new ConnectionConfig());
+    }
+
+    public DefaultConnectionFactory(ConnectionManager connectionManager,
+                                    ConcurrentHashMap<String, UserProcessor<?>> userProcessors,
+                                    ConnectionConfig connectionConfig) {
         this(new ConnectionEventHandler(connectionManager),
                 new ProtocolEncoder(),
                 new ProtocolDecoder(),
@@ -60,9 +67,10 @@ public class DefaultConnectionFactory implements ConnectionFactory {
                 new ProtocolHandler(userProcessors)
         );
         this.connectionManager = connectionManager;
+        this.connectionConfig = connectionConfig;
     }
 
-    public DefaultConnectionFactory(
+    private DefaultConnectionFactory(
             ChannelHandler connectionEventHandler,
             ChannelHandler encoder,
             ChannelHandler decoder,
@@ -86,12 +94,13 @@ public class DefaultConnectionFactory implements ConnectionFactory {
                         pipeline.addLast("encoder", encoder);
                         pipeline.addLast("decoder", decoder);
 
-                        if (connectionFactoryConfig.isIdleSwitch()) {
-                            pipeline.addLast("idleStateHandler", new IdleStateHandler(connectionFactoryConfig.getIdleReaderTimeout(),
-                                    connectionFactoryConfig.getIdleWriterTimeout(), connectionFactoryConfig.getIdleAllTimeout(),
+                        if (connectionConfig.isIdleSwitch()) {
+                            pipeline.addLast("idleStateHandler", new IdleStateHandler(connectionConfig.getIdleReaderTimeout(),
+                                    connectionConfig.getIdleWriterTimeout(), connectionConfig.getIdleAllTimeout(),
                                     TimeUnit.MILLISECONDS));
+                            pipeline.addLast("heartbeatHandler", heartbeatHandler);
                         }
-                        pipeline.addLast("heartbeatHandler", heartbeatHandler);
+                        // todo FlushConsolidationHandler
                         pipeline.addLast("handler", handler);
                     }
                 });
@@ -99,9 +108,9 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 
 
     @Override
-    public Connection create(Endpoint endpoint, ConnectionConfig config) throws RemotingException {
+    public Connection create(Endpoint endpoint) throws RemotingException {
         SocketAddress address = new InetSocketAddress(endpoint.getIp(), endpoint.getPort());
-        bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, config.getConnectTimeout());
+        bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionConfig.getConnectTimeout());
         ChannelFuture future = bootstrap.connect(address);
         future.awaitUninterruptibly();
         if (!future.isDone()) {

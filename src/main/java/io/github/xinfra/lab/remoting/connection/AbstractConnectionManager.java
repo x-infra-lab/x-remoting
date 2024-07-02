@@ -8,18 +8,17 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AbstractConnectionManager implements ConnectionManager {
 
-    private ConnectionConfig config = new ConnectionConfig();
-
     private Map<Endpoint, ConnectionHolder> connections = new ConcurrentHashMap<>();
 
     protected ConnectionFactory connectionFactory;
 
     private ConnectionSelectStrategy connectionSelectStrategy = new RoundRobinConnectionSelectStrategy();
 
+    private  ConnectionManagerConfig config = new ConnectionManagerConfig();
     public AbstractConnectionManager() {
     }
 
-    public AbstractConnectionManager(ConnectionConfig config) {
+    public AbstractConnectionManager(ConnectionManagerConfig config) {
         this.config = config;
     }
 
@@ -88,8 +87,8 @@ public abstract class AbstractConnectionManager implements ConnectionManager {
     }
 
     private void createConnectionForHolder(Endpoint endpoint, ConnectionHolder connectionHolder) throws RemotingException {
-        for (int i = 0; i < config.getConnNum(); i++) {
-            Connection connection = connectionFactory.create(endpoint, config);
+        for (int i = 0; i < config.getConnectionNumPreEndpoint(); i++) {
+            Connection connection = connectionFactory.create(endpoint);
             connectionHolder.add(connection);
         }
     }
