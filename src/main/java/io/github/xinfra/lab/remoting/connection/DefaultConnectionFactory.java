@@ -36,7 +36,11 @@ public class DefaultConnectionFactory implements ConnectionFactory {
     private ChannelHandler decoder;
     private ChannelHandler heartbeatHandler;
     private ChannelHandler handler;
+
     private Bootstrap bootstrap;
+
+    private ConnectionManager connectionManager;
+    private ConnectionFactoryConfig connectionFactoryConfig = new ConnectionFactoryConfig();
 
     private static final EventLoopGroup workerGroup = Epoll.isAvailable() ?
             new EpollEventLoopGroup(Runtime.getRuntime().availableProcessors(),
@@ -46,8 +50,6 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 
     private static final Class<? extends SocketChannel> channelClass = Epoll.isAvailable() ?
             EpollSocketChannel.class : NioSocketChannel.class;
-
-    private ConnectionManager connectionManager;
 
     public DefaultConnectionFactory(ConnectionManager connectionManager,
                                     ConcurrentHashMap<String, UserProcessor<?>> userProcessors) {
@@ -84,8 +86,11 @@ public class DefaultConnectionFactory implements ConnectionFactory {
                         pipeline.addLast("encoder", encoder);
                         pipeline.addLast("decoder", decoder);
 
-                        // todo: use config
-                        pipeline.addLast("idleStateHandler", new IdleStateHandler(1500, 1500, 0, TimeUnit.MILLISECONDS));
+                        if (connectionFactoryConfig.isIdleSwitch()) {
+                            pipeline.addLast("idleStateHandler", new IdleStateHandler(connectionFactoryConfig.getIdleReaderTimeout(),
+                                    connectionFactoryConfig.getIdleWriterTimeout(), connectionFactoryConfig.getIdleAllTimeout(),
+                                    TimeUnit.MILLISECONDS));
+                        }
                         pipeline.addLast("heartbeatHandler", heartbeatHandler);
                         pipeline.addLast("handler", handler);
                     }
@@ -96,7 +101,7 @@ public class DefaultConnectionFactory implements ConnectionFactory {
     @Override
     public Connection create(Endpoint endpoint, ConnectionConfig config) throws RemotingException {
         SocketAddress address = new InetSocketAddress(endpoint.getIp(), endpoint.getPort());
-        bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, config.getConnectTimeoutMills());
+        bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, config.getConnectTimeout());
         ChannelFuture future = bootstrap.connect(address);
         future.awaitUninterruptibly();
         if (!future.isDone()) {

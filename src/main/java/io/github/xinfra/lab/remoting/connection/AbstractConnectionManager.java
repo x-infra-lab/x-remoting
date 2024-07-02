@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class AbstractConnectionManager implements ConnectionManager {
 
-    private ConnectionConfig config;
+    private ConnectionConfig config = new ConnectionConfig();
 
     private Map<Endpoint, ConnectionHolder> connections = new ConcurrentHashMap<>();
 
@@ -17,7 +17,10 @@ public abstract class AbstractConnectionManager implements ConnectionManager {
     private ConnectionSelectStrategy connectionSelectStrategy = new RoundRobinConnectionSelectStrategy();
 
     public AbstractConnectionManager() {
-        this.config = new ConnectionConfig();
+    }
+
+    public AbstractConnectionManager(ConnectionConfig config) {
+        this.config = config;
     }
 
     @Override

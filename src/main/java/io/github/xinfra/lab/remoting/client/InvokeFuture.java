@@ -24,7 +24,6 @@ public class InvokeFuture {
     @Getter
     private int requestId;
 
-
     private final CountDownLatch countDownLatch;
 
     private Message message;
