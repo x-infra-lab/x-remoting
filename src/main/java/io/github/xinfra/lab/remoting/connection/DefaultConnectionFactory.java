@@ -4,7 +4,6 @@ package io.github.xinfra.lab.remoting.connection;
 import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
-import io.github.xinfra.lab.remoting.processor.UserProcessor;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -24,22 +23,18 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 
 @Slf4j
 public class DefaultConnectionFactory implements ConnectionFactory {
 
-    private ChannelHandler connectionEventHandler;
-    private ChannelHandler encoder;
-    private ChannelHandler decoder;
-    private ChannelHandler heartbeatHandler;
-    private ChannelHandler handler;
+
+    private List<ChannelHandler> channelHandlers;
 
     private Bootstrap bootstrap;
 
-    private ConnectionManager connectionManager;
     private ConnectionConfig connectionConfig;
 
     // todo EpollUtils
@@ -52,35 +47,13 @@ public class DefaultConnectionFactory implements ConnectionFactory {
     private static final Class<? extends SocketChannel> channelClass = Epoll.isAvailable() ?
             EpollSocketChannel.class : NioSocketChannel.class;
 
-    public DefaultConnectionFactory(ConnectionManager connectionManager,
-                                    ConcurrentHashMap<String, UserProcessor<?>> userProcessors) {
-        this(connectionManager, userProcessors, new ConnectionConfig());
+    public DefaultConnectionFactory(List<ChannelHandler> channelHandlers) {
+        this(channelHandlers, new ConnectionConfig());
     }
 
-    public DefaultConnectionFactory(ConnectionManager connectionManager,
-                                    ConcurrentHashMap<String, UserProcessor<?>> userProcessors,
+    public DefaultConnectionFactory(List<ChannelHandler> channelHandlers,
                                     ConnectionConfig connectionConfig) {
-        this(new ConnectionEventHandler(connectionManager),
-                new ProtocolEncoder(),
-                new ProtocolDecoder(),
-                new ProtocolHeartBeatHandler(),
-                new ProtocolHandler(userProcessors)
-        );
-        this.connectionManager = connectionManager;
         this.connectionConfig = connectionConfig;
-    }
-
-    private DefaultConnectionFactory(
-            ChannelHandler connectionEventHandler,
-            ChannelHandler encoder,
-            ChannelHandler decoder,
-            ChannelHandler heartbeatHandler,
-            ChannelHandler handler) {
-        this.connectionEventHandler = connectionEventHandler;
-        this.encoder = encoder;
-        this.decoder = decoder;
-        this.heartbeatHandler = heartbeatHandler;
-        this.handler = handler;
 
         bootstrap = new Bootstrap();
         bootstrap.group(workerGroup)
@@ -90,18 +63,14 @@ public class DefaultConnectionFactory implements ConnectionFactory {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
-                        pipeline.addLast("connectionEventHandler", connectionEventHandler);
-                        pipeline.addLast("encoder", encoder);
-                        pipeline.addLast("decoder", decoder);
+                        channelHandlers.forEach(pipeline::addLast);
 
                         if (connectionConfig.isIdleSwitch()) {
                             pipeline.addLast("idleStateHandler", new IdleStateHandler(connectionConfig.getIdleReaderTimeout(),
                                     connectionConfig.getIdleWriterTimeout(), connectionConfig.getIdleAllTimeout(),
                                     TimeUnit.MILLISECONDS));
-                            pipeline.addLast("heartbeatHandler", heartbeatHandler);
                         }
                         // todo FlushConsolidationHandler
-                        pipeline.addLast("handler", handler);
                     }
                 });
     }
