@@ -20,6 +20,7 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Validate;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -53,7 +54,10 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 
     public DefaultConnectionFactory(List<ChannelHandler> channelHandlers,
                                     ConnectionConfig connectionConfig) {
+        Validate.notNull(channelHandlers, "channelHandlers can not be null");
+        Validate.notNull(connectionConfig, "connectionConfig can not be null");
         this.connectionConfig = connectionConfig;
+        this.channelHandlers = channelHandlers;
 
         bootstrap = new Bootstrap();
         bootstrap.group(workerGroup)
