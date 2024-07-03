@@ -9,6 +9,7 @@ import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
+import org.apache.commons.lang3.Validate;
 
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,6 +23,7 @@ public class ProtocolHandler extends ChannelDuplexHandler {
 
 
     public ProtocolHandler(ConcurrentHashMap<String, UserProcessor<?>> userProcessors) {
+        Validate.notNull(userProcessors, "userProcessors can not be null");
         this.userProcessors = userProcessors;
     }
 

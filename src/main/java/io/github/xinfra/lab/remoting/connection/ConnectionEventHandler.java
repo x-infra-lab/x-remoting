@@ -4,6 +4,7 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
+import org.apache.commons.lang3.Validate;
 
 
 @ChannelHandler.Sharable
@@ -12,6 +13,7 @@ public class ConnectionEventHandler extends ChannelDuplexHandler {
     private ConnectionManager connectionManager;
 
     public ConnectionEventHandler(ConnectionManager connectionManager) {
+        Validate.notNull(connectionManager, "connectionManager can not be null.");
         this.connectionManager = connectionManager;
     }
 

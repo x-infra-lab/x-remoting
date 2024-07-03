@@ -14,7 +14,8 @@ public abstract class AbstractConnectionManager implements ConnectionManager {
 
     private ConnectionSelectStrategy connectionSelectStrategy = new RoundRobinConnectionSelectStrategy();
 
-    private  ConnectionManagerConfig config = new ConnectionManagerConfig();
+    private ConnectionManagerConfig config = new ConnectionManagerConfig();
+
     public AbstractConnectionManager() {
     }
 
@@ -80,7 +81,7 @@ public abstract class AbstractConnectionManager implements ConnectionManager {
         // TODO
     }
 
-    private ConnectionHolder createConnectionHolder(Endpoint endpoint) throws RemotingException {
+    private ConnectionHolder createConnectionHolder(Endpoint endpoint) {
         ConnectionHolder connectionHolder = new ConnectionHolder(connectionSelectStrategy);
         connections.put(endpoint, connectionHolder);
         return connectionHolder;

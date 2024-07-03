@@ -3,17 +3,10 @@ package io.github.xinfra.lab.remoting.connection;
 import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
-import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler;
-import io.netty.channel.nio.NioEventLoopGroup;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
-import io.netty.handler.codec.http.HttpServerCodec;
-import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.net.InetSocketAddress;
@@ -21,28 +14,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static io.github.xinfra.lab.remoting.common.TestSocketUtils.findAvailableTcpPort;
 
-public class ConnectionFactoryTest {
-
-    static int serverPort;
-
-    static String remoteAddress = "localhost";
-
-    static Channel serverChannel;
-
-    @BeforeClass
-    public static void beforeClass() throws InterruptedException {
-        // start a http server
-        serverPort = findAvailableTcpPort();
-        ChannelFuture future = new ServerBootstrap()
-                .group(new NioEventLoopGroup(1))
-                .channel(NioServerSocketChannel.class)
-                .childHandler(new HttpServerCodec())
-                .bind(serverPort);
-        Assert.assertTrue(future.sync().isSuccess());
-        serverChannel = future.channel();
-    }
+public class ConnectionFactoryTest extends ServerBase1Test {
 
 
     @Test
@@ -60,7 +33,7 @@ public class ConnectionFactoryTest {
     }
 
     @Test
-    public void testCreate() throws RemotingException {
+    public void testCreateSuccess() throws RemotingException {
         List<ChannelHandler> channelHandlers = new ArrayList<>();
         channelHandlers.add(new HttpClientCodec());
         ConnectionFactory connectionFactory = new DefaultConnectionFactory(channelHandlers);
@@ -78,10 +51,16 @@ public class ConnectionFactoryTest {
 
     }
 
-    @AfterClass
-    public static void afterClass() throws InterruptedException {
-        if (serverChannel != null) {
-            serverChannel.close().sync();
-        }
+    @Test
+    public void testCreateFail()  {
+        List<ChannelHandler> channelHandlers = new ArrayList<>();
+        channelHandlers.add(new HttpClientCodec());
+        ConnectionFactory connectionFactory = new DefaultConnectionFactory(channelHandlers);
+
+        Assert.assertThrows(RemotingException.class, () -> {
+            connectionFactory.create(new Endpoint(ProtocolType.RPC, remoteAddress, serverPort + 1));
+        });
+
     }
+
 }

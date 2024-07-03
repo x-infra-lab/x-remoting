@@ -17,6 +17,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -40,8 +41,7 @@ public class HeartBeatTest {
     public void heartbeatTest1() throws RemotingException, InterruptedException {
         InetSocketAddress remoteAddress = rpcServer.localAddress();
 
-
-        ConnectionManager connectionManager = new ClientConnectionManager(null);
+        ConnectionManager connectionManager = new ClientConnectionManager(new ConcurrentHashMap<>());
         Protocol protocol = ProtocolManager.getProtocol(ProtocolType.RPC);
         MessageFactory messageFactory = protocol.messageFactory();
         BaseRemoting baseRemoting = new BaseRemoting(messageFactory);
