@@ -40,6 +40,8 @@ public class Connection {
 
 
     public Connection(Endpoint endpoint, Channel channel) {
+        Validate.notNull(endpoint, "endpoint can not be null");
+        Validate.notNull(channel, "channel can not be null");
         this.endpoint = endpoint;
         this.channel = channel;
         this.channel.attr(PROTOCOL).set(endpoint.getProtocolType());

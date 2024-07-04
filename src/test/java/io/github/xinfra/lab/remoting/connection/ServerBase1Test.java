@@ -6,6 +6,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpServerCodec;
+import io.netty.handler.logging.LoggingHandler;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -27,7 +28,8 @@ public class ServerBase1Test {
         ChannelFuture future = new ServerBootstrap()
                 .group(new NioEventLoopGroup(1))
                 .channel(NioServerSocketChannel.class)
-                .childHandler(new HttpServerCodec())
+                .handler(new HttpServerCodec())
+                .childHandler(new LoggingHandler())
                 .bind(serverPort);
         Assert.assertTrue(future.sync().isSuccess());
         serverChannel = future.channel();

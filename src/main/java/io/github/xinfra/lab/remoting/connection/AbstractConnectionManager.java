@@ -72,8 +72,11 @@ public abstract class AbstractConnectionManager implements ConnectionManager {
 
     @Override
     public Connection get(Endpoint endpoint) {
-        // TODO
-        return null;
+        ConnectionHolder connectionHolder = connections.get(endpoint);
+        if (connectionHolder == null) {
+            return null;
+        }
+        return connectionHolder.get();
     }
 
     @Override
