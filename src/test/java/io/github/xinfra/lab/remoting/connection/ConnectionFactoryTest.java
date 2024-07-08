@@ -57,8 +57,9 @@ public class ConnectionFactoryTest extends ServerBase1Test {
         channelHandlers.add(new HttpClientCodec());
         ConnectionFactory connectionFactory = new DefaultConnectionFactory(channelHandlers);
 
+        Endpoint invalidEndpoint = new Endpoint(ProtocolType.RPC, remoteAddress, serverPort + 1);
         Assert.assertThrows(RemotingException.class, () -> {
-            connectionFactory.create(new Endpoint(ProtocolType.RPC, remoteAddress, serverPort + 1));
+            connectionFactory.create(invalidEndpoint);
         });
 
     }

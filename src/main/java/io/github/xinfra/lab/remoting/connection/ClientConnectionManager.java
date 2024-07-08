@@ -21,6 +21,19 @@ public class ClientConnectionManager extends AbstractConnectionManager {
         this.connectionFactory = new DefaultConnectionFactory(defaultChannelHandlers(userProcessors), connectionConfig);
     }
 
+    public ClientConnectionManager(ConcurrentHashMap<String, UserProcessor<?>> userProcessors,
+                                   ConnectionManagerConfig connectionManagerConfig) {
+        super(connectionManagerConfig);
+        this.connectionFactory = new DefaultConnectionFactory(defaultChannelHandlers(userProcessors));
+    }
+
+    public ClientConnectionManager(ConcurrentHashMap<String, UserProcessor<?>> userProcessors,
+                                   ConnectionConfig connectionConfig,
+                                   ConnectionManagerConfig connectionManagerConfig) {
+        super(connectionManagerConfig);
+        this.connectionFactory = new DefaultConnectionFactory(defaultChannelHandlers(userProcessors), connectionConfig);
+    }
+
     private List<ChannelHandler> defaultChannelHandlers(ConcurrentHashMap<String, UserProcessor<?>> userProcessors) {
         List<ChannelHandler> channelHandlers = new ArrayList<>();
         channelHandlers.add(new ProtocolEncoder());

@@ -12,6 +12,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class ClientConnectionManagerTest extends ServerBase1Test {
@@ -167,12 +169,13 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
         Connection spyConnection = spy(connection);
         doReturn(channel).when(spyConnection).getChannel();
 
+        ConnectionManager spyConnectionManager = spy(connectionManager);
+
         Assert.assertThrows(RemotingException.class, () -> {
-            connectionManager.check(spyConnection);
+            spyConnectionManager.check(spyConnection);
         });
-// todo
-//        Connection connection1 = connectionManager.get(endpoint);
-//        Assert.assertNull(connection1);
+
+        verify(spyConnectionManager, times(1)).remove(spyConnection);
     }
 
 }
