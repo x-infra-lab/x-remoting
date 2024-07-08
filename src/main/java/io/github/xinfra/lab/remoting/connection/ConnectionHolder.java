@@ -27,4 +27,11 @@ public class ConnectionHolder {
     public boolean isEmpty() {
         return connections.isEmpty();
     }
+
+    public void removeAndCloseAll() {
+        for (Connection connection : connections) {
+            connections.remove(connection);
+            connection.close();
+        }
+    }
 }

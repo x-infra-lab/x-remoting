@@ -10,7 +10,7 @@ import org.apache.commons.lang3.Validate;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class AbstractConnectionManager extends AbstractLifeCycle implements ConnectionManager  {
+public abstract class AbstractConnectionManager extends AbstractLifeCycle implements ConnectionManager {
 
     @OnlyForTest
     @Getter
@@ -30,16 +30,13 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
     }
 
     @Override
-    public Connection getOrCreateIfAbsent(Endpoint endpoint) throws RemotingException {
+    public synchronized Connection getOrCreateIfAbsent(Endpoint endpoint) throws RemotingException {
+        Validate.notNull(endpoint, "endpoint can not be null");
+
         ConnectionHolder connectionHolder = connections.get(endpoint);
         if (connectionHolder == null) {
-            synchronized (this) {
-                connectionHolder = connections.get(endpoint);
-                if (connectionHolder == null) {
-                    connectionHolder = createConnectionHolder(endpoint);
-                    createConnectionForHolder(endpoint, connectionHolder);
-                }
-            }
+            connectionHolder = createConnectionHolder(endpoint);
+            createConnectionForHolder(endpoint, connectionHolder);
         }
 
         return connectionHolder.get();
@@ -47,9 +44,8 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 
     @Override
     public void check(Connection connection) throws RemotingException {
-        if (connection == null) {
-            throw new RemotingException("Connection is null when do check!");
-        }
+        Validate.notNull(connection, "connection can not be null");
+
         if (connection.getChannel() == null || !connection.getChannel().isActive()) {
             this.removeAndClose(connection);
             throw new RemotingException("Check connection failed for address: "
@@ -63,10 +59,9 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
     }
 
     @Override
-    public void removeAndClose(Connection connection) {
-        if (connection == null) {
-            return;
-        }
+    public synchronized void removeAndClose(Connection connection) {
+        Validate.notNull(connection, "connection can not be null");
+
         Endpoint endpoint = connection.getEndpoint();
         ConnectionHolder connectionHolder = connections.get(endpoint);
         if (connectionHolder == null) {
@@ -81,6 +76,8 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 
     @Override
     public Connection get(Endpoint endpoint) {
+        Validate.notNull(endpoint, "endpoint can not be null");
+
         ConnectionHolder connectionHolder = connections.get(endpoint);
         if (connectionHolder == null) {
             return null;
@@ -89,20 +86,14 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
     }
 
     @Override
-    public void add(Connection connection) {
+    public synchronized void add(Connection connection) {
         Validate.notNull(connection, "connection can not be null");
 
         Endpoint endpoint = connection.getEndpoint();
-
         ConnectionHolder connectionHolder = connections.get(endpoint);
         if (connectionHolder == null) {
-            synchronized (this) {
-                connectionHolder = connections.get(endpoint);
-                if (connectionHolder == null) {
-                    connectionHolder = createConnectionHolder(endpoint);
-                    connectionHolder.add(connection);
-                }
-            }
+            connectionHolder = createConnectionHolder(endpoint);
+            connectionHolder.add(connection);
         } else {
             connectionHolder.add(connection);
         }
@@ -122,8 +113,15 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
     }
 
     @Override
-    public void shutdown() {
+    public synchronized void shutdown() {
         super.shutdown();
-        // todo
+
+        for (Map.Entry<Endpoint, ConnectionHolder> entry : connections.entrySet()) {
+            Endpoint endpoint = entry.getKey();
+            ConnectionHolder connectionHolder = entry.getValue();
+            connectionHolder.removeAndCloseAll();
+            connections.remove(endpoint);
+        }
+
     }
 }
