@@ -31,6 +31,9 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
         ConnectionManager connectionManager =
                 new ClientConnectionManager(new ConcurrentHashMap<>());
         Assert.assertNotNull(connectionManager);
+        connectionManager.startup();
+
+        connectionManager.shutdown();
     }
 
 
@@ -39,12 +42,15 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
         ConnectionManager connectionManager =
                 new ClientConnectionManager(new ConcurrentHashMap<>());
         Assert.assertNotNull(connectionManager);
+        connectionManager.startup();
 
         Connection connection1 = connectionManager.getOrCreateIfAbsent(new Endpoint(ProtocolType.RPC, remoteAddress, serverPort));
         Assert.assertNotNull(connection1);
 
         Connection connection2 = connectionManager.getOrCreateIfAbsent(new Endpoint(ProtocolType.RPC, remoteAddress, serverPort));
         Assert.assertTrue(connection1 == connection2);
+
+        connectionManager.shutdown();
     }
 
     @Test
@@ -52,10 +58,13 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
         ConnectionManager connectionManager =
                 new ClientConnectionManager(new ConcurrentHashMap<>());
         Assert.assertNotNull(connectionManager);
+        connectionManager.startup();
 
         Assert.assertThrows(RemotingException.class, () -> {
             connectionManager.getOrCreateIfAbsent(new Endpoint(ProtocolType.RPC, remoteAddress, serverPort + 1));
         });
+
+        connectionManager.shutdown();
     }
 
     @Test
@@ -63,6 +72,7 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
         ConnectionManager connectionManager =
                 new ClientConnectionManager(new ConcurrentHashMap<>());
         Assert.assertNotNull(connectionManager);
+        connectionManager.startup();
 
         // valid endpoint
         Endpoint endpoint = new Endpoint(ProtocolType.RPC, remoteAddress, serverPort);
@@ -79,6 +89,8 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
         Assert.assertNotNull(connection1);
 
         Assert.assertTrue(connection1 == connection2);
+
+        connectionManager.shutdown();
     }
 
 
@@ -87,6 +99,7 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
         ConnectionManager connectionManager =
                 new ClientConnectionManager(new ConcurrentHashMap<>());
         Assert.assertNotNull(connectionManager);
+        connectionManager.startup();
 
         // invalid endpoint
         Endpoint endpoint = new Endpoint(ProtocolType.RPC, remoteAddress, serverPort + 1);
@@ -104,6 +117,8 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
 
         connection1 = connectionManager.get(endpoint);
         Assert.assertNull(connection1);
+
+        connectionManager.shutdown();
     }
 
     @Test
@@ -111,6 +126,7 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
         ConnectionManager connectionManager =
                 new ClientConnectionManager(new ConcurrentHashMap<>());
         Assert.assertNotNull(connectionManager);
+        connectionManager.startup();
 
         Assert.assertThrows(RemotingException.class, () -> {
             connectionManager.check(null);
@@ -121,6 +137,8 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
         Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
         connectionManager.check(connection);
 
+        connectionManager.shutdown();
+
     }
 
     @Test
@@ -128,6 +146,7 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
         ConnectionManager connectionManager =
                 new ClientConnectionManager(new ConcurrentHashMap<>());
         Assert.assertNotNull(connectionManager);
+        connectionManager.startup();
 
         // valid endpoint
         Endpoint endpoint = new Endpoint(ProtocolType.RPC, remoteAddress, serverPort);
@@ -149,6 +168,8 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
         Connection connection1 = connectionManager.get(endpoint);
         Assert.assertNotNull(connection1);
         Assert.assertTrue(connection1 == connection);
+
+        connectionManager.shutdown();
     }
 
     @Test
@@ -156,6 +177,7 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
         ConnectionManager connectionManager =
                 new ClientConnectionManager(new ConcurrentHashMap<>());
         Assert.assertNotNull(connectionManager);
+        connectionManager.startup();
 
         // valid endpoint
         Endpoint endpoint = new Endpoint(ProtocolType.RPC, remoteAddress, serverPort);
@@ -175,7 +197,41 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
             spyConnectionManager.check(spyConnection);
         });
 
-        verify(spyConnectionManager, times(1)).remove(spyConnection);
+        verify(spyConnectionManager, times(1)).removeAndClose(spyConnection);
+
+        connectionManager.shutdown();
     }
+
+    @Test
+    public void testRemoveAndClose() throws RemotingException {
+
+        ConnectionManager connectionManager =
+                new ClientConnectionManager(new ConcurrentHashMap<>());
+        Assert.assertNotNull(connectionManager);
+        connectionManager.startup();
+
+        // valid endpoint
+        Endpoint endpoint = new Endpoint(ProtocolType.RPC, remoteAddress, serverPort);
+        Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
+
+        connectionManager.removeAndClose(connection);
+        Assert.assertNull(((ClientConnectionManager) connectionManager).connections.get(endpoint));
+        Assert.assertNull(connectionManager.get(endpoint));
+        // removeAndClose again
+        connectionManager.removeAndClose(connection);
+
+
+        Connection mockConnection = mock(Connection.class);
+        Endpoint endpoint1 = new Endpoint(ProtocolType.RPC, remoteAddress, serverPort + 1);
+        Assert.assertNull(connectionManager.get(endpoint));
+        doReturn(endpoint1).when(mockConnection).getEndpoint();
+        connectionManager.removeAndClose(mockConnection);
+        verify(mockConnection, times(1)).close();
+        connectionManager.removeAndClose(mockConnection);
+        verify(mockConnection, times(2)).close();
+
+        connectionManager.shutdown();
+    }
+
 
 }

@@ -19,7 +19,7 @@ public class ConnectionHolder {
         connections.add(connection);
     }
 
-    public void remove(Connection connection) {
+    public void removeAndClose(Connection connection) {
         connections.remove(connection);
         connection.close();
     }

@@ -15,6 +15,9 @@ public class ServerConnectionManagerTest extends ServerBase1Test {
         ConnectionManager connectionManager =
                 new ServerConnectionManager();
         Assert.assertNotNull(connectionManager);
+        connectionManager.startup();
+
+        connectionManager.shutdown();
     }
 
 
@@ -23,10 +26,13 @@ public class ServerConnectionManagerTest extends ServerBase1Test {
         ConnectionManager connectionManager =
                 new ServerConnectionManager();
         Assert.assertNotNull(connectionManager);
+        connectionManager.startup();
 
         Assert.assertThrows(UnsupportedOperationException.class, () -> {
             connectionManager.getOrCreateIfAbsent(new Endpoint(ProtocolType.RPC, remoteAddress, serverPort));
         });
+
+        connectionManager.shutdown();
     }
 
 
@@ -35,6 +41,7 @@ public class ServerConnectionManagerTest extends ServerBase1Test {
         ConnectionManager connectionManager =
                 new ServerConnectionManager();
         Assert.assertNotNull(connectionManager);
+        connectionManager.startup();
 
         // valid endpoint
         Endpoint endpoint = new Endpoint(ProtocolType.RPC, remoteAddress, serverPort);
@@ -50,6 +57,7 @@ public class ServerConnectionManagerTest extends ServerBase1Test {
         connection1 = connectionManager.get(endpoint);
         Assert.assertNull(connection1);
 
+        connectionManager.shutdown();
     }
 
 }

@@ -1,14 +1,20 @@
 package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.Endpoint;
+import io.github.xinfra.lab.remoting.annotation.OnlyForTest;
+import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
+import lombok.Getter;
+import org.apache.commons.lang3.Validate;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public abstract class AbstractConnectionManager implements ConnectionManager {
+public abstract class AbstractConnectionManager extends AbstractLifeCycle implements ConnectionManager  {
 
-    private Map<Endpoint, ConnectionHolder> connections = new ConcurrentHashMap<>();
+    @OnlyForTest
+    @Getter
+    public Map<Endpoint, ConnectionHolder> connections = new ConcurrentHashMap<>();
 
     protected ConnectionFactory connectionFactory;
 
@@ -45,7 +51,7 @@ public abstract class AbstractConnectionManager implements ConnectionManager {
             throw new RemotingException("Connection is null when do check!");
         }
         if (connection.getChannel() == null || !connection.getChannel().isActive()) {
-            this.remove(connection);
+            this.removeAndClose(connection);
             throw new RemotingException("Check connection failed for address: "
                     + connection.getEndpoint());
         }
@@ -57,13 +63,16 @@ public abstract class AbstractConnectionManager implements ConnectionManager {
     }
 
     @Override
-    public void remove(Connection connection) {
+    public void removeAndClose(Connection connection) {
+        if (connection == null) {
+            return;
+        }
         Endpoint endpoint = connection.getEndpoint();
         ConnectionHolder connectionHolder = connections.get(endpoint);
         if (connectionHolder == null) {
             connection.close();
         } else {
-            connectionHolder.remove(connection);
+            connectionHolder.removeAndClose(connection);
             if (connectionHolder.isEmpty()) {
                 connections.remove(endpoint);
             }
@@ -81,7 +90,22 @@ public abstract class AbstractConnectionManager implements ConnectionManager {
 
     @Override
     public void add(Connection connection) {
-        // TODO
+        Validate.notNull(connection, "connection can not be null");
+
+        Endpoint endpoint = connection.getEndpoint();
+
+        ConnectionHolder connectionHolder = connections.get(endpoint);
+        if (connectionHolder == null) {
+            synchronized (this) {
+                connectionHolder = connections.get(endpoint);
+                if (connectionHolder == null) {
+                    connectionHolder = createConnectionHolder(endpoint);
+                    connectionHolder.add(connection);
+                }
+            }
+        } else {
+            connectionHolder.add(connection);
+        }
     }
 
     private ConnectionHolder createConnectionHolder(Endpoint endpoint) {
@@ -95,5 +119,11 @@ public abstract class AbstractConnectionManager implements ConnectionManager {
             Connection connection = connectionFactory.create(endpoint);
             connectionHolder.add(connection);
         }
+    }
+
+    @Override
+    public void shutdown() {
+        super.shutdown();
+        // todo
     }
 }

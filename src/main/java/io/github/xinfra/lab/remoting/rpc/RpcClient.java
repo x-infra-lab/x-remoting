@@ -26,12 +26,14 @@ public class RpcClient extends AbstractLifeCycle {
     @Override
     public void startup() {
         super.startup();
+        connectionManager.startup();
     }
 
     @Override
     public void shutdown() {
         // todo close connectionManager
         super.shutdown();
+        connectionManager.shutdown();
     }
 
     public <R> R syncCall(Object request, Endpoint endpoint, int timeoutMills)

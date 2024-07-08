@@ -33,7 +33,6 @@ public class HeartBeatTest {
         rpcServer = new RpcServer(findAvailableTcpPort());
         rpcServer.startup();
         rpcServer.registerUserProcessor(new SimpleUserProcessor());
-
     }
 
 
