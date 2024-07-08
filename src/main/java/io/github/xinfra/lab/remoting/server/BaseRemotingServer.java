@@ -108,7 +108,7 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
                                 pipeline.addLast("decoder", decoder);
 
                                 // todo: use config
-                                pipeline.addLast("idleStateHandler", new IdleStateHandler(6000, 6000, 0, TimeUnit.MILLISECONDS));
+                                pipeline.addLast("idleStateHandler", new IdleStateHandler(60000, 60000, 0, TimeUnit.MILLISECONDS));
                                 pipeline.addLast("serverIdleHandler", serverIdleHandler);
                                 pipeline.addLast("handler", handler);
 
