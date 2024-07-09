@@ -10,7 +10,6 @@ import io.github.xinfra.lab.remoting.message.RpcMessageFactory;
 import io.github.xinfra.lab.remoting.message.RpcRequestMessage;
 import io.github.xinfra.lab.remoting.message.RpcResponseMessage;
 import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
-import io.github.xinfra.lab.remoting.protocol.RpcProtocol;
 
 
 public class RpcRemoting extends BaseRemoting {

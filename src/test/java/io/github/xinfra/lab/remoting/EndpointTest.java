@@ -1,11 +1,10 @@
 package io.github.xinfra.lab.remoting;
 
-import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import static io.github.xinfra.lab.remoting.protocol.RpcProtocol.RPC;
+import static io.github.xinfra.lab.remoting.rpc.RpcProtocol.RPC;
 
 
 public class EndpointTest {

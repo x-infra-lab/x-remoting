@@ -6,7 +6,6 @@ import io.github.xinfra.lab.remoting.message.RpcHeartbeatRequestMessage;
 import io.github.xinfra.lab.remoting.message.RpcMessage;
 import io.github.xinfra.lab.remoting.message.RpcRequestMessage;
 import io.github.xinfra.lab.remoting.message.RpcResponseMessage;
-import io.github.xinfra.lab.remoting.protocol.RpcProtocol;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;

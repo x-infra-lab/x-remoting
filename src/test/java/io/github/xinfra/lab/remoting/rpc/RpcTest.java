@@ -10,7 +10,7 @@ import org.junit.Test;
 import java.net.InetSocketAddress;
 
 import static io.github.xinfra.lab.remoting.common.TestSocketUtils.findAvailableTcpPort;
-import static io.github.xinfra.lab.remoting.protocol.RpcProtocol.RPC;
+import static io.github.xinfra.lab.remoting.rpc.RpcProtocol.RPC;
 
 public class RpcTest {
 

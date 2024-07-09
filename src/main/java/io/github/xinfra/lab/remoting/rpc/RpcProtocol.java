@@ -1,10 +1,12 @@
-package io.github.xinfra.lab.remoting.protocol;
+package io.github.xinfra.lab.remoting.rpc;
 
 import io.github.xinfra.lab.remoting.codec.MessageDecoder;
 import io.github.xinfra.lab.remoting.codec.MessageEncoder;
 import io.github.xinfra.lab.remoting.message.HeartbeatTrigger;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
 import io.github.xinfra.lab.remoting.message.RpcMessageFactory;
+import io.github.xinfra.lab.remoting.protocol.Protocol;
+import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.github.xinfra.lab.remoting.rpc.RpcHeartbeatTrigger;
 import io.github.xinfra.lab.remoting.rpc.RpcMessageDecoder;
 import io.github.xinfra.lab.remoting.rpc.RpcMessageEncoder;

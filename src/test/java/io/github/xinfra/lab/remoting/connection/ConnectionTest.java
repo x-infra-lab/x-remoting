@@ -4,8 +4,7 @@ import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
-import io.github.xinfra.lab.remoting.protocol.ProtocolType;
-import io.github.xinfra.lab.remoting.protocol.RpcProtocol;
+import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
 import io.netty.channel.Channel;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.Assert;
@@ -20,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 import static io.github.xinfra.lab.remoting.connection.Connection.CONNECTION;
 import static io.github.xinfra.lab.remoting.connection.Connection.HEARTBEAT_FAIL_COUNT;
 import static io.github.xinfra.lab.remoting.connection.Connection.PROTOCOL;
-import static io.github.xinfra.lab.remoting.protocol.RpcProtocol.RPC;
+import static io.github.xinfra.lab.remoting.rpc.RpcProtocol.RPC;
 
 public class ConnectionTest {
     private Connection connection;

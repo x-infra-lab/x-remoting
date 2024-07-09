@@ -2,7 +2,6 @@ package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
-import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.codec.http.HttpClientCodec;
@@ -14,7 +13,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import static io.github.xinfra.lab.remoting.protocol.RpcProtocol.RPC;
+import static io.github.xinfra.lab.remoting.rpc.RpcProtocol.RPC;
 
 
 public class ConnectionFactoryTest extends ServerBase1Test {

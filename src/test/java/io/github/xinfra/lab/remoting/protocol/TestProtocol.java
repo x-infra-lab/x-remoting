@@ -5,30 +5,45 @@ import io.github.xinfra.lab.remoting.codec.MessageEncoder;
 import io.github.xinfra.lab.remoting.message.HeartbeatTrigger;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
+import io.github.xinfra.lab.remoting.message.RpcMessageFactory;
+import lombok.Setter;
 
 public class TestProtocol implements Protocol {
+
+
+    @Setter
+    private MessageEncoder testMessageEncoder;
+    @Setter
+    private MessageDecoder testMessageDecoder;
+    @Setter
+    private MessageHandler testMessageHandler;
+    @Setter
+    private RpcMessageFactory testMessageFactory;
+    @Setter
+    private HeartbeatTrigger testHeartbeatTrigger;
+
     @Override
     public MessageEncoder encoder() {
-        return null;
+        return testMessageEncoder;
     }
 
     @Override
     public MessageDecoder decoder() {
-        return null;
+        return testMessageDecoder;
     }
 
     @Override
     public MessageHandler messageHandler() {
-        return null;
+        return testMessageHandler;
     }
 
     @Override
     public MessageFactory messageFactory() {
-        return null;
+        return testMessageFactory;
     }
 
     @Override
     public HeartbeatTrigger heartbeatTrigger() {
-        return null;
+        return testHeartbeatTrigger;
     }
 }

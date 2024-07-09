@@ -2,7 +2,6 @@ package io.github.xinfra.lab.remoting.rpc;
 
 import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.client.BaseRemoting;
-import io.github.xinfra.lab.remoting.client.InvokeCallBack;
 import io.github.xinfra.lab.remoting.connection.ClientConnectionManager;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.connection.ConnectionManager;
@@ -11,7 +10,6 @@ import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
-import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,7 +20,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static io.github.xinfra.lab.remoting.common.TestSocketUtils.findAvailableTcpPort;
-import static io.github.xinfra.lab.remoting.protocol.RpcProtocol.RPC;
+import static io.github.xinfra.lab.remoting.rpc.RpcProtocol.RPC;
 
 public class HeartBeatTest {
 

@@ -3,8 +3,7 @@ package io.github.xinfra.lab.remoting.client;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
-import io.github.xinfra.lab.remoting.protocol.ProtocolType;
-import io.github.xinfra.lab.remoting.protocol.RpcProtocol;
+import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
 import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timeout;
 import org.junit.Assert;
@@ -21,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static io.github.xinfra.lab.remoting.protocol.RpcProtocol.RPC;
+import static io.github.xinfra.lab.remoting.rpc.RpcProtocol.RPC;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

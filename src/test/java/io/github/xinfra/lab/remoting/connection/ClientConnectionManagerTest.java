@@ -2,7 +2,6 @@ package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
-import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.netty.channel.Channel;
 import org.junit.After;
 import org.junit.Assert;
@@ -11,7 +10,7 @@ import org.junit.Test;
 
 import java.util.concurrent.ConcurrentHashMap;
 
-import static io.github.xinfra.lab.remoting.protocol.RpcProtocol.RPC;
+import static io.github.xinfra.lab.remoting.rpc.RpcProtocol.RPC;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
