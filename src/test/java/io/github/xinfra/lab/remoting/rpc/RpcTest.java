@@ -4,14 +4,13 @@ import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import org.junit.AfterClass;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.net.InetSocketAddress;
 
 import static io.github.xinfra.lab.remoting.common.TestSocketUtils.findAvailableTcpPort;
-import static io.github.xinfra.lab.remoting.protocol.ProtocolType.RPC;
+import static io.github.xinfra.lab.remoting.protocol.RpcProtocol.RPC;
 
 public class RpcTest {
 

@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import static io.github.xinfra.lab.remoting.protocol.RpcProtocol.RPC;
+
 
 public class ConnectionFactoryTest extends ServerBase1Test {
 
@@ -38,7 +40,7 @@ public class ConnectionFactoryTest extends ServerBase1Test {
         channelHandlers.add(new HttpClientCodec());
         ConnectionFactory connectionFactory = new DefaultConnectionFactory(channelHandlers);
 
-        Connection connection = connectionFactory.create(new Endpoint(ProtocolType.RPC, remoteAddress, serverPort));
+        Connection connection = connectionFactory.create(new Endpoint(RPC, remoteAddress, serverPort));
         Assert.assertNotNull(connection);
 
         Channel channel = connection.getChannel();
@@ -57,7 +59,7 @@ public class ConnectionFactoryTest extends ServerBase1Test {
         channelHandlers.add(new HttpClientCodec());
         ConnectionFactory connectionFactory = new DefaultConnectionFactory(channelHandlers);
 
-        Endpoint invalidEndpoint = new Endpoint(ProtocolType.RPC, remoteAddress, serverPort + 1);
+        Endpoint invalidEndpoint = new Endpoint(RPC, remoteAddress, serverPort + 1);
         Assert.assertThrows(RemotingException.class, () -> {
             connectionFactory.create(invalidEndpoint);
         });

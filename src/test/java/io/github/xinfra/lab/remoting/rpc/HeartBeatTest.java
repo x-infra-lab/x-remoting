@@ -22,7 +22,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static io.github.xinfra.lab.remoting.common.TestSocketUtils.findAvailableTcpPort;
-import static io.github.xinfra.lab.remoting.protocol.ProtocolType.RPC;
+import static io.github.xinfra.lab.remoting.protocol.RpcProtocol.RPC;
 
 public class HeartBeatTest {
 
@@ -41,7 +41,7 @@ public class HeartBeatTest {
         InetSocketAddress remoteAddress = rpcServer.localAddress();
 
         ConnectionManager connectionManager = new ClientConnectionManager(new ConcurrentHashMap<>());
-        Protocol protocol = ProtocolManager.getProtocol(ProtocolType.RPC);
+        Protocol protocol = ProtocolManager.getProtocol(RPC);
         MessageFactory messageFactory = protocol.messageFactory();
         BaseRemoting baseRemoting = new BaseRemoting(messageFactory);
         Message heartbeatRequestMessage = messageFactory.createHeartbeatRequestMessage();

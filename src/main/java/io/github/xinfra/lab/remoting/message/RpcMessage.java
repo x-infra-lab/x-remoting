@@ -3,6 +3,7 @@ package io.github.xinfra.lab.remoting.message;
 import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
+import io.github.xinfra.lab.remoting.protocol.RpcProtocol;
 import io.github.xinfra.lab.remoting.serialization.SerializationManager;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
 import io.github.xinfra.lab.remoting.serialization.Serializer;
@@ -58,7 +59,7 @@ public abstract class RpcMessage implements Message {
     public RpcMessage(int id, MessageType messageType, SerializationType serializationType) {
         this.id = id;
         this.messageType = messageType;
-        this.protocolType = ProtocolType.RPC;
+        this.protocolType = RpcProtocol.RPC;
         this.serializationType = serializationType;
     }
 

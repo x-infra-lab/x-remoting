@@ -24,9 +24,12 @@ public class RpcHeartbeatTrigger implements HeartbeatTrigger {
 
     private int maxFailCount = 3;
 
+    private BaseRemoting baseRemoting;
+
 
     public RpcHeartbeatTrigger(RpcMessageFactory messageFactory) {
         this.messageFactory = messageFactory;
+        baseRemoting = new BaseRemoting(messageFactory);
     }
 
     @Override
@@ -41,7 +44,6 @@ public class RpcHeartbeatTrigger implements HeartbeatTrigger {
             return;
         }
 
-        BaseRemoting baseRemoting = new BaseRemoting(messageFactory);
         baseRemoting.asyncCall(heartbeatRequestMessage, connection, heartbeatTimeoutMills,
                 message -> {
                     RpcResponseMessage heartbeatResponseMessage = (RpcResponseMessage) message;

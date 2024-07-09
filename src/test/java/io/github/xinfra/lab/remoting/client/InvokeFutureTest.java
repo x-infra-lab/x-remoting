@@ -21,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static io.github.xinfra.lab.remoting.protocol.RpcProtocol.RPC;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -35,7 +36,7 @@ public class InvokeFutureTest {
 
     @BeforeClass
     public static void beforeClass() {
-        ProtocolManager.registerProtocolIfAbsent(ProtocolType.RPC, new RpcProtocol());
+        ProtocolManager.registerProtocolIfAbsent(RPC, new RpcProtocol());
     }
 
     @Before
@@ -122,7 +123,7 @@ public class InvokeFutureTest {
         });
 
         Message message = mock(Message.class);
-        when(message.protocolType()).thenReturn(ProtocolType.RPC);
+        when(message.protocolType()).thenReturn(RPC);
 
         invokeFuture.finish(message);
 
@@ -152,7 +153,7 @@ public class InvokeFutureTest {
         });
 
         Message message = mock(Message.class);
-        when(message.protocolType()).thenReturn(ProtocolType.RPC);
+        when(message.protocolType()).thenReturn(RPC);
 
         invokeFuture.finish(message);
 

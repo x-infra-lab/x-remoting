@@ -10,14 +10,13 @@ import io.github.xinfra.lab.remoting.message.RpcMessageFactory;
 import io.github.xinfra.lab.remoting.message.RpcRequestMessage;
 import io.github.xinfra.lab.remoting.message.RpcResponseMessage;
 import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
-import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.github.xinfra.lab.remoting.protocol.RpcProtocol;
 
 
 public class RpcRemoting extends BaseRemoting {
 
     static {
-        ProtocolManager.registerProtocolIfAbsent(ProtocolType.RPC, new RpcProtocol());
+        ProtocolManager.registerProtocolIfAbsent(RpcProtocol.RPC, new RpcProtocol());
     }
 
     protected RpcMessageFactory rpcMessageFactory;
@@ -25,8 +24,8 @@ public class RpcRemoting extends BaseRemoting {
     protected ConnectionManager connectionManager;
 
     public RpcRemoting(ConnectionManager connectionManager) {
-        super(ProtocolManager.getProtocol(ProtocolType.RPC).messageFactory());
-        this.rpcMessageFactory = (RpcMessageFactory) ProtocolManager.getProtocol(ProtocolType.RPC).messageFactory();
+        super(ProtocolManager.getProtocol(RpcProtocol.RPC).messageFactory());
+        this.rpcMessageFactory = (RpcMessageFactory) ProtocolManager.getProtocol(RpcProtocol.RPC).messageFactory();
         this.connectionManager = connectionManager;
     }
 

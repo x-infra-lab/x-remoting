@@ -11,6 +11,7 @@ import org.junit.Test;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import static io.github.xinfra.lab.remoting.protocol.RpcProtocol.RPC;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -50,10 +51,10 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
     @Test
     public void testGetOrCreateIfAbsent() throws RemotingException {
 
-        Connection connection1 = connectionManager.getOrCreateIfAbsent(new Endpoint(ProtocolType.RPC, remoteAddress, serverPort));
+        Connection connection1 = connectionManager.getOrCreateIfAbsent(new Endpoint(RPC, remoteAddress, serverPort));
         Assert.assertNotNull(connection1);
 
-        Connection connection2 = connectionManager.getOrCreateIfAbsent(new Endpoint(ProtocolType.RPC, remoteAddress, serverPort));
+        Connection connection2 = connectionManager.getOrCreateIfAbsent(new Endpoint(RPC, remoteAddress, serverPort));
         Assert.assertTrue(connection1 == connection2);
 
     }
@@ -62,7 +63,7 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
     public void testGetOrCreateIfAbsentFail() {
 
         // invalid endpoint
-        Endpoint endpoint = new Endpoint(ProtocolType.RPC, remoteAddress, serverPort + 1);
+        Endpoint endpoint = new Endpoint(RPC, remoteAddress, serverPort + 1);
         Assert.assertThrows(RemotingException.class, () -> {
             connectionManager.getOrCreateIfAbsent(endpoint);
         });
@@ -74,7 +75,7 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
 
 
         // valid endpoint
-        Endpoint endpoint = new Endpoint(ProtocolType.RPC, remoteAddress, serverPort);
+        Endpoint endpoint = new Endpoint(RPC, remoteAddress, serverPort);
 
         // no connection
         Connection connection1 = connectionManager.get(endpoint);
@@ -97,7 +98,7 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
 
 
         // invalid endpoint
-        Endpoint endpoint = new Endpoint(ProtocolType.RPC, remoteAddress, serverPort + 1);
+        Endpoint endpoint = new Endpoint(RPC, remoteAddress, serverPort + 1);
 
         // no connection
         Connection connection1 = connectionManager.get(endpoint);
@@ -124,7 +125,7 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
         });
 
         // valid endpoint
-        Endpoint endpoint = new Endpoint(ProtocolType.RPC, remoteAddress, serverPort);
+        Endpoint endpoint = new Endpoint(RPC, remoteAddress, serverPort);
         Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
         connectionManager.check(connection);
 
@@ -136,7 +137,7 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
 
 
         // valid endpoint
-        Endpoint endpoint = new Endpoint(ProtocolType.RPC, remoteAddress, serverPort);
+        Endpoint endpoint = new Endpoint(RPC, remoteAddress, serverPort);
         Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
         connectionManager.check(connection);
 
@@ -162,7 +163,7 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
     public void testCheckActive() throws RemotingException {
 
         // valid endpoint
-        Endpoint endpoint = new Endpoint(ProtocolType.RPC, remoteAddress, serverPort);
+        Endpoint endpoint = new Endpoint(RPC, remoteAddress, serverPort);
         Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
         connectionManager.check(connection);
 
@@ -189,7 +190,7 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
 
 
         // valid endpoint
-        Endpoint endpoint = new Endpoint(ProtocolType.RPC, remoteAddress, serverPort);
+        Endpoint endpoint = new Endpoint(RPC, remoteAddress, serverPort);
         Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
 
         connectionManager.removeAndClose(connection);
@@ -200,7 +201,7 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
 
 
         Connection mockConnection = mock(Connection.class);
-        Endpoint endpoint1 = new Endpoint(ProtocolType.RPC, remoteAddress, serverPort + 1);
+        Endpoint endpoint1 = new Endpoint(RPC, remoteAddress, serverPort + 1);
         Assert.assertNull(connectionManager.get(endpoint));
         doReturn(endpoint1).when(mockConnection).getEndpoint();
         connectionManager.removeAndClose(mockConnection);

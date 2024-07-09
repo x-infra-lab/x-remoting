@@ -6,7 +6,6 @@ import io.github.xinfra.lab.remoting.message.RpcHeartbeatRequestMessage;
 import io.github.xinfra.lab.remoting.message.RpcMessage;
 import io.github.xinfra.lab.remoting.message.RpcRequestMessage;
 import io.github.xinfra.lab.remoting.message.RpcResponseMessage;
-import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.github.xinfra.lab.remoting.protocol.RpcProtocol;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
 import io.netty.buffer.ByteBuf;
@@ -20,7 +19,7 @@ import static io.github.xinfra.lab.remoting.message.MessageType.onewayRequest;
 
 @Slf4j
 public class RpcMessageDecoder implements MessageDecoder {
-    private int protocolCodeLength = ProtocolType.RPC.protocolCode().length;
+    private int protocolCodeLength = RpcProtocol.RPC.protocolCode().length;
 
     private int minLength = Math.min(RpcProtocol.RESPONSE_HEADER_LEN, RpcProtocol.REQUEST_HEADER_LEN);
 

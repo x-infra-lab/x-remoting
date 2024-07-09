@@ -10,6 +10,8 @@ import io.github.xinfra.lab.remoting.rpc.RpcMessageDecoder;
 import io.github.xinfra.lab.remoting.rpc.RpcMessageEncoder;
 import io.github.xinfra.lab.remoting.rpc.RpcMessageHandler;
 
+import java.nio.charset.StandardCharsets;
+
 /**
  * x-protocol
  * <p>
@@ -26,6 +28,9 @@ public class RpcProtocol implements Protocol {
     public static int RESPONSE_HEADER_LEN = 21;
 
     public static int REQUEST_HEADER_LEN = 19;
+
+    public static final ProtocolType RPC = new ProtocolType("x-rpc".getBytes(StandardCharsets.UTF_8));
+
 
     private MessageEncoder rpcMessageEncoder;
     private MessageDecoder rpcMessageDecoder;

@@ -9,7 +9,7 @@ public class RoundRobinConnectionSelectStrategy implements ConnectionSelectStrat
 
     @Override
     public Connection select(List<Connection> connections) {
-        if (connections.isEmpty()) {
+        if (connections == null || connections.isEmpty()) {
             return null;
         }
 

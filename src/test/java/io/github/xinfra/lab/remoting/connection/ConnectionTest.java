@@ -20,20 +20,21 @@ import java.util.concurrent.TimeUnit;
 import static io.github.xinfra.lab.remoting.connection.Connection.CONNECTION;
 import static io.github.xinfra.lab.remoting.connection.Connection.HEARTBEAT_FAIL_COUNT;
 import static io.github.xinfra.lab.remoting.connection.Connection.PROTOCOL;
+import static io.github.xinfra.lab.remoting.protocol.RpcProtocol.RPC;
 
 public class ConnectionTest {
     private Connection connection;
 
     @Before
     public void before() {
-        Endpoint endpoint = new Endpoint(ProtocolType.RPC, "localhost", 0);
+        Endpoint endpoint = new Endpoint(RPC, "localhost", 0);
         Channel channel = new EmbeddedChannel();
         connection = new Connection(endpoint, channel);
     }
 
     @Test
     public void testNewInstance() {
-        Endpoint endpoint = new Endpoint(ProtocolType.RPC, "localhost", 0);
+        Endpoint endpoint = new Endpoint(RPC, "localhost", 0);
         Channel channel = new EmbeddedChannel();
         Connection connection = new Connection(endpoint, channel);
 
@@ -92,7 +93,7 @@ public class ConnectionTest {
         Assert.assertEquals(requestIds.size(), times);
 
 
-        ProtocolManager.registerProtocolIfAbsent(ProtocolType.RPC, new RpcProtocol());
+        ProtocolManager.registerProtocolIfAbsent(RPC, new RpcProtocol());
         connection.onClose();
 
         Assert.assertEquals(0, connection.getInvokeMap().size());
