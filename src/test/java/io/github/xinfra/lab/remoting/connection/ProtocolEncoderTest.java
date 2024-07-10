@@ -10,7 +10,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.Assert;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.nio.charset.StandardCharsets;
@@ -19,21 +18,17 @@ import static org.mockito.Mockito.mock;
 
 public class ProtocolEncoderTest {
 
-    public static final ProtocolType TEST_ENCODER = new ProtocolType("x-unit-test".getBytes(StandardCharsets.UTF_8));
-
-    @BeforeClass
-    public static void beforeClass() {
-        ProtocolManager.registerProtocolIfAbsent(TEST_ENCODER, new TestProtocol());
-    }
-
     @Test
     public void testEncode() {
+        ProtocolType testProtocol = new ProtocolType("testEncode".getBytes());
+        ProtocolManager.registerProtocolIfAbsent(testProtocol, new TestProtocol());
+
         ProtocolEncoder protocolEncoder = new ProtocolEncoder();
         Message message = mock(Message.class);
 
         EmbeddedChannel channel = new EmbeddedChannel();
         channel.pipeline().addLast(protocolEncoder);
-        channel.attr(Connection.PROTOCOL).set(TEST_ENCODER);
+        channel.attr(Connection.PROTOCOL).set(testProtocol);
 
         byte[] data = "testEncode".getBytes(StandardCharsets.UTF_8);
 
@@ -46,7 +41,7 @@ public class ProtocolEncoderTest {
         };
 
 
-        Protocol protocol = ProtocolManager.getProtocol(TEST_ENCODER);
+        Protocol protocol = ProtocolManager.getProtocol(testProtocol);
         ((TestProtocol) protocol).setTestMessageEncoder(messageEncoder);
 
         boolean written = channel.writeOutbound(message);
