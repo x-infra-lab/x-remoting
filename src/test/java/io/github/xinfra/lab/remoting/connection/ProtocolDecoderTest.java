@@ -1,6 +1,7 @@
 package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.codec.MessageDecoder;
+import io.github.xinfra.lab.remoting.exception.CodecException;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
@@ -10,6 +11,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.handler.codec.DecoderException;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -21,8 +23,8 @@ import static org.mockito.Mockito.mock;
 public class ProtocolDecoderTest {
 
     @Test
-    public void testDecoder1() {
-        ProtocolType testProtocol = new ProtocolType("testDecoder1".getBytes());
+    public void testDecode() {
+        ProtocolType testProtocol = new ProtocolType("testDecode".getBytes());
         ProtocolManager.registerProtocolIfAbsent(testProtocol, new TestProtocol());
         ProtocolDecoder protocolDecoder = new ProtocolDecoder();
 
@@ -52,8 +54,8 @@ public class ProtocolDecoderTest {
     }
 
     @Test
-    public void testDecoder2() {
-        ProtocolType testProtocol = new ProtocolType("testDecoder2".getBytes());
+    public void testDecodePartial() {
+        ProtocolType testProtocol = new ProtocolType("testDecodePartial".getBytes());
         ProtocolManager.registerProtocolIfAbsent(testProtocol, new TestProtocol());
         ProtocolDecoder protocolDecoder = new ProtocolDecoder();
 
@@ -100,5 +102,30 @@ public class ProtocolDecoderTest {
         Assert.assertTrue(!channel.inboundMessages().isEmpty());
         Message message = (Message) channel.inboundMessages().poll();
         Assert.assertEquals(message, decodeMockMessage);
+    }
+
+
+    @Test
+    public void testDecodeException() {
+        ProtocolType testProtocol = new ProtocolType("testDecodeException".getBytes());
+        ProtocolManager.registerProtocolIfAbsent(testProtocol, new TestProtocol());
+        ProtocolDecoder protocolDecoder = new ProtocolDecoder();
+
+        EmbeddedChannel channel = new EmbeddedChannel();
+        channel.pipeline().addLast(protocolDecoder);
+        channel.attr(Connection.PROTOCOL).set(testProtocol);
+
+
+        ByteBuf byteBuf = Unpooled.wrappedBuffer(testProtocol.protocolCode());
+        // Bad header
+        ByteBuf invalidByteBuf = byteBuf.copy();
+        invalidByteBuf.setByte(0, byteBuf.getByte(0) + 1);
+
+        DecoderException decoderException = Assert.assertThrows(DecoderException.class,
+                () -> {
+                    channel.writeInbound(invalidByteBuf);
+                });
+        Assert.assertTrue(decoderException.getCause() instanceof CodecException);
+
     }
 }

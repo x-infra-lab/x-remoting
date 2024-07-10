@@ -1,6 +1,7 @@
 package io.github.xinfra.lab.remoting.rpc;
 
 import io.github.xinfra.lab.remoting.codec.MessageEncoder;
+import io.github.xinfra.lab.remoting.exception.CodecException;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.RpcMessage;
 import io.github.xinfra.lab.remoting.message.RpcResponseMessage;
@@ -11,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RpcMessageEncoder implements MessageEncoder {
     @Override
-    public void encode(ChannelHandlerContext ctx, Message msg, ByteBuf out) {
+    public void encode(ChannelHandlerContext ctx, Message msg, ByteBuf out) throws Exception {
         if (msg instanceof RpcMessage) {
             RpcMessage rpcMessage = (RpcMessage) msg;
             out.writeBytes(msg.protocolType().protocolCode());
@@ -36,9 +37,10 @@ public class RpcMessageEncoder implements MessageEncoder {
             if (rpcMessage.getContentLength() > 0) {
                 out.writeBytes(rpcMessage.getContentData());
             }
-            
         } else {
-            log.warn("Message type not support:{}", msg.getClass());
+            String errorMsg = "Message type not support:" + msg.getClass();
+            log.warn(errorMsg);
+            throw new CodecException(errorMsg);
         }
     }
 }

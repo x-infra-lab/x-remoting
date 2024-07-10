@@ -1,6 +1,7 @@
 package io.github.xinfra.lab.remoting.rpc;
 
 import io.github.xinfra.lab.remoting.codec.MessageDecoder;
+import io.github.xinfra.lab.remoting.exception.CodecException;
 import io.github.xinfra.lab.remoting.message.MessageType;
 import io.github.xinfra.lab.remoting.message.RpcHeartbeatRequestMessage;
 import io.github.xinfra.lab.remoting.message.RpcMessage;
@@ -23,7 +24,7 @@ public class RpcMessageDecoder implements MessageDecoder {
     private int minLength = Math.min(RpcProtocol.RESPONSE_HEADER_LEN, RpcProtocol.REQUEST_HEADER_LEN);
 
     @Override
-    public void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
+    public void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
         if (in.readableBytes() >= minLength) {
             in.markReaderIndex();
             in.skipBytes(protocolCodeLength);
@@ -72,7 +73,7 @@ public class RpcMessageDecoder implements MessageDecoder {
                         break;
                     default:
                         log.warn("MessageType not support:{}", messageType);
-                        throw new RuntimeException("MessageType not support:" + messageType);
+                        throw new CodecException("MessageType not support:" + messageType);
 
                 }
 
