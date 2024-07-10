@@ -56,8 +56,8 @@ public class HeartBeatTest {
         AtomicReference<Message> messageAtomicReference = new AtomicReference<>();
         baseRemoting.asyncCall(heartbeatRequestMessage, connection, 1000,
                 message -> {
-                    countDownLatch.countDown();
                     messageAtomicReference.set(message);
+                    countDownLatch.countDown();
                 }
         );
 
