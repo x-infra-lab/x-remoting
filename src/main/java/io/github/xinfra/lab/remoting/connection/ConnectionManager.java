@@ -16,4 +16,6 @@ public interface ConnectionManager extends LifeCycle {
     void removeAndClose(Connection connection);
 
     void add(Connection connection);
+
+    void reconnection(Endpoint endpoint) throws RemotingException;
 }

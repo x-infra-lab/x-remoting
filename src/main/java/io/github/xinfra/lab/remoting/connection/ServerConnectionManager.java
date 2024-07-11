@@ -10,4 +10,8 @@ public class ServerConnectionManager extends AbstractConnectionManager {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public void reconnection(Endpoint endpoint) throws RemotingException {
+        throw new UnsupportedOperationException();
+    }
 }

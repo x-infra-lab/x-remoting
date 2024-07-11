@@ -1,6 +1,8 @@
 package io.github.xinfra.lab.remoting.connection;
 
 
+import io.github.xinfra.lab.remoting.Endpoint;
+import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.processor.UserProcessor;
 import io.netty.channel.ChannelHandler;
 
@@ -42,5 +44,10 @@ public class ClientConnectionManager extends AbstractConnectionManager {
         channelHandlers.add(new ProtocolHandler(userProcessors));
         channelHandlers.add(new ConnectionEventHandler(this));
         return channelHandlers;
+    }
+
+    @Override
+    public void reconnection(Endpoint endpoint) throws RemotingException {
+        // todo
     }
 }

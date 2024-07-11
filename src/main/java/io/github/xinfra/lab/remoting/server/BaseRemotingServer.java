@@ -63,7 +63,6 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 
     public BaseRemotingServer(InetSocketAddress localAddress,
                               boolean manageConnection) {
-        this.connectionEventHandler = new ConnectionEventHandler();
         this.encoder = new ProtocolEncoder();
         this.decoder = new ProtocolDecoder();
         this.handler = new ProtocolHandler(userProcessors);
@@ -73,6 +72,9 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
         this.manageConnection = manageConnection;
         if (this.manageConnection) {
             this.connectionManager = new ServerConnectionManager();
+            this.connectionEventHandler = new ConnectionEventHandler(this.connectionManager);
+        }else {
+            this.connectionEventHandler = new ConnectionEventHandler();
         }
     }
 
