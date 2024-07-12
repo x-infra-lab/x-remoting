@@ -4,7 +4,5 @@ public enum ConnectionEvent {
 
     CONNECT,
     CLOSE,
-    EXCEPTION,
-
 
 }

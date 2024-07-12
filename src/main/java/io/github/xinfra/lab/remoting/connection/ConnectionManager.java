@@ -4,6 +4,8 @@ import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.common.LifeCycle;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 
+import java.util.concurrent.Future;
+
 
 public interface ConnectionManager extends LifeCycle {
 
@@ -17,5 +19,5 @@ public interface ConnectionManager extends LifeCycle {
 
     void add(Connection connection);
 
-    void reconnection(Endpoint endpoint) throws RemotingException;
+    Future<Void> reconnect(Endpoint endpoint) throws RemotingException;
 }

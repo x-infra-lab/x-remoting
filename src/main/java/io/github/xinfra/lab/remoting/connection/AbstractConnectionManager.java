@@ -9,6 +9,7 @@ import org.apache.commons.lang3.Validate;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Future;
 
 public abstract class AbstractConnectionManager extends AbstractLifeCycle implements ConnectionManager {
 
@@ -21,6 +22,7 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
     private ConnectionSelectStrategy connectionSelectStrategy = new RoundRobinConnectionSelectStrategy();
 
     private ConnectionManagerConfig config = new ConnectionManagerConfig();
+
 
     public AbstractConnectionManager() {
     }
@@ -123,5 +125,11 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
             connections.remove(endpoint);
         }
 
+    }
+
+    @Override
+    public Future<Void> reconnect(Endpoint endpoint) throws RemotingException {
+        // todo
+        return null;
     }
 }

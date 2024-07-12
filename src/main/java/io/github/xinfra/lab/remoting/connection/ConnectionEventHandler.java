@@ -59,7 +59,11 @@ public class ConnectionEventHandler extends ChannelDuplexHandler {
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof ConnectionEvent) {
-            // TODO consider server side do not manage connections
+            Connection connection = ctx.channel().attr(CONNECTION).get();
+            ConnectionEvent connectionEvent = (ConnectionEvent) evt;
+            if (connectionEvent == ConnectionEvent.CLOSE) {
+                connectionManager.reconnect(connection.getEndpoint());
+            }
         } else {
             super.userEventTriggered(ctx, evt);
         }
@@ -75,6 +79,5 @@ public class ConnectionEventHandler extends ChannelDuplexHandler {
                 localAddress, remoteAddress, cause);
 
         channel.close();
-        userEventTriggered(ctx, ConnectionEvent.EXCEPTION);
     }
 }
