@@ -26,13 +26,14 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 
 @Slf4j
 public class DefaultConnectionFactory implements ConnectionFactory {
 
 
-    private List<ChannelHandler> channelHandlers;
+    private List<Supplier<ChannelHandler>> channelHandlerSuppliers;
 
     private Bootstrap bootstrap;
 
@@ -41,23 +42,23 @@ public class DefaultConnectionFactory implements ConnectionFactory {
     // todo EpollUtils
     private static final EventLoopGroup workerGroup = Epoll.isAvailable() ?
             new EpollEventLoopGroup(Runtime.getRuntime().availableProcessors(),
-                    new NamedThreadFactory("Remoting-Server-Worker")) :
+                    new NamedThreadFactory("Remoting-Client-Worker")) :
             new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(),
-                    new NamedThreadFactory("Remoting-Server-Worker"));
+                    new NamedThreadFactory("Remoting-Client-Worker"));
 
     private static final Class<? extends SocketChannel> channelClass = Epoll.isAvailable() ?
             EpollSocketChannel.class : NioSocketChannel.class;
 
-    public DefaultConnectionFactory(List<ChannelHandler> channelHandlers) {
-        this(channelHandlers, new ConnectionConfig());
+    public DefaultConnectionFactory(List<Supplier<ChannelHandler>> channelHandlerSuppliers) {
+        this(channelHandlerSuppliers, new ConnectionConfig());
     }
 
-    public DefaultConnectionFactory(List<ChannelHandler> channelHandlers,
+    public DefaultConnectionFactory(List<Supplier<ChannelHandler>> channelHandlerSuppliers,
                                     ConnectionConfig connectionConfig) {
-        Validate.notNull(channelHandlers, "channelHandlers can not be null");
+        Validate.notNull(channelHandlerSuppliers, "channelHandlers can not be null");
         Validate.notNull(connectionConfig, "connectionConfig can not be null");
         this.connectionConfig = connectionConfig;
-        this.channelHandlers = channelHandlers;
+        this.channelHandlerSuppliers = channelHandlerSuppliers;
 
         bootstrap = new Bootstrap();
         bootstrap.group(workerGroup)
@@ -67,7 +68,9 @@ public class DefaultConnectionFactory implements ConnectionFactory {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
-                        channelHandlers.forEach(pipeline::addLast);
+                        for (Supplier<ChannelHandler> supplier : channelHandlerSuppliers) {
+                            pipeline.addLast(supplier.get());
+                        }
 
                         if (connectionConfig.isIdleSwitch()) {
                             pipeline.addLast("idleStateHandler", new IdleStateHandler(connectionConfig.getIdleReaderTimeout(),

@@ -3,13 +3,19 @@ package io.github.xinfra.lab.remoting.connection;
 import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.annotation.OnlyForTest;
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
+import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import lombok.Getter;
 import org.apache.commons.lang3.Validate;
 
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractConnectionManager extends AbstractLifeCycle implements ConnectionManager {
 
@@ -22,6 +28,11 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
     private ConnectionSelectStrategy connectionSelectStrategy = new RoundRobinConnectionSelectStrategy();
 
     private ConnectionManagerConfig config = new ConnectionManagerConfig();
+
+    private ExecutorService reconnector = new ThreadPoolExecutor(1, 1,
+            0L, TimeUnit.MILLISECONDS,
+            new ArrayBlockingQueue<>(1024),
+            new NamedThreadFactory("Reconnector-Worker"));
 
 
     public AbstractConnectionManager() {
@@ -38,7 +49,7 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
         ConnectionHolder connectionHolder = connections.get(endpoint);
         if (connectionHolder == null) {
             connectionHolder = createConnectionHolder(endpoint);
-            createConnectionForHolder(endpoint, connectionHolder);
+            createConnectionForHolder(endpoint, connectionHolder, config.getConnectionNumPreEndpoint());
         }
 
         return connectionHolder.get();
@@ -107,8 +118,8 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
         return connectionHolder;
     }
 
-    private void createConnectionForHolder(Endpoint endpoint, ConnectionHolder connectionHolder) throws RemotingException {
-        for (int i = 0; i < config.getConnectionNumPreEndpoint(); i++) {
+    private void createConnectionForHolder(Endpoint endpoint, ConnectionHolder connectionHolder, int size) throws RemotingException {
+        for (int i = 0; i < size; i++) {
             Connection connection = connectionFactory.create(endpoint);
             connectionHolder.add(connection);
         }
@@ -128,8 +139,28 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
     }
 
     @Override
-    public Future<Void> reconnect(Endpoint endpoint) throws RemotingException {
-        // todo
-        return null;
+    public synchronized void reconnect(Endpoint endpoint) throws RemotingException {
+        ConnectionHolder connectionHolder = connections.get(endpoint);
+        if (connectionHolder == null) {
+            connectionHolder = createConnectionHolder(endpoint);
+            createConnectionForHolder(endpoint, connectionHolder, config.getConnectionNumPreEndpoint());
+        } else {
+            int needCreateNum = config.getConnectionNumPreEndpoint() - connectionHolder.size();
+            if (needCreateNum > 0) {
+                createConnectionForHolder(endpoint, connectionHolder, needCreateNum);
+            }
+        }
+    }
+
+    @Override
+    public Future<Void> asyncReconnect(Endpoint endpoint) {
+        Callable<Void> callable = new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                reconnect(endpoint);
+                return null;
+            }
+        };
+        return reconnector.submit(callable);
     }
 }

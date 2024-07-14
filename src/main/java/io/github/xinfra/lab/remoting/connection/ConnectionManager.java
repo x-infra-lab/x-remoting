@@ -19,5 +19,7 @@ public interface ConnectionManager extends LifeCycle {
 
     void add(Connection connection);
 
-    Future<Void> reconnect(Endpoint endpoint) throws RemotingException;
+    void reconnect(Endpoint endpoint) throws RemotingException;
+
+    Future<Void> asyncReconnect(Endpoint endpoint);
 }

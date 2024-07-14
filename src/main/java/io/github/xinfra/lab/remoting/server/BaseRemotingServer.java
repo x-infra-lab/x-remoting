@@ -53,8 +53,6 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
             EpollServerSocketChannel.class : NioServerSocketChannel.class;
 
     private ChannelHandler connectionEventHandler;
-    private ChannelHandler encoder;
-    private ChannelHandler decoder;
     private ChannelHandler handler;
     private ChannelHandler serverIdleHandler = new ServerIdleHandler();
 
@@ -63,8 +61,6 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 
     public BaseRemotingServer(InetSocketAddress localAddress,
                               boolean manageConnection) {
-        this.encoder = new ProtocolEncoder();
-        this.decoder = new ProtocolDecoder();
         this.handler = new ProtocolHandler(userProcessors);
 
         this.localAddress = localAddress;
@@ -106,8 +102,8 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
                                 ChannelPipeline pipeline = channel.pipeline();
 
                                 pipeline.addLast("connectionEventHandler", connectionEventHandler);
-                                pipeline.addLast("encoder", encoder);
-                                pipeline.addLast("decoder", decoder);
+                                pipeline.addLast("encoder", new ProtocolEncoder());
+                                pipeline.addLast("decoder", new ProtocolDecoder());
 
                                 // todo: use config
                                 pipeline.addLast("idleStateHandler", new IdleStateHandler(60000, 60000, 0, TimeUnit.MILLISECONDS));

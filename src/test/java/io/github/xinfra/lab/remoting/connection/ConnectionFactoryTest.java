@@ -10,8 +10,9 @@ import org.junit.Test;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
+import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import static io.github.xinfra.lab.remoting.rpc.RpcProtocol.RPC;
 
@@ -35,9 +36,9 @@ public class ConnectionFactoryTest extends ServerBase1Test {
 
     @Test
     public void testCreateSuccess() throws RemotingException {
-        List<ChannelHandler> channelHandlers = new ArrayList<>();
-        channelHandlers.add(new HttpClientCodec());
-        ConnectionFactory connectionFactory = new DefaultConnectionFactory(channelHandlers);
+        List<Supplier<ChannelHandler>> channelHandlerSuppliers = new ArrayList<>();
+        channelHandlerSuppliers.add(() -> new HttpClientCodec());
+        ConnectionFactory connectionFactory = new DefaultConnectionFactory(channelHandlerSuppliers);
 
         Connection connection = connectionFactory.create(new Endpoint(RPC, remoteAddress, serverPort));
         Assert.assertNotNull(connection);
@@ -46,17 +47,24 @@ public class ConnectionFactoryTest extends ServerBase1Test {
         Assert.assertNotNull(channel);
         Assert.assertTrue(channel.isActive());
 
-        Collection<ChannelHandler> handlers = channel.pipeline().toMap().values();
-        Assert.assertTrue(handlers.containsAll(channelHandlers));
+        List<Class<?>> handlerClassListForPipeline = channel.pipeline().
+                toMap().values().
+                stream().map(v->v.getClass()).
+                collect(Collectors.toList());
+
+        List<Class<?>> handerClassList = channelHandlerSuppliers.stream().map(v -> v.get()).map(v -> v.getClass())
+                .collect(Collectors.toList());
+
+        Assert.assertTrue(handlerClassListForPipeline.containsAll(handerClassList));
         Assert.assertEquals(((InetSocketAddress) channel.remoteAddress()).getHostName(), remoteAddress);
 
     }
 
     @Test
-    public void testCreateFail()  {
-        List<ChannelHandler> channelHandlers = new ArrayList<>();
-        channelHandlers.add(new HttpClientCodec());
-        ConnectionFactory connectionFactory = new DefaultConnectionFactory(channelHandlers);
+    public void testCreateFail() {
+        List<Supplier<ChannelHandler>> channelHandlerSuppliers = new ArrayList<>();
+        channelHandlerSuppliers.add(() -> new HttpClientCodec());
+        ConnectionFactory connectionFactory = new DefaultConnectionFactory(channelHandlerSuppliers);
 
         Endpoint invalidEndpoint = new Endpoint(RPC, remoteAddress, serverPort + 1);
         Assert.assertThrows(RemotingException.class, () -> {

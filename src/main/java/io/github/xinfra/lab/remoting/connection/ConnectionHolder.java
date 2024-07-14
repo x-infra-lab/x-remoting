@@ -34,4 +34,8 @@ public class ConnectionHolder {
             connection.close();
         }
     }
+
+    public int size() {
+        return connections.size();
+    }
 }
