@@ -7,6 +7,8 @@ import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import lombok.Getter;
 import org.apache.commons.lang3.Validate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -19,6 +21,7 @@ import java.util.concurrent.TimeUnit;
 
 public abstract class AbstractConnectionManager extends AbstractLifeCycle implements ConnectionManager {
 
+    private static final Logger log = LoggerFactory.getLogger(AbstractConnectionManager.class);
     @OnlyForTest
     @Getter
     public Map<Endpoint, ConnectionHolder> connections = new ConcurrentHashMap<>();
@@ -157,7 +160,12 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
         Callable<Void> callable = new Callable<Void>() {
             @Override
             public Void call() throws Exception {
-                reconnect(endpoint);
+                try {
+                    reconnect(endpoint);
+                } catch (Exception e) {
+                    log.warn("reconnect endpoint:{} fail", endpoint, e);
+                    throw e;
+                }
                 return null;
             }
         };
