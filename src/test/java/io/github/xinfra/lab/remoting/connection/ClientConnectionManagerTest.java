@@ -8,7 +8,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 
 import static io.github.xinfra.lab.remoting.rpc.RpcProtocol.RPC;
 import static org.mockito.Mockito.doReturn;
@@ -185,9 +188,6 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
 
     @Test
     public void testRemoveAndClose() throws RemotingException {
-
-
-
         // valid endpoint
         Endpoint endpoint = new Endpoint(RPC, remoteAddress, serverPort);
         Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
@@ -210,5 +210,64 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
 
     }
 
+    @Test
+    public void testReconnect1() throws RemotingException {
+        // valid endpoint
+        Endpoint endpoint = new Endpoint(RPC, remoteAddress, serverPort);
+        Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
+        Assert.assertNotNull(connection);
+
+        connectionManager.removeAndClose(connection);
+        Map<Endpoint, ConnectionHolder> connections =
+                ((ClientConnectionManager) connectionManager).getConnections();
+        Assert.assertTrue(!connections.containsKey(endpoint));
+
+        connectionManager.reconnect(endpoint);
+        Assert.assertTrue(connections.containsKey(endpoint));
+        Connection connection1 = connectionManager.get(endpoint);
+        Assert.assertNotNull(connection1);
+    }
+
+    @Test
+    public void testReconnect2() throws RemotingException {
+        int numPreEndpoint = 3;
+        ConnectionManagerConfig connectionManagerConfig = new ConnectionManagerConfig();
+        connectionManagerConfig.setConnectionNumPreEndpoint(numPreEndpoint);
+        connectionManager = new ClientConnectionManager(new ConcurrentHashMap<>(), connectionManagerConfig);
+        connectionManager.startup();
+
+        // valid endpoint
+        Endpoint endpoint = new Endpoint(RPC, remoteAddress, serverPort);
+        Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
+
+        Map<Endpoint, ConnectionHolder> connections = ((ClientConnectionManager) connectionManager).connections;
+        ConnectionHolder connectionHolder = connections.get(endpoint);
+        Assert.assertEquals(connectionHolder.size(), numPreEndpoint);
+
+        connectionManager.removeAndClose(connection);
+        Assert.assertEquals(connectionHolder.size(), numPreEndpoint - 1);
+
+        connectionManager.reconnect(endpoint);
+        Assert.assertEquals(connectionHolder.size(), numPreEndpoint);
+    }
+
+    @Test
+    public void testAsyncReconnect() throws ExecutionException, InterruptedException, RemotingException {
+        // valid endpoint
+        Endpoint endpoint = new Endpoint(RPC, remoteAddress, serverPort);
+        Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
+        Assert.assertNotNull(connection);
+
+        connectionManager.removeAndClose(connection);
+        Map<Endpoint, ConnectionHolder> connections = ((ClientConnectionManager) connectionManager).connections;
+        Assert.assertTrue(!connections.containsKey(endpoint));
+
+        Future<Void> future = connectionManager.asyncReconnect(endpoint);
+        future.get();
+
+        Assert.assertTrue(connections.containsKey(endpoint));
+        Connection connection1 = connectionManager.get(endpoint);
+        Assert.assertNotNull(connection1);
+    }
 
 }

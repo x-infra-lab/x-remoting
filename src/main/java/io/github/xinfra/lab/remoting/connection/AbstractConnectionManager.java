@@ -24,7 +24,7 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
     private static final Logger log = LoggerFactory.getLogger(AbstractConnectionManager.class);
     @OnlyForTest
     @Getter
-    public Map<Endpoint, ConnectionHolder> connections = new ConcurrentHashMap<>();
+    protected Map<Endpoint, ConnectionHolder> connections = new ConcurrentHashMap<>();
 
     protected ConnectionFactory connectionFactory;
 
