@@ -35,47 +35,38 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
     @After
     public void after() {
         connectionManager.shutdown();
-
     }
 
     @Test
     public void testNewInstance() {
-
         Assert.assertThrows(NullPointerException.class,
                 () -> {
                     new ClientConnectionManager(null);
                 }
         );
-
     }
 
 
     @Test
     public void testGetOrCreateIfAbsent() throws RemotingException {
-
         Connection connection1 = connectionManager.getOrCreateIfAbsent(new Endpoint(RPC, remoteAddress, serverPort));
         Assert.assertNotNull(connection1);
 
         Connection connection2 = connectionManager.getOrCreateIfAbsent(new Endpoint(RPC, remoteAddress, serverPort));
         Assert.assertTrue(connection1 == connection2);
-
     }
 
     @Test
     public void testGetOrCreateIfAbsentFail() {
-
         // invalid endpoint
         Endpoint endpoint = new Endpoint(RPC, remoteAddress, serverPort + 1);
         Assert.assertThrows(RemotingException.class, () -> {
             connectionManager.getOrCreateIfAbsent(endpoint);
         });
-
     }
 
     @Test
     public void testGet() throws RemotingException {
-
-
         // valid endpoint
         Endpoint endpoint = new Endpoint(RPC, remoteAddress, serverPort);
 
@@ -91,14 +82,11 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
         Assert.assertNotNull(connection1);
 
         Assert.assertTrue(connection1 == connection2);
-
     }
 
 
     @Test
     public void testGetFail() throws RemotingException {
-
-
         // invalid endpoint
         Endpoint endpoint = new Endpoint(RPC, remoteAddress, serverPort + 1);
 
@@ -115,13 +103,10 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
 
         connection1 = connectionManager.get(endpoint);
         Assert.assertNull(connection1);
-
     }
 
     @Test
     public void testCheck() throws RemotingException {
-
-
         Assert.assertThrows(NullPointerException.class, () -> {
             connectionManager.check(null);
         });
@@ -130,14 +115,10 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
         Endpoint endpoint = new Endpoint(RPC, remoteAddress, serverPort);
         Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
         connectionManager.check(connection);
-
-
     }
 
     @Test
     public void testCheckWritable() throws RemotingException {
-
-
         // valid endpoint
         Endpoint endpoint = new Endpoint(RPC, remoteAddress, serverPort);
         Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
@@ -163,7 +144,6 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
 
     @Test
     public void testCheckActive() throws RemotingException {
-
         // valid endpoint
         Endpoint endpoint = new Endpoint(RPC, remoteAddress, serverPort);
         Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
@@ -183,7 +163,6 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
         });
 
         verify(spyConnectionManager, times(1)).removeAndClose(spyConnection);
-
     }
 
     @Test
@@ -233,7 +212,7 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
         int numPreEndpoint = 3;
         ConnectionManagerConfig connectionManagerConfig = new ConnectionManagerConfig();
         connectionManagerConfig.setConnectionNumPreEndpoint(numPreEndpoint);
-        connectionManager = new ClientConnectionManager(new ConcurrentHashMap<>(), connectionManagerConfig);
+        ConnectionManager connectionManager = new ClientConnectionManager(new ConcurrentHashMap<>(), connectionManagerConfig);
         connectionManager.startup();
 
         // valid endpoint

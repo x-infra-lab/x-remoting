@@ -1,10 +1,15 @@
 package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.Endpoint;
+import io.github.xinfra.lab.remoting.RemotingContext;
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
+import io.github.xinfra.lab.remoting.message.Message;
+import io.github.xinfra.lab.remoting.message.MessageFactory;
+import io.github.xinfra.lab.remoting.message.MessageHandler;
 import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
-import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
+import io.github.xinfra.lab.remoting.protocol.ProtocolType;
+import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.Channel;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.Assert;
@@ -13,27 +18,32 @@ import org.junit.Test;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import static io.github.xinfra.lab.remoting.connection.Connection.CONNECTION;
 import static io.github.xinfra.lab.remoting.connection.Connection.HEARTBEAT_FAIL_COUNT;
 import static io.github.xinfra.lab.remoting.connection.Connection.PROTOCOL;
-import static io.github.xinfra.lab.remoting.rpc.RpcProtocol.RPC;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 
 public class ConnectionTest {
     private Connection connection;
 
+    private ProtocolType test = new ProtocolType("ConnectionTest".getBytes());
+
     @Before
     public void before() {
-        Endpoint endpoint = new Endpoint(RPC, "localhost", 0);
+        Endpoint endpoint = new Endpoint(test, "localhost", 0);
         Channel channel = new EmbeddedChannel();
         connection = new Connection(endpoint, channel);
     }
 
     @Test
     public void testNewInstance() {
-        Endpoint endpoint = new Endpoint(RPC, "localhost", 0);
+        Endpoint endpoint = new Endpoint(test, "localhost", 0);
         Channel channel = new EmbeddedChannel();
         Connection connection = new Connection(endpoint, channel);
 
@@ -88,7 +98,31 @@ public class ConnectionTest {
         Assert.assertEquals(requestIds.size(), times);
 
 
-        ProtocolManager.registerProtocolIfAbsent(RPC, new RpcProtocol());
+        MessageFactory messageFactory = mock(MessageFactory.class);
+        Message message = mock(Message.class);
+        doReturn(message).when(messageFactory).createConnectionClosedMessage(anyInt());
+        doReturn(test).when(message).protocolType();
+        ProtocolManager.registerProtocolIfAbsent(test, new TestProtocol() {
+            @Override
+            public MessageFactory messageFactory() {
+                return messageFactory;
+            }
+
+            @Override
+            public MessageHandler messageHandler() {
+                return new MessageHandler() {
+                    @Override
+                    public Executor executor() {
+                        return Executors.newSingleThreadExecutor();
+                    }
+
+                    @Override
+                    public void handleMessage(RemotingContext remotingContext, Object msg) {
+
+                    }
+                };
+            }
+        });
         connection.onClose();
 
         Assert.assertEquals(0, connection.getInvokeMap().size());

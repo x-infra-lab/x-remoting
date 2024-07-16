@@ -1,26 +1,28 @@
 package io.github.xinfra.lab.remoting.client;
 
+import io.github.xinfra.lab.remoting.RemotingContext;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.message.Message;
+import io.github.xinfra.lab.remoting.message.MessageHandler;
 import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
-import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
+import io.github.xinfra.lab.remoting.protocol.ProtocolType;
+import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timeout;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static io.github.xinfra.lab.remoting.rpc.RpcProtocol.RPC;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -28,15 +30,10 @@ public class InvokeFutureTest {
     private InvokeFuture invokeFuture;
 
     private InvokeFuture newInvokeFuture() {
-
         final int requestId1 = IDGenerator.nextRequestId();
         return new InvokeFuture(requestId1);
     }
 
-    @BeforeClass
-    public static void beforeClass() {
-        ProtocolManager.registerProtocolIfAbsent(RPC, new RpcProtocol());
-    }
 
     @Before
     public void before() {
@@ -122,7 +119,6 @@ public class InvokeFutureTest {
         });
 
         Message message = mock(Message.class);
-        when(message.protocolType()).thenReturn(RPC);
 
         invokeFuture.finish(message);
 
@@ -137,6 +133,24 @@ public class InvokeFutureTest {
 
     @Test
     public void testCallBackAsync() throws InterruptedException {
+        ProtocolType test = new ProtocolType("testCallBackAsync".getBytes());
+        ProtocolManager.registerProtocolIfAbsent(test, new TestProtocol() {
+            @Override
+            public MessageHandler messageHandler() {
+                return new MessageHandler() {
+                    @Override
+                    public Executor executor() {
+                        return Executors.newSingleThreadExecutor();
+                    }
+
+                    @Override
+                    public void handleMessage(RemotingContext remotingContext, Object msg) {
+
+                    }
+                };
+            }
+        });
+
         AtomicBoolean callbackExecuted = new AtomicBoolean(false);
         AtomicInteger callBackExecuteTimes = new AtomicInteger(0);
         CountDownLatch countDownLatch = new CountDownLatch(1);
@@ -152,7 +166,7 @@ public class InvokeFutureTest {
         });
 
         Message message = mock(Message.class);
-        when(message.protocolType()).thenReturn(RPC);
+        when(message.protocolType()).thenReturn(test);
 
         invokeFuture.finish(message);
 

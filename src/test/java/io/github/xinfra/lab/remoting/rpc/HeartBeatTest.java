@@ -10,6 +10,7 @@ import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
+import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,10 +28,15 @@ public class HeartBeatTest {
     private RpcServer rpcServer;
 
     @Before
-    public void beforeClass() {
+    public void before() {
         rpcServer = new RpcServer(findAvailableTcpPort());
         rpcServer.startup();
         rpcServer.registerUserProcessor(new SimpleUserProcessor());
+    }
+
+    @After
+    public void after(){
+        rpcServer.shutdown();
     }
 
 
@@ -39,6 +45,8 @@ public class HeartBeatTest {
         InetSocketAddress remoteAddress = rpcServer.localAddress();
 
         ConnectionManager connectionManager = new ClientConnectionManager(new ConcurrentHashMap<>());
+        connectionManager.startup();
+
         Protocol protocol = ProtocolManager.getProtocol(RPC);
         MessageFactory messageFactory = protocol.messageFactory();
         BaseRemoting baseRemoting = new BaseRemoting(messageFactory);
@@ -63,5 +71,7 @@ public class HeartBeatTest {
 
         countDownLatch.await();
         Assert.assertNotNull(messageAtomicReference.get());
+
+        connectionManager.shutdown();
     }
 }

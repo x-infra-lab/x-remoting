@@ -37,8 +37,6 @@ public class ServerConnectionManagerTest extends ServerBase1Test {
 
     @Test
     public void testGetOrCreateIfAbsent() {
-
-
         Assert.assertThrows(UnsupportedOperationException.class, () -> {
             connectionManager.getOrCreateIfAbsent(new Endpoint(RPC, remoteAddress, serverPort));
         });
@@ -48,8 +46,6 @@ public class ServerConnectionManagerTest extends ServerBase1Test {
 
     @Test
     public void testGet1() throws RemotingException {
-
-
         // valid endpoint
         Endpoint endpoint = new Endpoint(RPC, remoteAddress, serverPort);
 
@@ -63,7 +59,6 @@ public class ServerConnectionManagerTest extends ServerBase1Test {
 
         connection1 = connectionManager.get(endpoint);
         Assert.assertNull(connection1);
-
     }
 
     @Test

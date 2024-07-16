@@ -1,5 +1,7 @@
 package io.github.xinfra.lab.remoting.connection;
 
+import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
+import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -12,6 +14,7 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 
 import static io.github.xinfra.lab.remoting.common.TestSocketUtils.findAvailableTcpPort;
+import static io.github.xinfra.lab.remoting.rpc.RpcProtocol.RPC;
 
 public class ServerBase1Test {
 

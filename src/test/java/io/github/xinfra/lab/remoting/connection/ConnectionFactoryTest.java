@@ -49,7 +49,7 @@ public class ConnectionFactoryTest extends ServerBase1Test {
 
         List<Class<?>> handlerClassListForPipeline = channel.pipeline().
                 toMap().values().
-                stream().map(v->v.getClass()).
+                stream().map(v -> v.getClass()).
                 collect(Collectors.toList());
 
         List<Class<?>> handerClassList = channelHandlerSuppliers.stream().map(v -> v.get()).map(v -> v.getClass())
@@ -57,7 +57,7 @@ public class ConnectionFactoryTest extends ServerBase1Test {
 
         Assert.assertTrue(handlerClassListForPipeline.containsAll(handerClassList));
         Assert.assertEquals(((InetSocketAddress) channel.remoteAddress()).getHostName(), remoteAddress);
-
+        connection.close();
     }
 
     @Test
