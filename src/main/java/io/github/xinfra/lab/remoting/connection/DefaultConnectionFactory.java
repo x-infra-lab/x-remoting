@@ -81,15 +81,17 @@ public class DefaultConnectionFactory implements ConnectionFactory {
                     @Override
                     protected void initChannel(SocketChannel ch) throws Exception {
                         ChannelPipeline pipeline = ch.pipeline();
-                        for (Supplier<ChannelHandler> supplier : channelHandlerSuppliers) {
-                            pipeline.addLast(supplier.get());
-                        }
-
                         if (connectionConfig.isIdleSwitch()) {
                             pipeline.addLast("idleStateHandler", new IdleStateHandler(connectionConfig.getIdleReaderTimeout(),
                                     connectionConfig.getIdleWriterTimeout(), connectionConfig.getIdleAllTimeout(),
                                     TimeUnit.MILLISECONDS));
                         }
+                        
+                        for (Supplier<ChannelHandler> supplier : channelHandlerSuppliers) {
+                            pipeline.addLast(supplier.get());
+                        }
+
+
                         // todo FlushConsolidationHandler
                     }
                 });

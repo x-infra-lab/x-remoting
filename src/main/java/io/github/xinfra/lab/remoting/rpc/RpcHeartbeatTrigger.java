@@ -47,6 +47,7 @@ public class RpcHeartbeatTrigger implements HeartbeatTrigger {
         baseRemoting.asyncCall(heartbeatRequestMessage, connection, heartbeatTimeoutMills,
                 message -> {
                     RpcResponseMessage heartbeatResponseMessage = (RpcResponseMessage) message;
+                    // todo remoteAddress is null
                     SocketAddress remoteAddress = heartbeatResponseMessage.getRemoteAddress();
 
                     if (heartbeatResponseMessage.getStatus() == ResponseStatus.SUCCESS.getCode()) {
