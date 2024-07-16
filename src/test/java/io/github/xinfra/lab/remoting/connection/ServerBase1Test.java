@@ -15,11 +15,11 @@ import static io.github.xinfra.lab.remoting.common.TestSocketUtils.findAvailable
 
 public class ServerBase1Test {
 
-   public static int serverPort;
+    public static int serverPort;
 
-   public static String remoteAddress = "localhost";
+    public static String remoteAddress = "localhost";
 
-   public static Channel serverChannel;
+    public static Channel serverChannel;
 
     @BeforeClass
     public static void beforeClass() throws InterruptedException {
@@ -38,7 +38,7 @@ public class ServerBase1Test {
     @AfterClass
     public static void afterClass() throws InterruptedException {
         if (serverChannel != null) {
-            serverChannel.close().sync();
+            Assert.assertTrue(serverChannel.close().sync().isSuccess());
         }
     }
 }

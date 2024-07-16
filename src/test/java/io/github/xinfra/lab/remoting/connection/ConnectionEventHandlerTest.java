@@ -95,7 +95,7 @@ public class ConnectionEventHandlerTest extends ServerBase1Test {
 
     }
 
-//    @Test
+    @Test
     public void testChannelClose_withConnectionManager() throws Exception {
         ConnectionManager connectionManager = new ClientConnectionManager(new ConcurrentHashMap<>());
         connectionManager.startup();
@@ -119,9 +119,11 @@ public class ConnectionEventHandlerTest extends ServerBase1Test {
         channelFuture.await();
         Assert.assertTrue(channelFuture.isDone());
 
+        // todo
+        TimeUnit.SECONDS.sleep(5);
 
-        verify(connectionEventHandler, times(2)).close(any(), any());
-        verify(connection, times(2)).onClose();
+        verify(connectionEventHandler, times(1)).close(any(), any());
+        verify(connection, times(1)).onClose();
         verify(connectionEventHandler, times(1)).channelInactive(any());
         verify(connectionManager, times(1)).removeAndClose(eq(connection));
 
@@ -132,7 +134,7 @@ public class ConnectionEventHandlerTest extends ServerBase1Test {
     }
 
 
-//    @Test
+    @Test
     public void testChannelInactive_withConnectionManager() throws Exception {
         ConnectionManager connectionManager = new ClientConnectionManager(new ConcurrentHashMap<>());
         connectionManager.startup();
@@ -156,6 +158,8 @@ public class ConnectionEventHandlerTest extends ServerBase1Test {
         Assert.assertTrue(channelFuture.isDone());
 
         // todo
+        TimeUnit.SECONDS.sleep(5);
+
         verify(connectionEventHandler, times(2)).close(any(), any());
         verify(connection, times(2)).onClose();
 
@@ -168,7 +172,7 @@ public class ConnectionEventHandlerTest extends ServerBase1Test {
 
     }
 
-//    @Test
+    @Test
     public void testChannelExceptionCaught_withConnectionManager() throws Exception {
         ConnectionManager connectionManager = new ClientConnectionManager(new ConcurrentHashMap<>());
         connectionManager.startup();
