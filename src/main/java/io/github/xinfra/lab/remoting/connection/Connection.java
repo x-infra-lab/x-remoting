@@ -17,6 +17,7 @@ import org.apache.commons.lang3.Validate;
 
 import java.net.SocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
 public class Connection {
@@ -37,6 +38,8 @@ public class Connection {
 
     @Getter
     private Endpoint endpoint;
+
+    private final AtomicBoolean closed = new AtomicBoolean(false);
 
 
     public Connection(Endpoint endpoint, Channel channel) {
@@ -64,13 +67,16 @@ public class Connection {
     }
 
     public ChannelFuture close() {
-        return channel.close().addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
-                log.info("close connection to remote address:{} success:{} fail cause:{}",
-                        channel.remoteAddress(), future.isSuccess(), future.cause());
-            }
-        });
+        if (closed.compareAndSet(false, true)) {
+            return channel.close().addListener(new ChannelFutureListener() {
+                @Override
+                public void operationComplete(ChannelFuture future) throws Exception {
+                    log.info("close connection to remote address:{} success:{} fail cause:{}",
+                            channel.remoteAddress(), future.isSuccess(), future.cause());
+                }
+            });
+        }
+        return channel.newSucceededFuture();
     }
 
     public void onClose() {

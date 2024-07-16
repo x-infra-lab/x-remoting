@@ -69,14 +69,10 @@ public class ConnectionTest {
 
     @Test
     public void testCloseConnection() throws InterruptedException {
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-        connection.close().addListener(future -> {
-            Assert.assertTrue(future.isSuccess());
-            countDownLatch.countDown();
-        });
+        connection.close().sync();
+        Assert.assertFalse(connection.getChannel().isActive());
 
-        countDownLatch.await(5, TimeUnit.SECONDS);
-        Assert.assertTrue(countDownLatch.getCount() < 1);
+        connection.close().sync();
         Assert.assertFalse(connection.getChannel().isActive());
     }
 
