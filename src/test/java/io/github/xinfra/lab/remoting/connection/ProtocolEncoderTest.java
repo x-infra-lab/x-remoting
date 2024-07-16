@@ -47,9 +47,8 @@ public class ProtocolEncoderTest {
         Protocol protocol = ProtocolManager.getProtocol(testProtocol);
         ((TestProtocol) protocol).setTestMessageEncoder(messageEncoder);
 
-        boolean written = channel.writeOutbound(message);
-        Assert.assertTrue(written);
-        Assert.assertTrue(!channel.outboundMessages().isEmpty());
+        channel.writeOutbound(message);
+        Assert.assertTrue(channel.finish());
         ByteBuf byteBuf = (ByteBuf) channel.outboundMessages().poll();
         Assert.assertNotEquals(Unpooled.EMPTY_BUFFER, byteBuf);
 

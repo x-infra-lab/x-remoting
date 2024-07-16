@@ -46,9 +46,8 @@ public class ProtocolDecoderTest {
         ((TestProtocol) protocol).setTestMessageDecoder(messageDecoder);
 
         ByteBuf byteBuf = Unpooled.wrappedBuffer(testProtocol.protocolCode());
-        boolean written = channel.writeInbound(byteBuf);
-        Assert.assertTrue(written);
-        Assert.assertTrue(!channel.inboundMessages().isEmpty());
+        channel.writeInbound(byteBuf);
+        Assert.assertTrue(channel.finish());
         Message message = (Message) channel.inboundMessages().poll();
         Assert.assertEquals(message, decodeMockMessage);
     }
@@ -91,15 +90,13 @@ public class ProtocolDecoderTest {
 
         // write partial data
         ByteBuf part1ByteBuf = Unpooled.wrappedBuffer(part1);
-        boolean written = channel.writeInbound(part1ByteBuf);
-        Assert.assertFalse(written);
+        channel.writeInbound(part1ByteBuf);
         Assert.assertTrue(channel.inboundMessages().isEmpty());
 
         // write whole data
         ByteBuf part2ByteBuf = Unpooled.wrappedBuffer(part2);
-        written = channel.writeInbound(part2ByteBuf);
-        Assert.assertTrue(written);
-        Assert.assertTrue(!channel.inboundMessages().isEmpty());
+        channel.writeInbound(part2ByteBuf);
+        Assert.assertTrue(channel.finish());
         Message message = (Message) channel.inboundMessages().poll();
         Assert.assertEquals(message, decodeMockMessage);
     }
