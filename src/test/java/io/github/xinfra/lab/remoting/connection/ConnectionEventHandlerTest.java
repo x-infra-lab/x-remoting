@@ -1,23 +1,23 @@
 package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.Endpoint;
+import io.github.xinfra.lab.remoting.message.HeartbeatTrigger;
 import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
-import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
-import io.netty.channel.Channel;
+import io.github.xinfra.lab.remoting.protocol.ProtocolType;
+import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.Assert;
 import org.junit.Test;
 
-import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import static io.github.xinfra.lab.remoting.connection.Connection.CONNECTION;
-import static io.github.xinfra.lab.remoting.rpc.RpcProtocol.RPC;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -25,8 +25,20 @@ import static org.mockito.Mockito.verify;
 
 public class ConnectionEventHandlerTest extends ServerBase1Test {
 
+    private static ProtocolType test = new ProtocolType("ConnectionEventHandlerTest".getBytes());
+
     static {
-        ProtocolManager.registerProtocolIfAbsent(RPC, new RpcProtocol());
+        ProtocolManager.registerProtocolIfAbsent(test, new TestProtocol() {
+            @Override
+            public HeartbeatTrigger heartbeatTrigger() {
+                return new HeartbeatTrigger() {
+                    @Override
+                    public void triggerHeartBeat(ChannelHandlerContext ctx) {
+                        // do nothing
+                    }
+                };
+            }
+        });
     }
 
     @Test
@@ -91,20 +103,17 @@ public class ConnectionEventHandlerTest extends ServerBase1Test {
         embeddedChannel.pipeline().fireExceptionCaught(new RuntimeException("testChannelExceptionCaught"));
         verify(spyHandler, times(1)).exceptionCaught(any(), any());
 
-        verify(spyHandler, times(1)).close(any(), any());
-        verify(connection, times(1)).onClose();
-        verify(spyHandler, times(1)).channelInactive(any());
-        verify(spyHandler, times(1)).userEventTriggered(any(), eq(ConnectionEvent.CLOSE));
+        verify(connection, times(1)).close();
 
     }
 
-//    @Test
+    @Test
     public void testChannelClose_withConnectionManager() throws Exception {
         ConnectionManager connectionManager = new ClientConnectionManager(new ConcurrentHashMap<>());
         connectionManager.startup();
 
         connectionManager = spy(connectionManager);
-        Endpoint endpoint = new Endpoint(RPC, remoteAddress, serverPort);
+        Endpoint endpoint = new Endpoint(test, remoteAddress, serverPort);
         Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
         connection = spy(connection);
         connection.getChannel().attr(CONNECTION).set(connection);
@@ -123,7 +132,7 @@ public class ConnectionEventHandlerTest extends ServerBase1Test {
         Assert.assertTrue(channelFuture.isDone());
 
         // todo
-        TimeUnit.SECONDS.sleep(5);
+        TimeUnit.SECONDS.sleep(3);
 
         verify(connectionEventHandler, times(1)).close(any(), any());
         verify(connection, times(1)).onClose();
@@ -134,16 +143,17 @@ public class ConnectionEventHandlerTest extends ServerBase1Test {
         verify(connectionEventHandler, times(1)).userEventTriggered(any(), eq(ConnectionEvent.CLOSE));
         verify(connectionManager, times(1)).asyncReconnect(eq(endpoint));
 
+        connectionManager.shutdown();
     }
 
 
-//    @Test
+    @Test
     public void testChannelInactive_withConnectionManager() throws Exception {
         ConnectionManager connectionManager = new ClientConnectionManager(new ConcurrentHashMap<>());
         connectionManager.startup();
 
         connectionManager = spy(connectionManager);
-        Endpoint endpoint = new Endpoint(RPC, remoteAddress, serverPort);
+        Endpoint endpoint = new Endpoint(test, remoteAddress, serverPort);
         Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
         connection = spy(connection);
         connection.getChannel().attr(CONNECTION).set(connection);
@@ -161,8 +171,9 @@ public class ConnectionEventHandlerTest extends ServerBase1Test {
         Assert.assertTrue(channelFuture.isDone());
 
         // todo
-        TimeUnit.SECONDS.sleep(5);
+        TimeUnit.SECONDS.sleep(3);
 
+        // disconnect will call channel#close method
         verify(connectionEventHandler, times(2)).close(any(), any());
         verify(connection, times(2)).onClose();
 
@@ -173,15 +184,16 @@ public class ConnectionEventHandlerTest extends ServerBase1Test {
         verify(connectionEventHandler, times(1)).userEventTriggered(any(), eq(ConnectionEvent.CLOSE));
         verify(connectionManager, times(1)).asyncReconnect(eq(endpoint));
 
+        connectionManager.shutdown();
     }
 
-//    @Test
+    @Test
     public void testChannelExceptionCaught_withConnectionManager() throws Exception {
         ConnectionManager connectionManager = new ClientConnectionManager(new ConcurrentHashMap<>());
         connectionManager.startup();
 
         connectionManager = spy(connectionManager);
-        Endpoint endpoint = new Endpoint(RPC, remoteAddress, serverPort);
+        Endpoint endpoint = new Endpoint(test, remoteAddress, serverPort);
         Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
         connection = spy(connection);
         connection.getChannel().attr(CONNECTION).set(connection);
@@ -198,11 +210,11 @@ public class ConnectionEventHandlerTest extends ServerBase1Test {
         connection.getChannel().pipeline().fireExceptionCaught(new RuntimeException("testChannelExceptionCaught"));
 
         // todo
-        TimeUnit.SECONDS.sleep(5);
+        TimeUnit.SECONDS.sleep(3);
 
         verify(connectionEventHandler, times(1)).exceptionCaught(any(), any());
-        verify(connectionEventHandler, times(2)).close(any(), any());
-        verify(connection, times(2)).onClose();
+        verify(connectionEventHandler, times(1)).close(any(), any());
+        verify(connection, times(1)).onClose();
         verify(connectionEventHandler, times(1)).channelInactive(any());
         verify(connectionManager, times(1)).removeAndClose(eq(connection));
 
@@ -210,5 +222,6 @@ public class ConnectionEventHandlerTest extends ServerBase1Test {
         verify(connectionEventHandler, times(1)).userEventTriggered(any(), eq(ConnectionEvent.CLOSE));
         verify(connectionManager, times(1)).asyncReconnect(eq(endpoint));
 
+        connectionManager.shutdown();
     }
 }

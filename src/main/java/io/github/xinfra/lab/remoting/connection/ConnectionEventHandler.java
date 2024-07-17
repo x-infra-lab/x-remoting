@@ -80,6 +80,7 @@ public class ConnectionEventHandler extends ChannelDuplexHandler {
         log.warn("exceptionCaught channel localAddress:{} remoteAddress:{}, close the channel! cause by",
                 localAddress, remoteAddress, cause);
 
-        channel.close();
+        Connection connection = ctx.channel().attr(CONNECTION).get();
+        connection.close();
     }
 }
