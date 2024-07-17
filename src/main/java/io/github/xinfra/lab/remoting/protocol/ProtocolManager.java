@@ -15,7 +15,7 @@ public class ProtocolManager {
 
     public static void registerProtocolIfAbsent(ProtocolType protocolType,
                                                 Protocol protocol) {
-        Protocol preProtocol = protocols.computeIfAbsent(protocolType, k -> protocol);
+        Protocol preProtocol = protocols.putIfAbsent(protocolType, protocol);
         if (preProtocol != null) {
             log.warn("repeat registerProtocol protocolType:{}", protocolType);
         }
