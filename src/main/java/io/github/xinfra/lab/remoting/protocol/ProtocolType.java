@@ -9,9 +9,12 @@ import lombok.ToString;
 @ToString
 public class ProtocolType {
 
+    private String name;
+
     private byte[] protocolCode;
 
-    public ProtocolType(byte[] protocolCode) {
+    public ProtocolType(String name, byte[] protocolCode) {
+        this.name = name;
         this.protocolCode = protocolCode;
     }
 
@@ -19,4 +22,7 @@ public class ProtocolType {
         return this.protocolCode;
     }
 
+    public String name() {
+        return name;
+    }
 }

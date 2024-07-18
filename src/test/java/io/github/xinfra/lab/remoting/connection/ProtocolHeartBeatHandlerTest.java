@@ -22,7 +22,7 @@ public class ProtocolHeartBeatHandlerTest {
 
     @Test
     public void testHeartBeat() throws InterruptedException {
-        ProtocolType testProtocol = new ProtocolType("testHeartBeat".getBytes());
+        ProtocolType testProtocol = new ProtocolType("testHeartBeat", "testHeartBeat".getBytes());
         ProtocolManager.registerProtocolIfAbsent(testProtocol, new TestProtocol());
 
         ProtocolHeartBeatHandler protocolHeartBeatHandler = new ProtocolHeartBeatHandler();

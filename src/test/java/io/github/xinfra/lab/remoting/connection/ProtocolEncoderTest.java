@@ -23,7 +23,7 @@ public class ProtocolEncoderTest {
 
     @Test
     public void testEncode() {
-        ProtocolType testProtocol = new ProtocolType("testEncode".getBytes());
+        ProtocolType testProtocol = new ProtocolType("testEncode", "testEncode".getBytes());
         ProtocolManager.registerProtocolIfAbsent(testProtocol, new TestProtocol());
 
         ProtocolEncoder protocolEncoder = new ProtocolEncoder();
@@ -62,7 +62,7 @@ public class ProtocolEncoderTest {
 
     @Test
     public void testEncodeException() {
-        ProtocolType testProtocol = new ProtocolType("testEncodeException".getBytes());
+        ProtocolType testProtocol = new ProtocolType("testEncodeException", "testEncodeException".getBytes());
         ProtocolManager.registerProtocolIfAbsent(testProtocol, new TestProtocol());
 
         ProtocolEncoder protocolEncoder = new ProtocolEncoder();

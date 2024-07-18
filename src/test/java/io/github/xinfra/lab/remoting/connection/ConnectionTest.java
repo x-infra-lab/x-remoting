@@ -24,7 +24,6 @@ import java.util.concurrent.Executors;
 import static io.github.xinfra.lab.remoting.connection.Connection.CONNECTION;
 import static io.github.xinfra.lab.remoting.connection.Connection.HEARTBEAT_FAIL_COUNT;
 import static io.github.xinfra.lab.remoting.connection.Connection.PROTOCOL;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -32,7 +31,7 @@ import static org.mockito.Mockito.mock;
 public class ConnectionTest {
     private Connection connection;
 
-    private ProtocolType test = new ProtocolType("ConnectionTest".getBytes());
+    private ProtocolType test = new ProtocolType("ConnectionTest", "ConnectionTest".getBytes());
 
     @Before
     public void before() {

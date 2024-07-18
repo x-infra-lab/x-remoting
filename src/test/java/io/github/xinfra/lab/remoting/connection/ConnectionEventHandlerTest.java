@@ -17,7 +17,6 @@ import java.util.concurrent.TimeUnit;
 import static io.github.xinfra.lab.remoting.connection.Connection.CONNECTION;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -25,7 +24,7 @@ import static org.mockito.Mockito.verify;
 
 public class ConnectionEventHandlerTest extends ServerBase1Test {
 
-    private static ProtocolType test = new ProtocolType("ConnectionEventHandlerTest".getBytes());
+    private static ProtocolType test = new ProtocolType("ConnectionEventHandlerTest", "ConnectionEventHandlerTest".getBytes());
 
     static {
         ProtocolManager.registerProtocolIfAbsent(test, new TestProtocol() {

@@ -133,7 +133,7 @@ public class InvokeFutureTest {
 
     @Test
     public void testCallBackAsync() throws InterruptedException {
-        ProtocolType test = new ProtocolType("testCallBackAsync".getBytes());
+        ProtocolType test = new ProtocolType("testCallBackAsync", "testCallBackAsync".getBytes());
         ProtocolManager.registerProtocolIfAbsent(test, new TestProtocol() {
             @Override
             public MessageHandler messageHandler() {

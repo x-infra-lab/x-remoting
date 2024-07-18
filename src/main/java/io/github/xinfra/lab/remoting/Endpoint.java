@@ -4,11 +4,13 @@ package io.github.xinfra.lab.remoting;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.ToString;
 import org.apache.commons.lang3.Validate;
 
 
 @EqualsAndHashCode
 @Getter
+@ToString
 public class Endpoint {
 
     private ProtocolType protocolType;

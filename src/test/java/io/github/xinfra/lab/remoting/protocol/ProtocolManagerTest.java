@@ -7,7 +7,7 @@ public class ProtocolManagerTest {
 
     @Test
     public void test() {
-        ProtocolType test = new ProtocolType("ProtocolManagerTest".getBytes());
+        ProtocolType test = new ProtocolType("ProtocolManagerTest", "ProtocolManagerTest".getBytes());
         TestProtocol testProtocol1 = new TestProtocol();
         ProtocolManager.registerProtocolIfAbsent(test, testProtocol1);
 

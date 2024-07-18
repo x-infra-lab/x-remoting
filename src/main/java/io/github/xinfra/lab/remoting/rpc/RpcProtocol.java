@@ -31,7 +31,7 @@ public class RpcProtocol implements Protocol {
 
     public static int REQUEST_HEADER_LEN = 19;
 
-    public static final ProtocolType RPC = new ProtocolType("x-rpc".getBytes(StandardCharsets.UTF_8));
+    public static final ProtocolType RPC = new ProtocolType("x-rpc", "x-rpc".getBytes(StandardCharsets.UTF_8));
 
 
     private MessageEncoder rpcMessageEncoder;

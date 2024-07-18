@@ -24,7 +24,7 @@ public class ProtocolDecoderTest {
 
     @Test
     public void testDecode() {
-        ProtocolType testProtocol = new ProtocolType("testDecode".getBytes());
+        ProtocolType testProtocol = new ProtocolType("testDecode", "testDecode".getBytes());
         ProtocolManager.registerProtocolIfAbsent(testProtocol, new TestProtocol());
         ProtocolDecoder protocolDecoder = new ProtocolDecoder();
 
@@ -54,7 +54,7 @@ public class ProtocolDecoderTest {
 
     @Test
     public void testDecodePartial() {
-        ProtocolType testProtocol = new ProtocolType("testDecodePartial".getBytes());
+        ProtocolType testProtocol = new ProtocolType("testDecodePartial", "testDecodePartial".getBytes());
         ProtocolManager.registerProtocolIfAbsent(testProtocol, new TestProtocol());
         ProtocolDecoder protocolDecoder = new ProtocolDecoder();
 
@@ -104,7 +104,7 @@ public class ProtocolDecoderTest {
 
     @Test
     public void testDecodeException() {
-        ProtocolType testProtocol = new ProtocolType("testDecodeException".getBytes());
+        ProtocolType testProtocol = new ProtocolType("testDecodeException", "testDecodeException".getBytes());
         ProtocolManager.registerProtocolIfAbsent(testProtocol, new TestProtocol());
         ProtocolDecoder protocolDecoder = new ProtocolDecoder();
 

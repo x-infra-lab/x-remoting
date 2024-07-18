@@ -24,7 +24,7 @@ public class ProtocolHandlerTest {
 
     @Test
     public void testProtocolHandler() {
-        ProtocolType testProtocol = new ProtocolType("testProtocolHandler".getBytes());
+        ProtocolType testProtocol = new ProtocolType("testProtocolHandler", "testProtocolHandler".getBytes());
         ProtocolManager.registerProtocolIfAbsent(testProtocol, new TestProtocol());
         ProtocolHandler protocolHandler = new ProtocolHandler(new ConcurrentHashMap<>());
 

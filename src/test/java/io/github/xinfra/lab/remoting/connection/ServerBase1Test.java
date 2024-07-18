@@ -1,7 +1,5 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
-import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -14,7 +12,6 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 
 import static io.github.xinfra.lab.remoting.common.TestSocketUtils.findAvailableTcpPort;
-import static io.github.xinfra.lab.remoting.rpc.RpcProtocol.RPC;
 
 public class ServerBase1Test {
 
@@ -27,6 +24,9 @@ public class ServerBase1Test {
     @BeforeClass
     public static void beforeClass() throws InterruptedException {
         // start a http server
+        if (serverChannel != null)
+            return;
+        System.out.println("ServerBase1Test start a http server serverPort:" + serverPort);
         serverPort = findAvailableTcpPort();
         ChannelFuture future = new ServerBootstrap()
                 .group(new NioEventLoopGroup(1))
@@ -38,10 +38,4 @@ public class ServerBase1Test {
         serverChannel = future.channel();
     }
 
-    @AfterClass
-    public static void afterClass() throws InterruptedException {
-        if (serverChannel != null) {
-            Assert.assertTrue(serverChannel.close().sync().isSuccess());
-        }
-    }
 }

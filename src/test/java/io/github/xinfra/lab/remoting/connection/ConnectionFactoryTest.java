@@ -2,6 +2,7 @@ package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
+import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.codec.http.HttpClientCodec;
@@ -14,10 +15,10 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import static io.github.xinfra.lab.remoting.rpc.RpcProtocol.RPC;
-
 
 public class ConnectionFactoryTest extends ServerBase1Test {
+
+    private ProtocolType test = new ProtocolType("ConnectionFactoryTest", "ConnectionFactoryTest".getBytes());
 
 
     @Test
@@ -40,7 +41,7 @@ public class ConnectionFactoryTest extends ServerBase1Test {
         channelHandlerSuppliers.add(() -> new HttpClientCodec());
         ConnectionFactory connectionFactory = new DefaultConnectionFactory(channelHandlerSuppliers);
 
-        Connection connection = connectionFactory.create(new Endpoint(RPC, remoteAddress, serverPort));
+        Connection connection = connectionFactory.create(new Endpoint(test, remoteAddress, serverPort));
         Assert.assertNotNull(connection);
 
         Channel channel = connection.getChannel();
@@ -66,7 +67,7 @@ public class ConnectionFactoryTest extends ServerBase1Test {
         channelHandlerSuppliers.add(() -> new HttpClientCodec());
         ConnectionFactory connectionFactory = new DefaultConnectionFactory(channelHandlerSuppliers);
 
-        Endpoint invalidEndpoint = new Endpoint(RPC, remoteAddress, serverPort + 1);
+        Endpoint invalidEndpoint = new Endpoint(test, remoteAddress, serverPort + 1);
         Assert.assertThrows(RemotingException.class, () -> {
             connectionFactory.create(invalidEndpoint);
         });
