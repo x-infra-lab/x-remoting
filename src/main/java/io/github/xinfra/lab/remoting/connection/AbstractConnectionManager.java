@@ -11,9 +11,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -36,6 +38,8 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
             0L, TimeUnit.MILLISECONDS,
             new ArrayBlockingQueue<>(1024),
             new NamedThreadFactory("Reconnector-Worker"));
+
+    private Set<Endpoint> disableReconnectEndpoints = new CopyOnWriteArraySet<>();
 
 
     public AbstractConnectionManager() {
@@ -129,20 +133,11 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
     }
 
     @Override
-    public synchronized void shutdown() {
-        super.shutdown();
-
-        for (Map.Entry<Endpoint, ConnectionHolder> entry : connections.entrySet()) {
-            Endpoint endpoint = entry.getKey();
-            ConnectionHolder connectionHolder = entry.getValue();
-            connectionHolder.removeAndCloseAll();
-            connections.remove(endpoint);
-        }
-
-    }
-
-    @Override
     public synchronized void reconnect(Endpoint endpoint) throws RemotingException {
+        if (disableReconnectEndpoints.contains(endpoint)) {
+            log.warn("endpoint:{} is disable to reconnect", endpoint);
+            return;
+        }
         ConnectionHolder connectionHolder = connections.get(endpoint);
         if (connectionHolder == null) {
             connectionHolder = createConnectionHolder(endpoint);
@@ -153,6 +148,16 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
                 createConnectionForHolder(endpoint, connectionHolder, needCreateNum);
             }
         }
+    }
+
+    @Override
+    public void disableReconnect(Endpoint endpoint) {
+        disableReconnectEndpoints.add(endpoint);
+    }
+
+    @Override
+    public void enableReconnect(Endpoint endpoint) {
+        disableReconnectEndpoints.remove(endpoint);
     }
 
     @Override

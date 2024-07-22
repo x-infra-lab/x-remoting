@@ -1,11 +1,13 @@
 package io.github.xinfra.lab.remoting.connection;
 
 
+import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.processor.UserProcessor;
 import io.netty.channel.ChannelHandler;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
@@ -50,4 +52,17 @@ public class ClientConnectionManager extends AbstractConnectionManager {
         return channelHandlerSuppliers;
     }
 
+    @Override
+    public synchronized void shutdown() {
+        super.shutdown();
+
+        for (Map.Entry<Endpoint, ConnectionHolder> entry : connections.entrySet()) {
+            Endpoint endpoint = entry.getKey();
+            disableReconnect(endpoint);
+            ConnectionHolder connectionHolder = entry.getValue();
+            connectionHolder.removeAndCloseAll();
+            connections.remove(endpoint);
+        }
+
+    }
 }
