@@ -1,6 +1,7 @@
 package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.Endpoint;
+import io.github.xinfra.lab.remoting.common.Until;
 import io.github.xinfra.lab.remoting.message.HeartbeatTrigger;
 import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
@@ -12,7 +13,6 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 import static io.github.xinfra.lab.remoting.connection.Connection.CONNECTION;
 import static org.mockito.Matchers.any;
@@ -130,8 +130,15 @@ public class ConnectionEventHandlerTest extends ServerBase1Test {
         channelFuture.await();
         Assert.assertTrue(channelFuture.isDone());
 
-        // todo
-        TimeUnit.SECONDS.sleep(3);
+        ConnectionManager tempConnectionManager = connectionManager;
+        Until.untilIsTrue(() -> {
+            try {
+                verify(tempConnectionManager, times(1)).asyncReconnect(eq(endpoint));
+                return true;
+            } catch (Throwable e) {
+                return false;
+            }
+        }, 100, 30);
 
         verify(connectionEventHandler, times(1)).close(any(), any());
         verify(connection, times(1)).onClose();
@@ -169,8 +176,15 @@ public class ConnectionEventHandlerTest extends ServerBase1Test {
         ChannelFuture channelFuture = connection.getChannel().disconnect().await();
         Assert.assertTrue(channelFuture.isDone());
 
-        // todo
-        TimeUnit.SECONDS.sleep(3);
+        ConnectionManager tempConnectionManager = connectionManager;
+        Until.untilIsTrue(() -> {
+            try {
+                verify(tempConnectionManager, times(1)).asyncReconnect(eq(endpoint));
+                return true;
+            } catch (Throwable e) {
+                return false;
+            }
+        }, 100, 30);
 
         // disconnect will call channel#close method
         verify(connectionEventHandler, times(2)).close(any(), any());
@@ -208,8 +222,15 @@ public class ConnectionEventHandlerTest extends ServerBase1Test {
 
         connection.getChannel().pipeline().fireExceptionCaught(new RuntimeException("testChannelExceptionCaught"));
 
-        // todo
-        TimeUnit.SECONDS.sleep(3);
+        ConnectionManager tempConnectionManager = connectionManager;
+        Until.untilIsTrue(() -> {
+            try {
+                verify(tempConnectionManager, times(1)).asyncReconnect(eq(endpoint));
+                return true;
+            } catch (Throwable e) {
+                return false;
+            }
+        }, 100, 30);
 
         verify(connectionEventHandler, times(1)).exceptionCaught(any(), any());
         verify(connectionEventHandler, times(1)).close(any(), any());
