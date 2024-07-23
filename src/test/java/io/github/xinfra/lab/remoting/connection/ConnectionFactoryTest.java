@@ -6,8 +6,8 @@ import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.codec.http.HttpClientCodec;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
@@ -23,16 +23,16 @@ public class ConnectionFactoryTest extends ServerBase1Test {
 
     @Test
     public void testNewInstance() {
-        Assert.assertThrows(NullPointerException.class, () -> {
+        Assertions.assertThrows(NullPointerException.class, () -> {
             new DefaultConnectionFactory(null, null);
         });
 
-        Assert.assertThrows(NullPointerException.class, () -> {
+        Assertions.assertThrows(NullPointerException.class, () -> {
             new DefaultConnectionFactory(null);
         });
 
         // empty channelHandlers is fine
-        Assert.assertNotNull(new DefaultConnectionFactory(new ArrayList<>()));
+        Assertions.assertNotNull(new DefaultConnectionFactory(new ArrayList<>()));
     }
 
     @Test
@@ -42,11 +42,11 @@ public class ConnectionFactoryTest extends ServerBase1Test {
         ConnectionFactory connectionFactory = new DefaultConnectionFactory(channelHandlerSuppliers);
 
         Connection connection = connectionFactory.create(new Endpoint(test, remoteAddress, serverPort));
-        Assert.assertNotNull(connection);
+        Assertions.assertNotNull(connection);
 
         Channel channel = connection.getChannel();
-        Assert.assertNotNull(channel);
-        Assert.assertTrue(channel.isActive());
+        Assertions.assertNotNull(channel);
+        Assertions.assertTrue(channel.isActive());
 
         List<Class<?>> handlerClassListForPipeline = channel.pipeline().
                 toMap().values().
@@ -56,8 +56,8 @@ public class ConnectionFactoryTest extends ServerBase1Test {
         List<Class<?>> handerClassList = channelHandlerSuppliers.stream().map(v -> v.get()).map(v -> v.getClass())
                 .collect(Collectors.toList());
 
-        Assert.assertTrue(handlerClassListForPipeline.containsAll(handerClassList));
-        Assert.assertEquals(((InetSocketAddress) channel.remoteAddress()).getHostName(), remoteAddress);
+        Assertions.assertTrue(handlerClassListForPipeline.containsAll(handerClassList));
+        Assertions.assertEquals(((InetSocketAddress) channel.remoteAddress()).getHostName(), remoteAddress);
         connection.close();
     }
 
@@ -68,7 +68,7 @@ public class ConnectionFactoryTest extends ServerBase1Test {
         ConnectionFactory connectionFactory = new DefaultConnectionFactory(channelHandlerSuppliers);
 
         Endpoint invalidEndpoint = new Endpoint(test, remoteAddress, serverPort + 1);
-        Assert.assertThrows(RemotingException.class, () -> {
+        Assertions.assertThrows(RemotingException.class, () -> {
             connectionFactory.create(invalidEndpoint);
         });
 

@@ -8,13 +8,13 @@ import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.embedded.EmbeddedChannel;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 
-import static org.mockito.Matchers.any;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -53,7 +53,7 @@ public class ProtocolHandlerTest {
         channel.writeInbound(object);
         verify(spyMessageHandler, times(0)).handleMessage(any(), any());
         Object inboundMessage = channel.inboundMessages().poll();
-        Assert.assertTrue(object == inboundMessage);
+        Assertions.assertTrue(object == inboundMessage);
 
 
         Message message = mock(Message.class);

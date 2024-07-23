@@ -12,8 +12,8 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.EncoderException;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
 
@@ -38,7 +38,7 @@ public class ProtocolEncoderTest {
         MessageEncoder messageEncoder = new MessageEncoder() {
             @Override
             public void encode(ChannelHandlerContext ctx, Message msg, ByteBuf out) {
-                Assert.assertEquals(message, msg);
+                Assertions.assertEquals(message, msg);
                 out.writeBytes(data);
             }
         };
@@ -48,15 +48,15 @@ public class ProtocolEncoderTest {
         ((TestProtocol) protocol).setTestMessageEncoder(messageEncoder);
 
         channel.writeOutbound(message);
-        Assert.assertTrue(channel.finish());
+        Assertions.assertTrue(channel.finish());
         ByteBuf byteBuf = (ByteBuf) channel.outboundMessages().poll();
-        Assert.assertNotEquals(Unpooled.EMPTY_BUFFER, byteBuf);
+        Assertions.assertNotEquals(Unpooled.EMPTY_BUFFER, byteBuf);
 
         int readableBytes = byteBuf.readableBytes();
         byte[] bytes = new byte[readableBytes];
         byteBuf.readBytes(bytes, 0, readableBytes);
 
-        Assert.assertArrayEquals(data, bytes);
+        Assertions.assertArrayEquals(data, bytes);
     }
 
 
@@ -84,11 +84,11 @@ public class ProtocolEncoderTest {
         Protocol protocol = ProtocolManager.getProtocol(testProtocol);
         ((TestProtocol) protocol).setTestMessageEncoder(messageEncoder);
 
-        EncoderException encoderException = Assert.assertThrows(EncoderException.class, () -> {
+        EncoderException encoderException = Assertions.assertThrows(EncoderException.class, () -> {
             channel.writeOutbound(message);
         });
 
-        Assert.assertTrue(encoderException.getCause() instanceof CodecException);
+        Assertions.assertTrue(encoderException.getCause() instanceof CodecException);
 
     }
 }

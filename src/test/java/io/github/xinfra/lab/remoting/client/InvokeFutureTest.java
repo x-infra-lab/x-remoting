@@ -9,9 +9,9 @@ import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timeout;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -35,28 +35,28 @@ public class InvokeFutureTest {
     }
 
 
-    @Before
+    @BeforeEach
     public void before() {
         invokeFuture = newInvokeFuture();
     }
 
     @Test
     public void testTimeout() {
-        Assert.assertNull(invokeFuture.getTimeout());
-        Assert.assertFalse(invokeFuture.cancelTimeout());
+        Assertions.assertNull(invokeFuture.getTimeout());
+        Assertions.assertFalse(invokeFuture.cancelTimeout());
 
         HashedWheelTimer timer = new HashedWheelTimer();
 
         Timeout timeout = timer.newTimeout(t -> {
         }, 3, TimeUnit.SECONDS);
         invokeFuture.addTimeout(timeout);
-        Assert.assertEquals(invokeFuture.getTimeout(), timeout);
+        Assertions.assertEquals(invokeFuture.getTimeout(), timeout);
 
-        Assert.assertTrue(invokeFuture.cancelTimeout());
-        Assert.assertFalse(invokeFuture.cancelTimeout());
-        Assert.assertTrue(invokeFuture.getTimeout().isCancelled());
+        Assertions.assertTrue(invokeFuture.cancelTimeout());
+        Assertions.assertFalse(invokeFuture.cancelTimeout());
+        Assertions.assertTrue(invokeFuture.getTimeout().isCancelled());
 
-        Assert.assertThrows(IllegalArgumentException.class, () -> {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
             invokeFuture.addTimeout(timeout);
         });
     }
@@ -74,29 +74,29 @@ public class InvokeFutureTest {
             invokeFuture.finish(message);
         });
 
-        Assert.assertNull(invokeFuture.await(1, TimeUnit.SECONDS));
-        Assert.assertFalse(invokeFuture.isDone());
+        Assertions.assertNull(invokeFuture.await(1, TimeUnit.SECONDS));
+        Assertions.assertFalse(invokeFuture.isDone());
 
         Message result = invokeFuture.await();
-        Assert.assertSame(result, message);
-        Assert.assertTrue(invokeFuture.isDone());
+        Assertions.assertSame(result, message);
+        Assertions.assertTrue(invokeFuture.isDone());
 
         result = invokeFuture.await();
-        Assert.assertSame(result, message);
-        Assert.assertTrue(invokeFuture.isDone());
+        Assertions.assertSame(result, message);
+        Assertions.assertTrue(invokeFuture.isDone());
     }
 
     @Test
     public void testAppClassLoader() {
         ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-        Assert.assertSame(contextClassLoader, invokeFuture.getAppClassLoader());
+        Assertions.assertSame(contextClassLoader, invokeFuture.getAppClassLoader());
 
         try {
             URLClassLoader urlClassLoader = new URLClassLoader(new URL[]{}, contextClassLoader);
             Thread.currentThread().setContextClassLoader(urlClassLoader);
 
             InvokeFuture future = newInvokeFuture();
-            Assert.assertSame(future.getAppClassLoader(), urlClassLoader);
+            Assertions.assertSame(future.getAppClassLoader(), urlClassLoader);
         } finally {
             // recover current thread context classLoader
             Thread.currentThread().setContextClassLoader(contextClassLoader);
@@ -114,7 +114,7 @@ public class InvokeFutureTest {
         };
         invokeFuture.addCallBack(callBack);
 
-        Assert.assertThrows(IllegalArgumentException.class, () -> {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
             invokeFuture.addCallBack(callBack);
         });
 
@@ -123,12 +123,12 @@ public class InvokeFutureTest {
         invokeFuture.finish(message);
 
         invokeFuture.executeCallBack();
-        Assert.assertTrue(callbackExecuted.get());
-        Assert.assertEquals(1, callBackExecuteTimes.get());
+        Assertions.assertTrue(callbackExecuted.get());
+        Assertions.assertEquals(1, callBackExecuteTimes.get());
 
         invokeFuture.executeCallBack();
-        Assert.assertTrue(callbackExecuted.get());
-        Assert.assertEquals(1, callBackExecuteTimes.get());
+        Assertions.assertTrue(callbackExecuted.get());
+        Assertions.assertEquals(1, callBackExecuteTimes.get());
     }
 
     @Test
@@ -161,7 +161,7 @@ public class InvokeFutureTest {
         };
         invokeFuture.addCallBack(callBack);
 
-        Assert.assertThrows(IllegalArgumentException.class, () -> {
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
             invokeFuture.addCallBack(callBack);
         });
 
@@ -172,12 +172,12 @@ public class InvokeFutureTest {
 
         invokeFuture.asyncExecuteCallBack();
         countDownLatch.await();
-        Assert.assertTrue(callbackExecuted.get());
-        Assert.assertEquals(1, callBackExecuteTimes.get());
+        Assertions.assertTrue(callbackExecuted.get());
+        Assertions.assertEquals(1, callBackExecuteTimes.get());
 
         invokeFuture.asyncExecuteCallBack();
         countDownLatch.await();
-        Assert.assertTrue(callbackExecuted.get());
-        Assert.assertEquals(1, callBackExecuteTimes.get());
+        Assertions.assertTrue(callbackExecuted.get());
+        Assertions.assertEquals(1, callBackExecuteTimes.get());
     }
 }

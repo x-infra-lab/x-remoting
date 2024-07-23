@@ -12,8 +12,8 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.DecoderException;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -47,9 +47,9 @@ public class ProtocolDecoderTest {
 
         ByteBuf byteBuf = Unpooled.wrappedBuffer(testProtocol.protocolCode());
         channel.writeInbound(byteBuf);
-        Assert.assertTrue(channel.finish());
+        Assertions.assertTrue(channel.finish());
         Message message = (Message) channel.inboundMessages().poll();
-        Assert.assertEquals(message, decodeMockMessage);
+        Assertions.assertEquals(message, decodeMockMessage);
     }
 
     @Test
@@ -91,14 +91,14 @@ public class ProtocolDecoderTest {
         // write partial data
         ByteBuf part1ByteBuf = Unpooled.wrappedBuffer(part1);
         channel.writeInbound(part1ByteBuf);
-        Assert.assertTrue(channel.inboundMessages().isEmpty());
+        Assertions.assertTrue(channel.inboundMessages().isEmpty());
 
         // write whole data
         ByteBuf part2ByteBuf = Unpooled.wrappedBuffer(part2);
         channel.writeInbound(part2ByteBuf);
-        Assert.assertTrue(channel.finish());
+        Assertions.assertTrue(channel.finish());
         Message message = (Message) channel.inboundMessages().poll();
-        Assert.assertEquals(message, decodeMockMessage);
+        Assertions.assertEquals(message, decodeMockMessage);
     }
 
 
@@ -118,11 +118,11 @@ public class ProtocolDecoderTest {
         ByteBuf invalidByteBuf = byteBuf.copy();
         invalidByteBuf.setByte(0, byteBuf.getByte(0) + 1);
 
-        DecoderException decoderException = Assert.assertThrows(DecoderException.class,
+        DecoderException decoderException = Assertions.assertThrows(DecoderException.class,
                 () -> {
                     channel.writeInbound(invalidByteBuf);
                 });
-        Assert.assertTrue(decoderException.getCause() instanceof CodecException);
+        Assertions.assertTrue(decoderException.getCause() instanceof CodecException);
 
     }
 }

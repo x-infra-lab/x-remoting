@@ -10,10 +10,10 @@ import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.net.InetSocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
@@ -27,15 +27,15 @@ public class HeartBeatTest {
 
     private RpcServer rpcServer;
 
-    @Before
+    @BeforeEach
     public void before() {
         rpcServer = new RpcServer(findAvailableTcpPort());
         rpcServer.startup();
         rpcServer.registerUserProcessor(new SimpleUserProcessor());
     }
 
-    @After
-    public void after(){
+    @AfterEach
+    public void after() {
         rpcServer.shutdown();
     }
 
@@ -57,7 +57,7 @@ public class HeartBeatTest {
         Message heartbeatResponseMessage = baseRemoting.syncCall(heartbeatRequestMessage, connection,
                 1000);
 
-        Assert.assertNotNull(heartbeatResponseMessage);
+        Assertions.assertNotNull(heartbeatResponseMessage);
 
 
         CountDownLatch countDownLatch = new CountDownLatch(1);
@@ -70,7 +70,7 @@ public class HeartBeatTest {
         );
 
         countDownLatch.await();
-        Assert.assertNotNull(messageAtomicReference.get());
+        Assertions.assertNotNull(messageAtomicReference.get());
 
         connectionManager.shutdown();
     }

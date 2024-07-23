@@ -7,9 +7,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.logging.LoggingHandler;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 
 import static io.github.xinfra.lab.remoting.common.TestSocketUtils.findAvailableTcpPort;
 
@@ -21,7 +20,7 @@ public class ServerBase1Test {
 
     public static Channel serverChannel;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws InterruptedException {
         // start a http server
         if (serverChannel != null)
@@ -34,7 +33,7 @@ public class ServerBase1Test {
                 .handler(new HttpServerCodec())
                 .childHandler(new LoggingHandler())
                 .bind(serverPort);
-        Assert.assertTrue(future.sync().isSuccess());
+        Assertions.assertTrue(future.sync().isSuccess());
         serverChannel = future.channel();
     }
 

@@ -1,7 +1,8 @@
 package io.github.xinfra.lab.remoting.protocol;
 
-import org.junit.Assert;
-import org.junit.Test;
+
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 public class ProtocolManagerTest {
 
@@ -14,6 +15,6 @@ public class ProtocolManagerTest {
         TestProtocol testProtocol2 = new TestProtocol();
         ProtocolManager.registerProtocolIfAbsent(test, testProtocol2);
 
-        Assert.assertTrue(ProtocolManager.getProtocol(test) == testProtocol1);
+         Assertions.assertTrue(ProtocolManager.getProtocol(test) == testProtocol1);
     }
 }

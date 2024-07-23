@@ -4,17 +4,17 @@ import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.netty.channel.Channel;
-import org.junit.After;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -26,22 +26,22 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
     ConnectionManager connectionManager;
     private ProtocolType test = new ProtocolType("ClientConnectionManagerTest", "ClientConnectionManagerTest".getBytes());
 
-    @Before
+    @BeforeEach
     public void before() {
         connectionManager =
                 new ClientConnectionManager(new ConcurrentHashMap<>());
-        Assert.assertNotNull(connectionManager);
+        Assertions.assertNotNull(connectionManager);
         connectionManager.startup();
     }
 
-    @After
+    @AfterEach
     public void after() {
         connectionManager.shutdown();
     }
 
     @Test
     public void testNewInstance() {
-        Assert.assertThrows(NullPointerException.class,
+        Assertions.assertThrows(NullPointerException.class,
                 () -> {
                     new ClientConnectionManager(null);
                 }
@@ -52,17 +52,17 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
     @Test
     public void testGetOrCreateIfAbsent() throws RemotingException {
         Connection connection1 = connectionManager.getOrCreateIfAbsent(new Endpoint(test, remoteAddress, serverPort));
-        Assert.assertNotNull(connection1);
+        Assertions.assertNotNull(connection1);
 
         Connection connection2 = connectionManager.getOrCreateIfAbsent(new Endpoint(test, remoteAddress, serverPort));
-        Assert.assertTrue(connection1 == connection2);
+        Assertions.assertTrue(connection1 == connection2);
     }
 
     @Test
     public void testGetOrCreateIfAbsentFail() {
         // invalid endpoint
         Endpoint endpoint = new Endpoint(test, remoteAddress, serverPort + 1);
-        Assert.assertThrows(RemotingException.class, () -> {
+        Assertions.assertThrows(RemotingException.class, () -> {
             connectionManager.getOrCreateIfAbsent(endpoint);
         });
     }
@@ -74,16 +74,16 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
 
         // no connection
         Connection connection1 = connectionManager.get(endpoint);
-        Assert.assertNull(connection1);
+        Assertions.assertNull(connection1);
 
         // create connection
         Connection connection2 = connectionManager.getOrCreateIfAbsent(endpoint);
-        Assert.assertNotNull(connection2);
+        Assertions.assertNotNull(connection2);
 
         connection1 = connectionManager.get(endpoint);
-        Assert.assertNotNull(connection1);
+        Assertions.assertNotNull(connection1);
 
-        Assert.assertTrue(connection1 == connection2);
+        Assertions.assertTrue(connection1 == connection2);
     }
 
 
@@ -94,22 +94,22 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
 
         // no connection
         Connection connection1 = connectionManager.get(endpoint);
-        Assert.assertNull(connection1);
+        Assertions.assertNull(connection1);
 
         // fail create connection
-        Assert.assertThrows(RemotingException.class,
+        Assertions.assertThrows(RemotingException.class,
                 () -> {
                     connectionManager.getOrCreateIfAbsent(endpoint);
                 });
 
 
         connection1 = connectionManager.get(endpoint);
-        Assert.assertNull(connection1);
+        Assertions.assertNull(connection1);
     }
 
     @Test
     public void testCheck() throws RemotingException {
-        Assert.assertThrows(NullPointerException.class, () -> {
+        Assertions.assertThrows(NullPointerException.class, () -> {
             connectionManager.check(null);
         });
 
@@ -134,13 +134,13 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
         Connection spyConnection = spy(connection);
         doReturn(channel).when(spyConnection).getChannel();
 
-        Assert.assertThrows(RemotingException.class, () -> {
+        Assertions.assertThrows(RemotingException.class, () -> {
             connectionManager.check(spyConnection);
         });
 
         Connection connection1 = connectionManager.get(endpoint);
-        Assert.assertNotNull(connection1);
-        Assert.assertTrue(connection1 == connection);
+        Assertions.assertNotNull(connection1);
+        Assertions.assertTrue(connection1 == connection);
 
     }
 
@@ -161,7 +161,7 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
         ConnectionManager spyConnectionManager = spy(connectionManager);
 
         connectionManager.disableReconnect(endpoint);
-        Assert.assertThrows(RemotingException.class, () -> {
+        Assertions.assertThrows(RemotingException.class, () -> {
             spyConnectionManager.check(spyConnection);
         });
 
@@ -176,15 +176,15 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
 
         connectionManager.disableReconnect(endpoint);
         connectionManager.removeAndClose(connection);
-        Assert.assertNull(((ClientConnectionManager) connectionManager).connections.get(endpoint));
-        Assert.assertNull(connectionManager.get(endpoint));
+        Assertions.assertNull(((ClientConnectionManager) connectionManager).connections.get(endpoint));
+        Assertions.assertNull(connectionManager.get(endpoint));
         // removeAndClose again
         connectionManager.removeAndClose(connection);
 
 
         Connection mockConnection = mock(Connection.class);
         Endpoint endpoint1 = new Endpoint(test, remoteAddress, serverPort + 1);
-        Assert.assertNull(connectionManager.get(endpoint));
+        Assertions.assertNull(connectionManager.get(endpoint));
         doReturn(endpoint1).when(mockConnection).getEndpoint();
         connectionManager.removeAndClose(mockConnection);
         verify(mockConnection, times(1)).close();
@@ -198,18 +198,18 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
         // valid endpoint
         Endpoint endpoint = new Endpoint(test, remoteAddress, serverPort);
         Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
-        Assert.assertNotNull(connection);
+        Assertions.assertNotNull(connection);
 
 
         Map<Endpoint, ConnectionHolder> connections =
                 ((ClientConnectionManager) connectionManager).getConnections();
-        Assert.assertTrue(connections.containsKey(endpoint));
+        Assertions.assertTrue(connections.containsKey(endpoint));
         connections.remove(endpoint);
 
         connectionManager.reconnect(endpoint);
-        Assert.assertTrue(connections.containsKey(endpoint));
+        Assertions.assertTrue(connections.containsKey(endpoint));
         Connection connection1 = connectionManager.get(endpoint);
-        Assert.assertNotNull(connection1);
+        Assertions.assertNotNull(connection1);
     }
 
     @Test
@@ -226,13 +226,13 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
 
         Map<Endpoint, ConnectionHolder> connections = ((ClientConnectionManager) connectionManager).connections;
         ConnectionHolder connectionHolder = connections.get(endpoint);
-        Assert.assertEquals(connectionHolder.size(), numPreEndpoint);
+        Assertions.assertEquals(connectionHolder.size(), numPreEndpoint);
 
         connectionHolder.connections.remove(connection);
-        Assert.assertEquals(connectionHolder.size(), numPreEndpoint - 1);
+        Assertions.assertEquals(connectionHolder.size(), numPreEndpoint - 1);
 
         connectionManager.reconnect(endpoint);
-        Assert.assertEquals(connectionHolder.size(), numPreEndpoint);
+        Assertions.assertEquals(connectionHolder.size(), numPreEndpoint);
     }
 
     @Test
@@ -248,9 +248,9 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
 
         verify(connectionManager, times(1)).reconnect(eq(endpoint));
 
-        Assert.assertTrue(connections.containsKey(endpoint));
+        Assertions.assertTrue(connections.containsKey(endpoint));
         Connection connection = connectionManager.get(endpoint);
-        Assert.assertNotNull(connection);
+        Assertions.assertNotNull(connection);
     }
 
 }

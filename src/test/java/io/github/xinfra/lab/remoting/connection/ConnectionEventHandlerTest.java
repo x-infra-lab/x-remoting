@@ -9,14 +9,14 @@ import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ConcurrentHashMap;
 
 import static io.github.xinfra.lab.remoting.connection.Connection.CONNECTION;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
@@ -128,7 +128,7 @@ public class ConnectionEventHandlerTest extends ServerBase1Test {
 
         ChannelFuture channelFuture = connection.close();
         channelFuture.await();
-        Assert.assertTrue(channelFuture.isDone());
+        Assertions.assertTrue(channelFuture.isDone());
 
         ConnectionManager tempConnectionManager = connectionManager;
         Until.untilIsTrue(() -> {
@@ -174,7 +174,7 @@ public class ConnectionEventHandlerTest extends ServerBase1Test {
 
 
         ChannelFuture channelFuture = connection.getChannel().disconnect().await();
-        Assert.assertTrue(channelFuture.isDone());
+        Assertions.assertTrue(channelFuture.isDone());
 
         ConnectionManager tempConnectionManager = connectionManager;
         Until.untilIsTrue(() -> {

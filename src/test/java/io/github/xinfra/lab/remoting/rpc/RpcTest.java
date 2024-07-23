@@ -2,10 +2,10 @@ package io.github.xinfra.lab.remoting.rpc;
 
 import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import java.net.InetSocketAddress;
 
@@ -18,7 +18,7 @@ public class RpcTest {
 
     private static RpcClient rpcClient;
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         rpcServer = new RpcServer(findAvailableTcpPort());
         rpcServer.startup();
@@ -29,7 +29,7 @@ public class RpcTest {
         rpcClient.startup();
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass(){
         rpcServer.shutdown();
         rpcClient.shutdown();
@@ -44,22 +44,22 @@ public class RpcTest {
             String result = rpcClient.syncCall(new SimpleRequest("test"),
                     new Endpoint(RPC, remoteAddress.getHostName(), remoteAddress.getPort()),
                     1000);
-            Assert.assertEquals("echo:test", result);
+            Assertions.assertEquals("echo:test", result);
 
             result = rpcClient.syncCall(new SimpleRequest("test"),
                     new Endpoint(RPC, remoteAddress.getHostName(), remoteAddress.getPort()),
                     1000);
-            Assert.assertEquals("echo:test", result);
+            Assertions.assertEquals("echo:test", result);
 
             result = rpcClient.syncCall(new SimpleRequest("test"),
                     new Endpoint(RPC, remoteAddress.getHostName(), remoteAddress.getPort()),
                     1000);
-            Assert.assertEquals("echo:test", result);
+            Assertions.assertEquals("echo:test", result);
 
         } catch (RemotingException e) {
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         } catch (InterruptedException e) {
-            Assert.fail(e.getMessage());
+            Assertions.fail(e.getMessage());
         }
 
     }
