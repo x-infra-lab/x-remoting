@@ -27,6 +27,7 @@ public class RpcMessageHandler implements MessageHandler {
     private RpcMessageFactory rpcMessageFactory;
 
     // TODO: use config
+    // TODO: shutdown it
     private Executor executor = new ThreadPoolExecutor(20, 400, 60,
             TimeUnit.SECONDS, new ArrayBlockingQueue<Runnable>(1024),
             new NamedThreadFactory("Rpc-Message-Handler")

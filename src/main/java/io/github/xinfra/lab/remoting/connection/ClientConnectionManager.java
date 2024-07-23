@@ -7,7 +7,6 @@ import io.netty.channel.ChannelHandler;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
@@ -54,15 +53,9 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 
     @Override
     public synchronized void shutdown() {
-        super.shutdown();
-
-        for (Map.Entry<Endpoint, ConnectionHolder> entry : connections.entrySet()) {
-            Endpoint endpoint = entry.getKey();
+        for (Endpoint endpoint : connections.keySet()) {
             disableReconnect(endpoint);
-            ConnectionHolder connectionHolder = entry.getValue();
-            connectionHolder.removeAndCloseAll();
-            connections.remove(endpoint);
         }
-
+        super.shutdown();
     }
 }

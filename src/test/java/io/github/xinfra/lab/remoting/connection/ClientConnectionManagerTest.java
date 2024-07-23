@@ -14,6 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -159,6 +160,7 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
 
         ConnectionManager spyConnectionManager = spy(connectionManager);
 
+        connectionManager.disableReconnect(endpoint);
         Assert.assertThrows(RemotingException.class, () -> {
             spyConnectionManager.check(spyConnection);
         });
@@ -172,6 +174,7 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
         Endpoint endpoint = new Endpoint(test, remoteAddress, serverPort);
         Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
 
+        connectionManager.disableReconnect(endpoint);
         connectionManager.removeAndClose(connection);
         Assert.assertNull(((ClientConnectionManager) connectionManager).connections.get(endpoint));
         Assert.assertNull(connectionManager.get(endpoint));
@@ -197,10 +200,11 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
         Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
         Assert.assertNotNull(connection);
 
-        connectionManager.removeAndClose(connection);
+
         Map<Endpoint, ConnectionHolder> connections =
                 ((ClientConnectionManager) connectionManager).getConnections();
-        Assert.assertTrue(!connections.containsKey(endpoint));
+        Assert.assertTrue(connections.containsKey(endpoint));
+        connections.remove(endpoint);
 
         connectionManager.reconnect(endpoint);
         Assert.assertTrue(connections.containsKey(endpoint));
@@ -224,7 +228,7 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
         ConnectionHolder connectionHolder = connections.get(endpoint);
         Assert.assertEquals(connectionHolder.size(), numPreEndpoint);
 
-        connectionManager.removeAndClose(connection);
+        connectionHolder.connections.remove(connection);
         Assert.assertEquals(connectionHolder.size(), numPreEndpoint - 1);
 
         connectionManager.reconnect(endpoint);
@@ -232,22 +236,21 @@ public class ClientConnectionManagerTest extends ServerBase1Test {
     }
 
     @Test
-    public void testAsyncReconnect() throws ExecutionException, InterruptedException, RemotingException {
+    public void testAsyncReconnect1() throws ExecutionException, InterruptedException, RemotingException {
         // valid endpoint
         Endpoint endpoint = new Endpoint(test, remoteAddress, serverPort);
-        Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
-        Assert.assertNotNull(connection);
 
-        connectionManager.removeAndClose(connection);
         Map<Endpoint, ConnectionHolder> connections = ((ClientConnectionManager) connectionManager).connections;
-        Assert.assertTrue(!connections.containsKey(endpoint));
 
+        connectionManager = spy(connectionManager);
         Future<Void> future = connectionManager.asyncReconnect(endpoint);
         future.get();
 
+        verify(connectionManager, times(1)).reconnect(eq(endpoint));
+
         Assert.assertTrue(connections.containsKey(endpoint));
-        Connection connection1 = connectionManager.get(endpoint);
-        Assert.assertNotNull(connection1);
+        Connection connection = connectionManager.get(endpoint);
+        Assert.assertNotNull(connection);
     }
 
 }

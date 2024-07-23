@@ -2,7 +2,6 @@ package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.Endpoint;
 
-import java.util.Map;
 import java.util.concurrent.Future;
 
 public class ServerConnectionManager extends AbstractConnectionManager {
@@ -32,15 +31,4 @@ public class ServerConnectionManager extends AbstractConnectionManager {
         throw new UnsupportedOperationException();
     }
 
-    public synchronized void shutdown() {
-        super.shutdown();
-
-        for (Map.Entry<Endpoint, ConnectionHolder> entry : connections.entrySet()) {
-            Endpoint endpoint = entry.getKey();
-            ConnectionHolder connectionHolder = entry.getValue();
-            connectionHolder.removeAndCloseAll();
-            connections.remove(endpoint);
-        }
-
-    }
 }

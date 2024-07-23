@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
@@ -119,6 +120,19 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
         }
     }
 
+    @Override
+    public synchronized void shutdown() {
+        super.shutdown();
+        for (Map.Entry<Endpoint, ConnectionHolder> entry : connections.entrySet()) {
+            Endpoint endpoint = entry.getKey();
+            ConnectionHolder connectionHolder = entry.getValue();
+            connectionHolder.removeAndCloseAll();
+            connections.remove(endpoint);
+        }
+
+        reconnector.shutdownNow();
+    }
+
     private ConnectionHolder createConnectionHolder(Endpoint endpoint) {
         ConnectionHolder connectionHolder = new ConnectionHolder(connectionSelectStrategy);
         connections.put(endpoint, connectionHolder);
@@ -136,7 +150,7 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
     public synchronized void reconnect(Endpoint endpoint) throws RemotingException {
         if (disableReconnectEndpoints.contains(endpoint)) {
             log.warn("endpoint:{} is disable to reconnect", endpoint);
-            return;
+            throw new RemotingException("endpoint is disable to reconnect:" + endpoint);
         }
         ConnectionHolder connectionHolder = connections.get(endpoint);
         if (connectionHolder == null) {
@@ -162,6 +176,13 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 
     @Override
     public Future<Void> asyncReconnect(Endpoint endpoint) {
+        if (disableReconnectEndpoints.contains(endpoint)) {
+            log.warn("endpoint:{} is disable to asyncReconnect", endpoint);
+            CompletableFuture<Void> future = new CompletableFuture<>();
+            future.completeExceptionally(new RemotingException("endpoint is disable to asyncReconnect:" + endpoint));
+            return future;
+        }
+
         Callable<Void> callable = new Callable<Void>() {
             @Override
             public Void call() throws Exception {
@@ -174,6 +195,12 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
                 return null;
             }
         };
-        return reconnector.submit(callable);
+
+        try {
+            return reconnector.submit(callable);
+        } catch (Throwable t) {
+            log.warn("asyncReconnect submit failed.", t);
+            throw t;
+        }
     }
 }

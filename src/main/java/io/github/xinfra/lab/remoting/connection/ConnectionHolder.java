@@ -1,10 +1,13 @@
 package io.github.xinfra.lab.remoting.connection;
 
+import io.github.xinfra.lab.remoting.annotation.OnlyForTest;
+
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ConnectionHolder {
 
-    private CopyOnWriteArrayList<Connection> connections = new CopyOnWriteArrayList<>();
+    @OnlyForTest
+    protected CopyOnWriteArrayList<Connection> connections = new CopyOnWriteArrayList<>();
     private ConnectionSelectStrategy connectionSelectStrategy;
 
     public ConnectionHolder(ConnectionSelectStrategy connectionSelectStrategy) {
