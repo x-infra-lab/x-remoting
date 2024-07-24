@@ -17,12 +17,18 @@ public class RpcServer extends BaseRemotingServer {
     public void startup() {
         super.startup();
         rpcServerRemoting = new RpcServerRemoting(connectionManager);
+        rpcServerRemoting.startup();
+    }
+
+    @Override
+    public void shutdown() {
+        super.shutdown();
+        rpcServerRemoting.shutdown();
     }
 
     @Override
     public ProtocolType protocolType() {
         return RpcProtocol.RPC;
     }
-
 
 }

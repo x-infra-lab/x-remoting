@@ -1,5 +1,6 @@
 package io.github.xinfra.lab.remoting.client;
 
+import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
@@ -9,10 +10,11 @@ import io.netty.util.Timeout;
 import io.netty.util.Timer;
 import lombok.extern.slf4j.Slf4j;
 
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public class BaseRemoting {
+public class BaseRemoting extends AbstractLifeCycle {
     private MessageFactory messageFactory;
 
     private Timer timer;
@@ -159,6 +161,16 @@ public class BaseRemoting {
             );
         } catch (Throwable t) {
             log.error("Invoke sending message fail. id:{}", requestId, t);
+        }
+    }
+
+    @Override
+    public void shutdown() {
+        super.shutdown();
+        Set<Timeout> timeouts = timer.stop();
+        if (timeouts != null && !timeouts.isEmpty()) {
+            log.warn("timer#stop with {} timeout unprocessed. timeouts:{}", timeouts.size(),
+                    timeouts);
         }
     }
 }
