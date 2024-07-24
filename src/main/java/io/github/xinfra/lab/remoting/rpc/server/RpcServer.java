@@ -1,11 +1,13 @@
-package io.github.xinfra.lab.remoting.rpc;
+package io.github.xinfra.lab.remoting.rpc.server;
 
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
+import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
+import io.github.xinfra.lab.remoting.rpc.server.RpcServerRemoting;
 import io.github.xinfra.lab.remoting.server.BaseRemotingServer;
 
 public class RpcServer extends BaseRemotingServer {
 
-    private  RpcServerRemoting rpcServerRemoting;
+    private RpcServerRemoting rpcServerRemoting;
 
     public RpcServer(int port) {
         super(port);

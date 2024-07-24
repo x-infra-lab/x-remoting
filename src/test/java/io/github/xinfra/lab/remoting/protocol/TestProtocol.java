@@ -2,10 +2,10 @@ package io.github.xinfra.lab.remoting.protocol;
 
 import io.github.xinfra.lab.remoting.codec.MessageDecoder;
 import io.github.xinfra.lab.remoting.codec.MessageEncoder;
-import io.github.xinfra.lab.remoting.message.HeartbeatTrigger;
+import io.github.xinfra.lab.remoting.heartbeat.HeartbeatTrigger;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
-import io.github.xinfra.lab.remoting.message.RpcMessageFactory;
+import io.github.xinfra.lab.remoting.rpc.message.RpcMessageFactory;
 import lombok.Setter;
 
 public class TestProtocol implements Protocol {

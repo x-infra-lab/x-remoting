@@ -1,10 +1,10 @@
-package io.github.xinfra.lab.remoting.rpc;
+package io.github.xinfra.lab.remoting.rpc.codec;
 
 import io.github.xinfra.lab.remoting.codec.MessageEncoder;
 import io.github.xinfra.lab.remoting.exception.CodecException;
 import io.github.xinfra.lab.remoting.message.Message;
-import io.github.xinfra.lab.remoting.message.RpcMessage;
-import io.github.xinfra.lab.remoting.message.RpcResponseMessage;
+import io.github.xinfra.lab.remoting.rpc.message.RpcMessage;
+import io.github.xinfra.lab.remoting.rpc.message.RpcResponseMessage;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;

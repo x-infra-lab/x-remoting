@@ -1,9 +1,13 @@
-package io.github.xinfra.lab.remoting.message;
+package io.github.xinfra.lab.remoting.rpc.message;
 
 import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.exception.ConnectionClosedException;
 import io.github.xinfra.lab.remoting.exception.SendMessageException;
 import io.github.xinfra.lab.remoting.exception.TimeoutException;
+import io.github.xinfra.lab.remoting.message.Message;
+import io.github.xinfra.lab.remoting.message.MessageFactory;
+import io.github.xinfra.lab.remoting.message.ResponseStatus;
+import io.github.xinfra.lab.remoting.rpc.heartbeat.RpcHeartbeatRequestMessage;
 
 
 public class RpcMessageFactory implements MessageFactory {

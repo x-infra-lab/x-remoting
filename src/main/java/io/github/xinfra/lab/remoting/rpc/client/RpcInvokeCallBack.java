@@ -1,8 +1,9 @@
-package io.github.xinfra.lab.remoting.rpc;
+package io.github.xinfra.lab.remoting.rpc.client;
 
 import io.github.xinfra.lab.remoting.client.InvokeCallBack;
 import io.github.xinfra.lab.remoting.message.Message;
-import io.github.xinfra.lab.remoting.message.RpcResponseMessage;
+import io.github.xinfra.lab.remoting.rpc.message.RpcResponses;
+import io.github.xinfra.lab.remoting.rpc.message.RpcResponseMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

@@ -57,6 +57,9 @@ public class ProtocolEncoderTest {
         byteBuf.readBytes(bytes, 0, readableBytes);
 
         Assertions.assertArrayEquals(data, bytes);
+
+        // release it
+        byteBuf.release();
     }
 
 

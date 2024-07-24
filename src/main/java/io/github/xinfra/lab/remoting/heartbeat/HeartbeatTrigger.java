@@ -1,4 +1,4 @@
-package io.github.xinfra.lab.remoting.message;
+package io.github.xinfra.lab.remoting.heartbeat;
 
 import io.netty.channel.ChannelHandlerContext;
 

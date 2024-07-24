@@ -1,9 +1,10 @@
-package io.github.xinfra.lab.remoting.rpc;
+package io.github.xinfra.lab.remoting.rpc.heartbeat;
 
 import io.github.xinfra.lab.remoting.RemotingContext;
-import io.github.xinfra.lab.remoting.message.RpcMessage;
-import io.github.xinfra.lab.remoting.message.RpcMessageFactory;
 import io.github.xinfra.lab.remoting.processor.RemotingProcessor;
+import io.github.xinfra.lab.remoting.rpc.message.RpcMessage;
+import io.github.xinfra.lab.remoting.rpc.message.RpcMessageFactory;
+import io.github.xinfra.lab.remoting.rpc.message.RpcResponses;
 
 public class RpcHeartbeatMessageProcessor implements RemotingProcessor<RpcMessage> {
     private RpcMessageFactory rpcMessageFactory;

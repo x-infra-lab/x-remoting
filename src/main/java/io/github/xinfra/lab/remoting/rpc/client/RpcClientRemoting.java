@@ -1,9 +1,10 @@
-package io.github.xinfra.lab.remoting.rpc;
+package io.github.xinfra.lab.remoting.rpc.client;
 
 import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.connection.ClientConnectionManager;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
+import io.github.xinfra.lab.remoting.rpc.RpcRemoting;
 
 public class RpcClientRemoting extends RpcRemoting {
 

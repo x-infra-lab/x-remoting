@@ -3,7 +3,7 @@ package io.github.xinfra.lab.remoting.connection;
 import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.common.TestServerUtils;
 import io.github.xinfra.lab.remoting.common.Until;
-import io.github.xinfra.lab.remoting.message.HeartbeatTrigger;
+import io.github.xinfra.lab.remoting.heartbeat.HeartbeatTrigger;
 import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;

@@ -1,8 +1,9 @@
-package io.github.xinfra.lab.remoting.rpc;
+package io.github.xinfra.lab.remoting.rpc.client;
 
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
-import io.github.xinfra.lab.remoting.message.RpcResponseMessage;
+import io.github.xinfra.lab.remoting.rpc.message.RpcResponses;
+import io.github.xinfra.lab.remoting.rpc.message.RpcResponseMessage;
 
 import java.util.concurrent.TimeUnit;
 

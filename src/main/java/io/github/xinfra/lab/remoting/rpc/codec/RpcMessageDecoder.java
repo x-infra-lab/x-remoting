@@ -1,12 +1,13 @@
-package io.github.xinfra.lab.remoting.rpc;
+package io.github.xinfra.lab.remoting.rpc.codec;
 
 import io.github.xinfra.lab.remoting.codec.MessageDecoder;
 import io.github.xinfra.lab.remoting.exception.CodecException;
 import io.github.xinfra.lab.remoting.message.MessageType;
-import io.github.xinfra.lab.remoting.message.RpcHeartbeatRequestMessage;
-import io.github.xinfra.lab.remoting.message.RpcMessage;
-import io.github.xinfra.lab.remoting.message.RpcRequestMessage;
-import io.github.xinfra.lab.remoting.message.RpcResponseMessage;
+import io.github.xinfra.lab.remoting.rpc.heartbeat.RpcHeartbeatRequestMessage;
+import io.github.xinfra.lab.remoting.rpc.message.RpcMessage;
+import io.github.xinfra.lab.remoting.rpc.message.RpcRequestMessage;
+import io.github.xinfra.lab.remoting.rpc.message.RpcResponseMessage;
+import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;

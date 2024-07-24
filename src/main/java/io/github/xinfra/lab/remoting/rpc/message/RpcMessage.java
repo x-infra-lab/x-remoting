@@ -1,7 +1,9 @@
-package io.github.xinfra.lab.remoting.message;
+package io.github.xinfra.lab.remoting.rpc.message;
 
 import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
+import io.github.xinfra.lab.remoting.message.Message;
+import io.github.xinfra.lab.remoting.message.MessageType;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
 import io.github.xinfra.lab.remoting.serialization.SerializationManager;
