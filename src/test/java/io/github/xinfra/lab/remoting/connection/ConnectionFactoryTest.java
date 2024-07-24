@@ -1,12 +1,16 @@
 package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.Endpoint;
+import io.github.xinfra.lab.remoting.common.TestServerUtils;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.http.HttpClientCodec;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.net.InetSocketAddress;
@@ -16,10 +20,26 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 
-public class ConnectionFactoryTest extends ServerBase1Test {
+public class ConnectionFactoryTest {
 
     private ProtocolType test = new ProtocolType("ConnectionFactoryTest", "ConnectionFactoryTest".getBytes());
 
+    private static String remoteAddress;
+    private static int serverPort;
+
+    private static NioServerSocketChannel serverSocketChannel;
+
+    @BeforeAll
+    public static void beforeAll() throws InterruptedException {
+        serverSocketChannel = TestServerUtils.startEmptyServer();
+        remoteAddress = serverSocketChannel.localAddress().getHostName();
+        serverPort = serverSocketChannel.localAddress().getPort();
+    }
+
+    @AfterAll
+    public static void afterAll() throws InterruptedException {
+        serverSocketChannel.close().sync();
+    }
 
     @Test
     public void testNewInstance() {

@@ -1,6 +1,7 @@
 package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.Endpoint;
+import io.github.xinfra.lab.remoting.common.TestServerUtils;
 import io.github.xinfra.lab.remoting.common.Until;
 import io.github.xinfra.lab.remoting.message.HeartbeatTrigger;
 import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
@@ -9,7 +10,10 @@ import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.ConcurrentHashMap;
@@ -22,7 +26,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-public class ConnectionEventHandlerTest extends ServerBase1Test {
+public class ConnectionEventHandlerTest {
 
     private static ProtocolType test = new ProtocolType("ConnectionEventHandlerTest", "ConnectionEventHandlerTest".getBytes());
 
@@ -38,6 +42,23 @@ public class ConnectionEventHandlerTest extends ServerBase1Test {
                 };
             }
         });
+    }
+
+    private static String remoteAddress;
+    private static int serverPort;
+
+    private static NioServerSocketChannel serverSocketChannel;
+
+    @BeforeAll
+    public static void beforeAll() throws InterruptedException {
+        serverSocketChannel = TestServerUtils.startEmptyServer();
+        remoteAddress = serverSocketChannel.localAddress().getHostName();
+        serverPort = serverSocketChannel.localAddress().getPort();
+    }
+
+    @AfterAll
+    public static void afterAll() throws InterruptedException {
+        serverSocketChannel.close().sync();
     }
 
     @Test

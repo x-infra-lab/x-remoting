@@ -1,10 +1,14 @@
 package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.Endpoint;
+import io.github.xinfra.lab.remoting.common.TestServerUtils;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
+import io.netty.channel.socket.nio.NioServerSocketChannel;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -14,10 +18,27 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 
-public class ServerConnectionManagerTest extends ServerBase1Test {
+public class ServerConnectionManagerTest {
     private ConnectionManager connectionManager;
     private boolean skipAfter;
     private ProtocolType test = new ProtocolType("ServerConnectionManagerTest", "ServerConnectionManagerTest".getBytes());
+
+    private static String remoteAddress;
+    private static int serverPort;
+
+    private static NioServerSocketChannel serverSocketChannel;
+
+    @BeforeAll
+    public static void beforeAll() throws InterruptedException {
+        serverSocketChannel = TestServerUtils.startEmptyServer();
+        remoteAddress = serverSocketChannel.localAddress().getHostName();
+        serverPort = serverSocketChannel.localAddress().getPort();
+    }
+
+    @AfterAll
+    public static void afterAll() throws InterruptedException {
+        serverSocketChannel.close().sync();
+    }
 
     @BeforeEach
     public void before() {
