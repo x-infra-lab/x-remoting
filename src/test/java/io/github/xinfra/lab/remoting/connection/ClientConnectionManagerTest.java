@@ -2,6 +2,7 @@ package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.common.TestServerUtils;
+import io.github.xinfra.lab.remoting.common.Until;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.netty.channel.Channel;
@@ -17,6 +18,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -274,4 +277,53 @@ public class ClientConnectionManagerTest {
         Assertions.assertNotNull(connection);
     }
 
+    @Test
+    public void testAsyncReconnect2() throws InterruptedException, RemotingException, TimeoutException {
+        // valid endpoint
+        Endpoint endpoint = new Endpoint(test, remoteAddress, serverPort);
+
+        Map<Endpoint, ConnectionHolder> connections = ((ClientConnectionManager) connectionManager).connections;
+
+        Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
+        connectionManager.removeAndClose(connection);
+        Assertions.assertTrue(!connections.containsKey(endpoint));
+
+        Until.untilIsTrue(
+                () -> {
+                    ConnectionHolder connectionHolder = connections.get(endpoint);
+                    if (connectionHolder != null && connectionHolder.get() != null) {
+                        return true;
+                    }
+                    return false;
+                }, 100, 30
+        );
+
+        Assertions.assertTrue(connections.containsKey(endpoint));
+        connection = connectionManager.get(endpoint);
+        System.out.println("connections:" + connections);
+        Assertions.assertNotNull(connection);
+    }
+
+    @Test
+    void testDisableReconnect() throws RemotingException, ExecutionException, InterruptedException, TimeoutException {
+        Endpoint endpoint = new Endpoint(test, remoteAddress, serverPort);
+
+        connectionManager.reconnect(endpoint);
+        connectionManager.asyncReconnect(endpoint).get(3, TimeUnit.SECONDS);
+
+        connectionManager.disableReconnect(endpoint);
+        RemotingException remotingException = Assertions.assertThrowsExactly(RemotingException.class, () -> {
+            connectionManager.reconnect(endpoint);
+        });
+
+        ExecutionException executionException = Assertions.assertThrows(ExecutionException.class, () -> {
+            connectionManager.asyncReconnect(endpoint).get(3, TimeUnit.SECONDS);
+        });
+        Assertions.assertTrue(executionException.getCause() instanceof RemotingException);
+
+        connectionManager.enableReconnect(endpoint);
+
+        connectionManager.reconnect(endpoint);
+        connectionManager.asyncReconnect(endpoint).get(3, TimeUnit.SECONDS);
+    }
 }
