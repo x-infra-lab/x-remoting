@@ -25,4 +25,8 @@ public class RpcInvokeFuture<T> {
         RpcResponseMessage responseMessage = (RpcResponseMessage) invokeFuture.get(timeout, unit);
         return RpcResponses.getResponseObject(responseMessage);
     }
+
+    public boolean isDone() {
+        return invokeFuture.isDone();
+    }
 }
