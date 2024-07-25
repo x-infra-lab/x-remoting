@@ -226,7 +226,7 @@ public class ClientConnectionManagerTest {
 
 
         Map<Endpoint, ConnectionHolder> connections =
-                ((ClientConnectionManager) connectionManager).getConnections();
+                ((ClientConnectionManager) connectionManager).connections;
         Assertions.assertTrue(connections.containsKey(endpoint));
         connections.remove(endpoint);
 

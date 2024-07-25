@@ -1,8 +1,7 @@
 package io.github.xinfra.lab.remoting.client;
 
 
-import io.github.xinfra.lab.remoting.annotation.OnlyForTest;
-import io.github.xinfra.lab.remoting.connection.Connection;
+import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
@@ -28,9 +27,8 @@ public class InvokeFuture {
 
     private Message message;
 
-    @OnlyForTest
-    @Getter
-    private Timeout timeout;
+    @AccessForTest
+    protected Timeout timeout;
 
     private InvokeCallBack invokeCallBack;
 

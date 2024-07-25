@@ -1,7 +1,7 @@
 package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.Endpoint;
-import io.github.xinfra.lab.remoting.annotation.OnlyForTest;
+import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
@@ -29,9 +29,8 @@ public class Connection {
 
     public static final AttributeKey<Integer> HEARTBEAT_FAIL_COUNT = AttributeKey.valueOf("heartbeat_fail_count");
 
-    @OnlyForTest
-    @Getter
-    private ConcurrentHashMap<Integer, InvokeFuture> invokeMap = new ConcurrentHashMap<>();
+    @AccessForTest
+    protected ConcurrentHashMap<Integer, InvokeFuture> invokeMap = new ConcurrentHashMap<>();
 
     @Getter
     private Channel channel;

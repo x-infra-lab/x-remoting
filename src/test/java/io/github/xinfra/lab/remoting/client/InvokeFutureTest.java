@@ -42,7 +42,7 @@ public class InvokeFutureTest {
 
     @Test
     public void testTimeout() {
-        Assertions.assertNull(invokeFuture.getTimeout());
+        Assertions.assertNull(invokeFuture.timeout);
         Assertions.assertFalse(invokeFuture.cancelTimeout());
 
         HashedWheelTimer timer = new HashedWheelTimer();
@@ -50,11 +50,11 @@ public class InvokeFutureTest {
         Timeout timeout = timer.newTimeout(t -> {
         }, 3, TimeUnit.SECONDS);
         invokeFuture.addTimeout(timeout);
-        Assertions.assertEquals(invokeFuture.getTimeout(), timeout);
+        Assertions.assertEquals(invokeFuture.timeout, timeout);
 
         Assertions.assertTrue(invokeFuture.cancelTimeout());
         Assertions.assertFalse(invokeFuture.cancelTimeout());
-        Assertions.assertTrue(invokeFuture.getTimeout().isCancelled());
+        Assertions.assertTrue(invokeFuture.timeout.isCancelled());
 
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
             invokeFuture.addTimeout(timeout);

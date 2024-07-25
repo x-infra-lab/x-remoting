@@ -124,6 +124,6 @@ public class ConnectionTest {
         });
         connection.onClose();
 
-        Assertions.assertEquals(0, connection.getInvokeMap().size());
+        Assertions.assertEquals(0, connection.invokeMap.size());
     }
 }

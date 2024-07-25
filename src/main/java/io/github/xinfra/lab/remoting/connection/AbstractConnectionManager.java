@@ -1,11 +1,10 @@
 package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.Endpoint;
-import io.github.xinfra.lab.remoting.annotation.OnlyForTest;
+import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
-import lombok.Getter;
 import org.apache.commons.lang3.Validate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +24,7 @@ import java.util.concurrent.TimeUnit;
 public abstract class AbstractConnectionManager extends AbstractLifeCycle implements ConnectionManager {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractConnectionManager.class);
-    @OnlyForTest
-    @Getter
+    @AccessForTest
     protected Map<Endpoint, ConnectionHolder> connections = new ConcurrentHashMap<>();
 
     protected ConnectionFactory connectionFactory;
