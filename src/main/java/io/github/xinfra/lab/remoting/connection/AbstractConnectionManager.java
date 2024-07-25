@@ -163,17 +163,17 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
     }
 
     @Override
-    public void disableReconnect(Endpoint endpoint) {
+    public synchronized void disableReconnect(Endpoint endpoint) {
         disableReconnectEndpoints.add(endpoint);
     }
 
     @Override
-    public void enableReconnect(Endpoint endpoint) {
+    public synchronized void enableReconnect(Endpoint endpoint) {
         disableReconnectEndpoints.remove(endpoint);
     }
 
     @Override
-    public Future<Void> asyncReconnect(Endpoint endpoint) {
+    public synchronized Future<Void> asyncReconnect(Endpoint endpoint) {
         if (disableReconnectEndpoints.contains(endpoint)) {
             log.warn("endpoint:{} is disable to asyncReconnect", endpoint);
             CompletableFuture<Void> future = new CompletableFuture<>();

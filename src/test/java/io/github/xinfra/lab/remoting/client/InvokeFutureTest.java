@@ -20,6 +20,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -62,7 +63,7 @@ public class InvokeFutureTest {
     }
 
     @Test
-    public void testAwait() throws InterruptedException {
+    public void testGet() throws InterruptedException {
         Message message = mock(Message.class);
         ExecutorService executorService = Executors.newFixedThreadPool(2);
         executorService.submit(() -> {
@@ -71,17 +72,19 @@ public class InvokeFutureTest {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            invokeFuture.finish(message);
+            invokeFuture.complete(message);
         });
 
-        Assertions.assertNull(invokeFuture.await(1, TimeUnit.SECONDS));
+        Assertions.assertThrows(TimeoutException.class, ()->{
+            invokeFuture.get(1, TimeUnit.SECONDS);
+        });
         Assertions.assertFalse(invokeFuture.isDone());
 
-        Message result = invokeFuture.await();
+        Message result = invokeFuture.get();
         Assertions.assertSame(result, message);
         Assertions.assertTrue(invokeFuture.isDone());
 
-        result = invokeFuture.await();
+        result = invokeFuture.get();
         Assertions.assertSame(result, message);
         Assertions.assertTrue(invokeFuture.isDone());
     }
@@ -120,7 +123,7 @@ public class InvokeFutureTest {
 
         Message message = mock(Message.class);
 
-        invokeFuture.finish(message);
+        invokeFuture.complete(message);
 
         invokeFuture.executeCallBack();
         Assertions.assertTrue(callbackExecuted.get());
@@ -168,7 +171,7 @@ public class InvokeFutureTest {
         Message message = mock(Message.class);
         when(message.protocolType()).thenReturn(test);
 
-        invokeFuture.finish(message);
+        invokeFuture.complete(message);
 
         invokeFuture.asyncExecuteCallBack();
         countDownLatch.await();

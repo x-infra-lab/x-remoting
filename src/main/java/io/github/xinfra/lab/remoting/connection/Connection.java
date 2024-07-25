@@ -83,7 +83,7 @@ public class Connection {
             InvokeFuture invokeFuture = removeInvokeFuture(requestId);
             if (invokeFuture != null) {
                 invokeFuture.cancelTimeout();
-                invokeFuture.finish(createConnectionClosedMessage(requestId));
+                invokeFuture.complete(createConnectionClosedMessage(requestId));
                 invokeFuture.asyncExecuteCallBack();
             }
         }

@@ -11,7 +11,9 @@ import io.netty.util.Timer;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 @Slf4j
 public class BaseRemoting extends AbstractLifeCycle {
@@ -22,7 +24,6 @@ public class BaseRemoting extends AbstractLifeCycle {
     public BaseRemoting(MessageFactory messageFactory) {
         this.messageFactory = messageFactory;
 
-        // todo close it
         // todo netty setup leakDetection
         this.timer = new HashedWheelTimer();
     }
@@ -37,7 +38,7 @@ public class BaseRemoting extends AbstractLifeCycle {
                         if (!channelFuture.isSuccess()) {
                             InvokeFuture future = connection.removeInvokeFuture(requestId);
                             if (future != null) {
-                                future.finish(messageFactory.createSendFailResponseMessage(requestId,
+                                future.complete(messageFactory.createSendFailResponseMessage(requestId,
                                         channelFuture.cause()));
                                 log.error("Send message fail. id:{}", requestId, channelFuture.cause());
                             }
@@ -47,14 +48,14 @@ public class BaseRemoting extends AbstractLifeCycle {
         } catch (Throwable t) {
             InvokeFuture future = connection.removeInvokeFuture(requestId);
             if (future != null) {
-                future.finish(messageFactory.createSendFailResponseMessage(requestId, t));
+                future.complete(messageFactory.createSendFailResponseMessage(requestId, t));
                 log.error("Invoke sending message fail. id:{}", requestId, t);
             }
         }
-
-        Message result = invokeFuture.await(timeoutMills, TimeUnit.MILLISECONDS);
-
-        if (result == null) {
+        Message result;
+        try {
+            result = invokeFuture.get(timeoutMills, TimeUnit.MILLISECONDS);
+        } catch (TimeoutException timeoutException) {
             connection.removeInvokeFuture(requestId);
             result = messageFactory.createTimeoutResponseMessage(requestId);
             log.warn("Wait result timeout. id:{}", requestId);
@@ -70,7 +71,7 @@ public class BaseRemoting extends AbstractLifeCycle {
             InvokeFuture future = connection.removeInvokeFuture(requestId);
             if (future != null) {
                 Message result = messageFactory.createTimeoutResponseMessage(requestId);
-                future.finish(result);
+                future.complete(result);
             }
             log.warn("Wait result timeout. id:{}", requestId);
         }, timeoutMills, TimeUnit.MILLISECONDS);
@@ -84,7 +85,7 @@ public class BaseRemoting extends AbstractLifeCycle {
                             InvokeFuture future = connection.removeInvokeFuture(requestId);
                             if (future != null) {
                                 future.cancelTimeout();
-                                future.finish(messageFactory.createSendFailResponseMessage(requestId,
+                                future.complete(messageFactory.createSendFailResponseMessage(requestId,
                                         channelFuture.cause()));
                             }
                             log.error("Send message fail. id:{}", requestId, channelFuture.cause());
@@ -95,7 +96,7 @@ public class BaseRemoting extends AbstractLifeCycle {
             InvokeFuture future = connection.removeInvokeFuture(requestId);
             if (future != null) {
                 future.cancelTimeout();
-                future.finish(messageFactory.createSendFailResponseMessage(requestId, t));
+                future.complete(messageFactory.createSendFailResponseMessage(requestId, t));
             }
             log.error("Invoke sending message fail. id:{}", requestId, t);
         }
@@ -113,7 +114,7 @@ public class BaseRemoting extends AbstractLifeCycle {
             InvokeFuture future = connection.removeInvokeFuture(requestId);
             if (future != null) {
                 Message result = messageFactory.createTimeoutResponseMessage(requestId);
-                future.finish(result);
+                future.complete(result);
                 future.asyncExecuteCallBack();
             }
             log.warn("Wait result timeout. id:{}", requestId);
@@ -129,7 +130,7 @@ public class BaseRemoting extends AbstractLifeCycle {
                             InvokeFuture future = connection.removeInvokeFuture(requestId);
                             if (future != null) {
                                 future.cancelTimeout();
-                                future.finish(messageFactory.createSendFailResponseMessage(requestId,
+                                future.complete(messageFactory.createSendFailResponseMessage(requestId,
                                         channelFuture.cause()));
                                 future.asyncExecuteCallBack();
                             }
@@ -141,7 +142,7 @@ public class BaseRemoting extends AbstractLifeCycle {
             InvokeFuture future = connection.removeInvokeFuture(requestId);
             if (future != null) {
                 future.cancelTimeout();
-                future.finish(messageFactory.createSendFailResponseMessage(requestId, t));
+                future.complete(messageFactory.createSendFailResponseMessage(requestId, t));
                 future.asyncExecuteCallBack();
             }
             log.error("Invoke sending message fail. id:{}", requestId, t);

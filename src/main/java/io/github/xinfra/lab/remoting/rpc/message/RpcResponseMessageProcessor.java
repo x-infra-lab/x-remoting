@@ -3,8 +3,6 @@ package io.github.xinfra.lab.remoting.rpc.message;
 import io.github.xinfra.lab.remoting.RemotingContext;
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
 import io.github.xinfra.lab.remoting.connection.Connection;
-import io.github.xinfra.lab.remoting.rpc.message.RpcMessage;
-import io.github.xinfra.lab.remoting.rpc.message.RpcResponseMessage;
 import io.github.xinfra.lab.remoting.processor.RemotingProcessor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,7 +30,7 @@ public class RpcResponseMessageProcessor implements RemotingProcessor<RpcMessage
         InvokeFuture future = connection.removeInvokeFuture(id);
         if (future != null) {
             future.cancelTimeout();
-            future.finish(responseMessage);
+            future.complete(responseMessage);
             try {
                 future.executeCallBack();
             } catch (Throwable t) {

@@ -14,11 +14,13 @@ import org.apache.commons.lang3.Validate;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
-public class InvokeFuture {
+public class InvokeFuture<T extends Message> implements Future {
 
     @Getter
     private int requestId;
@@ -97,39 +99,47 @@ public class InvokeFuture {
         return classLoader;
     }
 
-    public void finish(Message result) {
+    public void complete(Message result) {
         Validate.isTrue(this.message == null, "requestId: %s InvokeFuture already finished.", requestId);
         this.message = result;
         countDownLatch.countDown();
     }
 
-    public boolean isDone() {
-        return countDownLatch.getCount() <= 0;
-    }
-
-    public Message await() throws InterruptedException {
-        countDownLatch.await();
-        return message;
-    }
-
-    /**
-     * @param timeout
-     * @param unit
-     * @return null if timeout
-     * @throws InterruptedException
-     */
-    public Message await(long timeout, TimeUnit unit) throws InterruptedException {
-        boolean finished = countDownLatch.await(timeout, unit);
-        if (!finished) {
-            return null;
-        }
-        return message;
-    }
 
     public boolean cancelTimeout() {
         if (timeout != null) {
             return timeout.cancel();
         }
         return false;
+    }
+
+
+    @Override
+    public boolean cancel(boolean mayInterruptIfRunning) {
+        throw new UnsupportedOperationException("InvokeFuture not support method cannel");
+    }
+
+    @Override
+    public boolean isCancelled() {
+        throw new UnsupportedOperationException("InvokeFuture not support method isCancelled");
+    }
+
+    public boolean isDone() {
+        return countDownLatch.getCount() <= 0;
+    }
+
+    @Override
+    public Message get() throws InterruptedException {
+        countDownLatch.await();
+        return message;
+    }
+
+    @Override
+    public Message get(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
+        boolean finished = countDownLatch.await(timeout, unit);
+        if (!finished) {
+            throw new TimeoutException("InvokeFuture timeout");
+        }
+        return message;
     }
 }
