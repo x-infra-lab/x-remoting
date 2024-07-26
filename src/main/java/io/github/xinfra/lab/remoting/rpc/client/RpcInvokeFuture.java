@@ -15,13 +15,12 @@ public class RpcInvokeFuture<T> {
         this.invokeFuture = invokeFuture;
     }
 
-
-    public <T> T get() throws InterruptedException, RemotingException {
+    public T get() throws InterruptedException, RemotingException {
         RpcResponseMessage responseMessage = (RpcResponseMessage) invokeFuture.get();
         return RpcResponses.getResponseObject(responseMessage);
     }
 
-    public <T> T get(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException, RemotingException {
+    public T get(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException, RemotingException {
         RpcResponseMessage responseMessage = (RpcResponseMessage) invokeFuture.get(timeout, unit);
         return RpcResponses.getResponseObject(responseMessage);
     }
@@ -29,4 +28,5 @@ public class RpcInvokeFuture<T> {
     public boolean isDone() {
         return invokeFuture.isDone();
     }
+
 }

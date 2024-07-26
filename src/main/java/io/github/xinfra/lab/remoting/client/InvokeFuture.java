@@ -23,20 +23,20 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class InvokeFuture<T extends Message> implements Future {
 
     @Getter
-    private int requestId;
+    private final int requestId;
 
     private final CountDownLatch countDownLatch;
 
-    private Message message;
+    private volatile Message message;
 
     @AccessForTest
-    protected Timeout timeout;
+    protected volatile Timeout timeout;
 
-    private InvokeCallBack invokeCallBack;
+    private volatile InvokeCallBack invokeCallBack;
 
     private final AtomicBoolean callBackExecuted = new AtomicBoolean(false);
 
-    private ClassLoader classLoader;
+    private final ClassLoader classLoader;
 
     public InvokeFuture(int requestId) {
         this.requestId = requestId;

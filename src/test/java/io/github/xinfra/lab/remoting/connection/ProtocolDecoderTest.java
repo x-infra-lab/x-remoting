@@ -8,6 +8,7 @@ import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -89,12 +90,15 @@ public class ProtocolDecoderTest {
         System.arraycopy(bytes, part1Length, part2, 0, part2Length);
 
         // write partial data
-        ByteBuf part1ByteBuf = Unpooled.wrappedBuffer(part1);
+
+        ByteBuf part1ByteBuf = ByteBufAllocator.DEFAULT.buffer(part1Length);
+        part1ByteBuf.writeBytes(part1);
         channel.writeInbound(part1ByteBuf);
         Assertions.assertTrue(channel.inboundMessages().isEmpty());
 
         // write whole data
-        ByteBuf part2ByteBuf = Unpooled.wrappedBuffer(part2);
+        ByteBuf part2ByteBuf = ByteBufAllocator.DEFAULT.buffer(part2Length);
+        part1ByteBuf.writeBytes(part2);
         channel.writeInbound(part2ByteBuf);
         Assertions.assertTrue(channel.finish());
         Message message = (Message) channel.inboundMessages().poll();
