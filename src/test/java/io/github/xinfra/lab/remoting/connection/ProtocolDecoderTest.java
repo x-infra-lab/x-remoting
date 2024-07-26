@@ -9,7 +9,6 @@ import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.DecoderException;
@@ -38,7 +37,7 @@ public class ProtocolDecoderTest {
             @Override
             public void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
                 // simulate read all data
-                in.readBytes(in.readableBytes());
+                in.readerIndex(in.readableBytes());
                 // sumulate decode one message
                 out.add(decodeMockMessage);
             }
@@ -46,7 +45,8 @@ public class ProtocolDecoderTest {
         Protocol protocol = ProtocolManager.getProtocol(testProtocol);
         ((TestProtocol) protocol).setTestMessageDecoder(messageDecoder);
 
-        ByteBuf byteBuf = Unpooled.wrappedBuffer(testProtocol.protocolCode());
+        ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer(testProtocol.protocolCode().length);
+        byteBuf.writeBytes(testProtocol.protocolCode());
         channel.writeInbound(byteBuf);
         Assertions.assertTrue(channel.finish());
         Message message = (Message) channel.inboundMessages().poll();
@@ -68,7 +68,7 @@ public class ProtocolDecoderTest {
             @Override
             public void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
                 // simulate read all data
-                in.readBytes(in.readableBytes());
+                in.readerIndex(in.readableBytes());
                 // sumulate decode one message
                 out.add(decodeMockMessage);
             }
@@ -98,7 +98,7 @@ public class ProtocolDecoderTest {
 
         // write whole data
         ByteBuf part2ByteBuf = ByteBufAllocator.DEFAULT.buffer(part2Length);
-        part1ByteBuf.writeBytes(part2);
+        part2ByteBuf.writeBytes(part2);
         channel.writeInbound(part2ByteBuf);
         Assertions.assertTrue(channel.finish());
         Message message = (Message) channel.inboundMessages().poll();
@@ -117,7 +117,8 @@ public class ProtocolDecoderTest {
         channel.attr(Connection.PROTOCOL).set(testProtocol);
 
 
-        ByteBuf byteBuf = Unpooled.wrappedBuffer(testProtocol.protocolCode());
+        ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer(testProtocol.protocolCode().length);
+        byteBuf.writeBytes(testProtocol.protocolCode());
         // Bad header
         ByteBuf invalidByteBuf = byteBuf.copy();
         invalidByteBuf.setByte(0, byteBuf.getByte(0) + 1);
@@ -128,5 +129,6 @@ public class ProtocolDecoderTest {
                 });
         Assertions.assertTrue(decoderException.getCause() instanceof CodecException);
 
+        byteBuf.release();
     }
 }

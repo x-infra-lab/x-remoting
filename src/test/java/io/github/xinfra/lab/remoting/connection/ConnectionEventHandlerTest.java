@@ -154,7 +154,7 @@ public class ConnectionEventHandlerTest {
         ConnectionManager tempConnectionManager = connectionManager;
         Until.untilIsTrue(() -> {
             try {
-                verify(tempConnectionManager, times(1)).asyncReconnect(eq(endpoint));
+                verify(tempConnectionManager, times(1)).reconnect(eq(endpoint));
                 return true;
             } catch (Throwable e) {
                 return false;
@@ -200,7 +200,7 @@ public class ConnectionEventHandlerTest {
         ConnectionManager tempConnectionManager = connectionManager;
         Until.untilIsTrue(() -> {
             try {
-                verify(tempConnectionManager, times(1)).asyncReconnect(eq(endpoint));
+                verify(tempConnectionManager, times(1)).reconnect(eq(endpoint));
                 return true;
             } catch (Throwable e) {
                 return false;
@@ -246,7 +246,7 @@ public class ConnectionEventHandlerTest {
         ConnectionManager tempConnectionManager = connectionManager;
         Until.untilIsTrue(() -> {
             try {
-                verify(tempConnectionManager, times(1)).asyncReconnect(eq(endpoint));
+                verify(tempConnectionManager, times(1)).reconnect(eq(endpoint));
                 return true;
             } catch (Throwable e) {
                 return false;

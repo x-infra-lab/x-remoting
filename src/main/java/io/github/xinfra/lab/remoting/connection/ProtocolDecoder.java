@@ -30,6 +30,7 @@ public class ProtocolDecoder extends ByteToMessageDecoder {
             if (Arrays.equals(protocolCode, protocolType.protocolCode())) {
                 ProtocolManager.getProtocol(protocolType).decoder().decode(ctx, in, out);
             } else {
+                in.release();
                 throw new CodecException("unknown protocol code:" + Arrays.toString(protocolCode)
                         + " for protocolType");
             }
