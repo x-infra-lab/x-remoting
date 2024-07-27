@@ -9,21 +9,25 @@ import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.message.ResponseStatus;
 import io.github.xinfra.lab.remoting.rpc.heartbeat.RpcHeartbeatRequestMessage;
 
+import java.net.SocketAddress;
+
 
 public class RpcMessageFactory implements MessageFactory {
     @Override
-    public RpcResponseMessage createSendFailResponseMessage(int id, Throwable cause) {
+    public RpcResponseMessage createSendFailResponseMessage(int id, Throwable cause, SocketAddress remoteAddress) {
         RpcResponseMessage rpcResponseMessage = new RpcResponseMessage(id);
         rpcResponseMessage.setStatus(ResponseStatus.CLIENT_SEND_ERROR.getCode());
         rpcResponseMessage.setCause(new SendMessageException(cause));
+        rpcResponseMessage.setRemoteAddress(remoteAddress);
         return rpcResponseMessage;
     }
 
     @Override
-    public RpcResponseMessage createTimeoutResponseMessage(int id) {
+    public RpcResponseMessage createTimeoutResponseMessage(int id, SocketAddress remoteAddress) {
         RpcResponseMessage rpcResponseMessage = new RpcResponseMessage(id);
         rpcResponseMessage.setStatus(ResponseStatus.TIMEOUT.getCode());
         rpcResponseMessage.setCause(new TimeoutException());
+        rpcResponseMessage.setRemoteAddress(remoteAddress);
         return rpcResponseMessage;
     }
 

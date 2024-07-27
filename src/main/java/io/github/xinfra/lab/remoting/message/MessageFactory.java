@@ -1,13 +1,14 @@
 package io.github.xinfra.lab.remoting.message;
 
 
+import java.net.SocketAddress;
 
 public interface MessageFactory {
 
 
-    Message createSendFailResponseMessage(int id, Throwable cause);
+    Message createSendFailResponseMessage(int id, Throwable cause, SocketAddress remoteAddress);
 
-    Message createTimeoutResponseMessage(int id);
+    Message createTimeoutResponseMessage(int id, SocketAddress remoteAddress);
 
     Message createRequestMessage();
 
