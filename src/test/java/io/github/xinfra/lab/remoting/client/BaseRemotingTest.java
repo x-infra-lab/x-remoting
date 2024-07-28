@@ -449,7 +449,7 @@ public class BaseRemotingTest {
                     try {
                         verify(finalChannel, atLeastOnce()).writeAndFlush(any());
                         return true;
-                    } catch (Exception e) {
+                    } catch (Throwable e) {
                         return false;
                     }
                 }, 30, 100
@@ -485,7 +485,7 @@ public class BaseRemotingTest {
                     try {
                         verify(finalChannel, atLeastOnce()).writeAndFlush(any());
                         return true;
-                    } catch (Exception e) {
+                    } catch (Throwable e) {
                         return false;
                     }
                 }, 30, 100
@@ -521,7 +521,7 @@ public class BaseRemotingTest {
                     try {
                         verify(finalChannel, atLeastOnce()).writeAndFlush(any());
                         return true;
-                    } catch (Exception e) {
+                    } catch (Throwable e) {
                         return false;
                     }
                 }, 30, 100

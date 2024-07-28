@@ -67,7 +67,7 @@ public class BaseRemotingServerTest {
             try {
                 verify(finalServer, atLeastOnce()).createConnection(any());
                 return true;
-            } catch (Exception e) {
+            } catch (Throwable e) {
                 return false;
             }
         }, 30, 100);
