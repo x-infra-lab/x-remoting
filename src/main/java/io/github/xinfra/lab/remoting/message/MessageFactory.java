@@ -26,5 +26,5 @@ public interface MessageFactory {
 
     Message createResponse(int id, Object responseContent);
 
-    Message createConnectionClosedMessage(int id);
+    Message createConnectionClosedMessage(int id, SocketAddress remoteAddress);
 }

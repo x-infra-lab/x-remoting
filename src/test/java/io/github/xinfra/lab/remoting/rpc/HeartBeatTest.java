@@ -11,6 +11,7 @@ import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
 import io.github.xinfra.lab.remoting.rpc.server.RpcServer;
+import io.github.xinfra.lab.remoting.rpc.server.RpcServerConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,7 +31,9 @@ public class HeartBeatTest {
 
     @BeforeEach
     public void before() {
-        rpcServer = new RpcServer(findAvailableTcpPort());
+        RpcServerConfig rpcServerConfig = new RpcServerConfig();
+        rpcServerConfig.setPort(findAvailableTcpPort());
+        rpcServer = new RpcServer(rpcServerConfig);
         rpcServer.startup();
         rpcServer.registerUserProcessor(new SimpleUserProcessor());
     }
@@ -51,6 +54,7 @@ public class HeartBeatTest {
         Protocol protocol = ProtocolManager.getProtocol(RPC);
         MessageFactory messageFactory = protocol.messageFactory();
         BaseRemoting baseRemoting = new BaseRemoting(messageFactory);
+        baseRemoting.startup();
         Message heartbeatRequestMessage = messageFactory.createHeartbeatRequestMessage();
 
         Connection connection = connectionManager.getOrCreateIfAbsent(new Endpoint(RPC, remoteAddress.getHostName(), remoteAddress.getPort()));
@@ -74,5 +78,6 @@ public class HeartBeatTest {
         Assertions.assertNotNull(messageAtomicReference.get());
 
         connectionManager.shutdown();
+        baseRemoting.shutdown();
     }
 }

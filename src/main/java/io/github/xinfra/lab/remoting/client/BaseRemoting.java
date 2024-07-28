@@ -26,6 +26,7 @@ public class BaseRemoting extends AbstractLifeCycle {
     }
 
     public Message syncCall(Message message, Connection connection, int timeoutMills) throws InterruptedException {
+        ensureStarted();
         int requestId = message.id();
         InvokeFuture invokeFuture = new InvokeFuture(requestId);
         try {
@@ -37,7 +38,7 @@ public class BaseRemoting extends AbstractLifeCycle {
                             if (future != null) {
                                 future.complete(messageFactory.createSendFailResponseMessage(requestId,
                                         channelFuture.cause(), connection.remoteAddress()));
-                                log.error("Send message fail. id:{}", requestId, channelFuture.cause());
+                                log.error("Send message fail. id:{} remoteAddress:{}", requestId, connection.remoteAddress(), channelFuture.cause());
                             }
                         }
                     }
@@ -46,7 +47,7 @@ public class BaseRemoting extends AbstractLifeCycle {
             InvokeFuture future = connection.removeInvokeFuture(requestId);
             if (future != null) {
                 future.complete(messageFactory.createSendFailResponseMessage(requestId, t, connection.remoteAddress()));
-                log.error("Invoke sending message fail. id:{}", requestId, t);
+                log.error("Invoke sending message fail. id:{} remoteAddress:{}", requestId, connection.remoteAddress(), t);
             }
         }
         Message result;
@@ -55,12 +56,13 @@ public class BaseRemoting extends AbstractLifeCycle {
         } catch (TimeoutException timeoutException) {
             connection.removeInvokeFuture(requestId);
             result = messageFactory.createTimeoutResponseMessage(requestId, connection.remoteAddress());
-            log.warn("Wait result timeout. id:{}", requestId);
+            log.warn("Wait result timeout. id:{} remoteAddress:{}", requestId, connection.remoteAddress());
         }
         return result;
     }
 
     public InvokeFuture asyncCall(Message message, Connection connection, int timeoutMills) {
+        ensureStarted();
         int requestId = message.id();
         InvokeFuture invokeFuture = new InvokeFuture(requestId);
 
@@ -70,7 +72,7 @@ public class BaseRemoting extends AbstractLifeCycle {
                 Message result = messageFactory.createTimeoutResponseMessage(requestId, connection.remoteAddress());
                 future.complete(result);
             }
-            log.warn("Wait result timeout. id:{}", requestId);
+            log.warn("Wait result timeout. id:{} remoteAddress:{}", requestId, connection.remoteAddress());
         }, timeoutMills, TimeUnit.MILLISECONDS);
         invokeFuture.addTimeout(timeout);
 
@@ -85,7 +87,7 @@ public class BaseRemoting extends AbstractLifeCycle {
                                 future.complete(messageFactory.createSendFailResponseMessage(requestId,
                                         channelFuture.cause(), connection.remoteAddress()));
                             }
-                            log.error("Send message fail. id:{}", requestId, channelFuture.cause());
+                            log.error("Send message fail. id:{} remoteAddress:{}", requestId, connection.remoteAddress(), channelFuture.cause());
                         }
                     }
             );
@@ -95,7 +97,7 @@ public class BaseRemoting extends AbstractLifeCycle {
                 future.cancelTimeout();
                 future.complete(messageFactory.createSendFailResponseMessage(requestId, t, connection.remoteAddress()));
             }
-            log.error("Invoke sending message fail. id:{}", requestId, t);
+            log.error("Invoke sending message fail. id:{} remoteAddress:{}", requestId, connection.remoteAddress(), t);
         }
 
         return invokeFuture;
@@ -104,6 +106,7 @@ public class BaseRemoting extends AbstractLifeCycle {
     public void asyncCall(Message message, Connection connection,
                           int timeoutMills,
                           InvokeCallBack invokeCallBack) {
+        ensureStarted();
         int requestId = message.id();
         InvokeFuture invokeFuture = new InvokeFuture(requestId);
 
@@ -114,7 +117,7 @@ public class BaseRemoting extends AbstractLifeCycle {
                 future.complete(result);
                 future.asyncExecuteCallBack();
             }
-            log.warn("Wait result timeout. id:{}", requestId);
+            log.warn("Wait result timeout. id:{} remoteAddress:{}", requestId, connection.remoteAddress());
         }, timeoutMills, TimeUnit.MILLISECONDS);
         invokeFuture.addTimeout(timeout);
         invokeFuture.addCallBack(invokeCallBack);
@@ -131,7 +134,7 @@ public class BaseRemoting extends AbstractLifeCycle {
                                         channelFuture.cause(), connection.remoteAddress()));
                                 future.asyncExecuteCallBack();
                             }
-                            log.error("Send message fail. id:{}", requestId, channelFuture.cause());
+                            log.error("Send message fail. id:{} remoteAddress:{}", requestId, connection.remoteAddress(), channelFuture.cause());
                         }
                     }
             );
@@ -142,23 +145,24 @@ public class BaseRemoting extends AbstractLifeCycle {
                 future.complete(messageFactory.createSendFailResponseMessage(requestId, t, connection.remoteAddress()));
                 future.asyncExecuteCallBack();
             }
-            log.error("Invoke sending message fail. id:{}", requestId, t);
+            log.error("Invoke sending message fail. id:{} remoteAddress:{}", requestId, connection.remoteAddress(), t);
         }
 
     }
 
     public void oneway(Message message, Connection connection) {
+        ensureStarted();
         int requestId = message.id();
         try {
             connection.getChannel().writeAndFlush(message).addListener(
                     (ChannelFuture future) -> {
                         if (!future.isSuccess()) {
-                            log.error("Send message fail. id:{}", requestId, future.cause());
+                            log.error("Send message fail. id:{} remoteAddress:{}", requestId, connection.remoteAddress(), future.cause());
                         }
                     }
             );
         } catch (Throwable t) {
-            log.error("Invoke sending message fail. id:{}", requestId, t);
+            log.error("Invoke sending message fail. id:{} remoteAddress:{}", requestId, connection.remoteAddress(), t);
         }
     }
 

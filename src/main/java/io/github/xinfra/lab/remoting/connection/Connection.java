@@ -91,6 +91,6 @@ public class Connection {
 
     private Message createConnectionClosedMessage(int requestId) {
         Protocol protocol = ProtocolManager.getProtocol(endpoint.getProtocolType());
-        return protocol.messageFactory().createConnectionClosedMessage(requestId);
+        return protocol.messageFactory().createConnectionClosedMessage(requestId, remoteAddress());
     }
 }

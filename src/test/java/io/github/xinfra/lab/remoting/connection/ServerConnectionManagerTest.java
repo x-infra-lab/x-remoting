@@ -124,8 +124,7 @@ public class ServerConnectionManagerTest {
         verify(connection1, times(1)).close();
         verify(connection2, times(1)).close();
 
-        Assertions.assertNull(connectionManager.get(endpoint1));
-        Assertions.assertNull(connectionManager.get(endpoint2));
+        Assertions.assertTrue(((ServerConnectionManager) connectionManager).connections.isEmpty());
         skipAfter = true;
     }
 }

@@ -11,7 +11,9 @@ public class AbstractLifeCycle implements LifeCycle {
         if (started.compareAndSet(false, true)) {
             return;
         }
-        throw new IllegalStateException("this component has started");
+        throw new IllegalStateException(String.format(
+                "Component(%s) has started", getClass()
+                        .getSimpleName()));
     }
 
     @Override
@@ -19,11 +21,21 @@ public class AbstractLifeCycle implements LifeCycle {
         if (started.compareAndSet(true, false)) {
             return;
         }
-        throw new IllegalStateException("this component has closed");
+        throw new IllegalStateException(String.format(
+                "Component(%s) has shutdown", getClass()
+                        .getSimpleName()));
     }
 
     @Override
     public boolean isStarted() {
         return started.get();
+    }
+
+    protected void ensureStarted() {
+        if (!isStarted()) {
+            throw new IllegalStateException(String.format(
+                    "Component(%s) has not been started yet, please startup first!", getClass()
+                            .getSimpleName()));
+        }
     }
 }

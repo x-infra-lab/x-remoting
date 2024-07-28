@@ -24,6 +24,7 @@ import java.util.concurrent.Executors;
 import static io.github.xinfra.lab.remoting.connection.Connection.CONNECTION;
 import static io.github.xinfra.lab.remoting.connection.Connection.HEARTBEAT_FAIL_COUNT;
 import static io.github.xinfra.lab.remoting.connection.Connection.PROTOCOL;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -99,7 +100,7 @@ public class ConnectionTest {
 
         MessageFactory messageFactory = mock(MessageFactory.class);
         Message message = mock(Message.class);
-        doReturn(message).when(messageFactory).createConnectionClosedMessage(anyInt());
+        doReturn(message).when(messageFactory).createConnectionClosedMessage(anyInt(), any());
         doReturn(test).when(message).protocolType();
         ProtocolManager.registerProtocolIfAbsent(test, new TestProtocol() {
             @Override

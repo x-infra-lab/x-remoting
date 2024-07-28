@@ -31,14 +31,7 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 
     private ConnectionSelectStrategy connectionSelectStrategy = new RoundRobinConnectionSelectStrategy();
 
-    private ConnectionManagerConfig config = new ConnectionManagerConfig();
-
-    private ExecutorService reconnector = new ThreadPoolExecutor(1, 1,
-            0L, TimeUnit.MILLISECONDS,
-            new ArrayBlockingQueue<>(1024),
-            new NamedThreadFactory("Reconnector-Worker"));
-
-    private Set<Endpoint> disableReconnectEndpoints = new CopyOnWriteArraySet<>();
+    protected ConnectionManagerConfig config = new ConnectionManagerConfig();
 
 
     public AbstractConnectionManager() {
@@ -50,6 +43,7 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 
     @Override
     public synchronized Connection getOrCreateIfAbsent(Endpoint endpoint) throws RemotingException {
+        ensureStarted();
         Validate.notNull(endpoint, "endpoint can not be null");
 
         ConnectionHolder connectionHolder = connections.get(endpoint);
@@ -63,6 +57,7 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 
     @Override
     public void check(Connection connection) throws RemotingException {
+        ensureStarted();
         Validate.notNull(connection, "connection can not be null");
 
         if (connection.getChannel() == null || !connection.getChannel().isActive()) {
@@ -79,6 +74,7 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 
     @Override
     public synchronized void removeAndClose(Connection connection) {
+        ensureStarted();
         Validate.notNull(connection, "connection can not be null");
 
         Endpoint endpoint = connection.getEndpoint();
@@ -95,6 +91,7 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 
     @Override
     public Connection get(Endpoint endpoint) {
+        ensureStarted();
         Validate.notNull(endpoint, "endpoint can not be null");
 
         ConnectionHolder connectionHolder = connections.get(endpoint);
@@ -106,6 +103,7 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 
     @Override
     public synchronized void add(Connection connection) {
+        ensureStarted();
         Validate.notNull(connection, "connection can not be null");
 
         Endpoint endpoint = connection.getEndpoint();
@@ -128,77 +126,20 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
             connections.remove(endpoint);
         }
 
-        reconnector.shutdownNow();
     }
 
-    private ConnectionHolder createConnectionHolder(Endpoint endpoint) {
+    protected ConnectionHolder createConnectionHolder(Endpoint endpoint) {
         ConnectionHolder connectionHolder = new ConnectionHolder(connectionSelectStrategy);
         connections.put(endpoint, connectionHolder);
         return connectionHolder;
     }
 
-    private void createConnectionForHolder(Endpoint endpoint, ConnectionHolder connectionHolder, int size) throws RemotingException {
+    protected void createConnectionForHolder(Endpoint endpoint, ConnectionHolder connectionHolder, int size) throws RemotingException {
         for (int i = 0; i < size; i++) {
             Connection connection = connectionFactory.create(endpoint);
             connectionHolder.add(connection);
         }
     }
 
-    @Override
-    public synchronized void reconnect(Endpoint endpoint) throws RemotingException {
-        if (disableReconnectEndpoints.contains(endpoint)) {
-            log.warn("endpoint:{} is disable to reconnect", endpoint);
-            throw new RemotingException("endpoint is disable to reconnect:" + endpoint);
-        }
-        ConnectionHolder connectionHolder = connections.get(endpoint);
-        if (connectionHolder == null) {
-            connectionHolder = createConnectionHolder(endpoint);
-            createConnectionForHolder(endpoint, connectionHolder, config.getConnectionNumPreEndpoint());
-        } else {
-            int needCreateNum = config.getConnectionNumPreEndpoint() - connectionHolder.size();
-            if (needCreateNum > 0) {
-                createConnectionForHolder(endpoint, connectionHolder, needCreateNum);
-            }
-        }
-    }
 
-    @Override
-    public synchronized void disableReconnect(Endpoint endpoint) {
-        disableReconnectEndpoints.add(endpoint);
-    }
-
-    @Override
-    public synchronized void enableReconnect(Endpoint endpoint) {
-        disableReconnectEndpoints.remove(endpoint);
-    }
-
-    @Override
-    public synchronized Future<Void> asyncReconnect(Endpoint endpoint) {
-        if (disableReconnectEndpoints.contains(endpoint)) {
-            log.warn("endpoint:{} is disable to asyncReconnect", endpoint);
-            CompletableFuture<Void> future = new CompletableFuture<>();
-            future.completeExceptionally(new RemotingException("endpoint is disable to asyncReconnect:" + endpoint));
-            return future;
-        }
-
-        Callable<Void> callable = new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                try {
-                    reconnect(endpoint);
-                } catch (Exception e) {
-                    log.warn("reconnect endpoint:{} fail", endpoint, e);
-                    throw e;
-                }
-                return null;
-            }
-        };
-
-        try {
-            return reconnector.submit(callable);
-        } catch (Throwable t) {
-            log.warn("asyncReconnect submit failed.", t);
-            throw t;
-        }
-    }
 }

@@ -86,10 +86,11 @@ public class RpcMessageFactory implements MessageFactory {
     }
 
     @Override
-    public Message createConnectionClosedMessage(int id) {
+    public Message createConnectionClosedMessage(int id, SocketAddress remoteAddress) {
         RpcResponseMessage rpcResponseMessage = new RpcResponseMessage(id);
         rpcResponseMessage.setStatus(ResponseStatus.CONNECTION_CLOSED.getCode());
         rpcResponseMessage.setCause(new ConnectionClosedException());
+        rpcResponseMessage.setRemoteAddress(remoteAddress);
         return rpcResponseMessage;
     }
 }
