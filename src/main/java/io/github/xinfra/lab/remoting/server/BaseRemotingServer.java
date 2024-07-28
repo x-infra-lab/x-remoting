@@ -1,6 +1,7 @@
 package io.github.xinfra.lab.remoting.server;
 
 import io.github.xinfra.lab.remoting.Endpoint;
+import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.connection.Connection;
@@ -121,7 +122,8 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
         }
     }
 
-    private void createConnection(SocketChannel channel) {
+    @AccessForTest
+    protected void createConnection(SocketChannel channel) {
         InetSocketAddress inetSocketAddress = channel.remoteAddress();
         Endpoint endpoint = new Endpoint(protocolType(), inetSocketAddress.getHostName(), inetSocketAddress.getPort());
         Connection connection = new Connection(endpoint, channel);
