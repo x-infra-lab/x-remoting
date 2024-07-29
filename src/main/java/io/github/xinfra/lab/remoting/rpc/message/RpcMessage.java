@@ -158,7 +158,13 @@ public abstract class RpcMessage implements Message {
 
     private void deserializeContent() throws DeserializeException {
         if (content == null && contentData != null) {
-            this.content = SerializationManager.getSerializer(serializationType).deserialize(contentData, contentType);
+            Class<?> clazz = null;
+            try {
+                clazz = Class.forName(contentType);
+            } catch (ClassNotFoundException e) {
+                throw new DeserializeException(e);
+            }
+            this.content = SerializationManager.getSerializer(serializationType).deserialize(contentData, clazz);
         }
     }
 

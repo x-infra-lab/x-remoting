@@ -8,5 +8,5 @@ public interface Serializer {
     byte[] serialize(Object obj) throws SerializeException;
 
 
-    <T> T deserialize(byte[] data, String clazz) throws DeserializeException;
+    <T> T deserialize(byte[] data,  Class<T> clazz) throws DeserializeException;
 }

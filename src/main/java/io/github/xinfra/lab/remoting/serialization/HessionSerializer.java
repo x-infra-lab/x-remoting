@@ -2,7 +2,7 @@ package io.github.xinfra.lab.remoting.serialization;
 
 import com.caucho.hessian.io.Hessian2Input;
 import com.caucho.hessian.io.Hessian2Output;
-import com.caucho.hessian.io.SerializerFactory;
+import com.caucho.hessian.io.HessianFactory;
 import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
 
@@ -10,9 +10,11 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class HessionSeriializer implements Serializer {
+public class HessionSerializer implements Serializer {
 
-    private SerializerFactory serializerFactory = new SerializerFactory();
+    HessianFactory hessianFactory = new HessianFactory();
+
+    // todo: thinking `localOutputByteArray` occupy a large space
     private static ThreadLocal<ByteArrayOutputStream> localOutputByteArray = new ThreadLocal<ByteArrayOutputStream>() {
         @Override
         protected ByteArrayOutputStream initialValue() {
@@ -25,27 +27,33 @@ public class HessionSeriializer implements Serializer {
         ByteArrayOutputStream baos = localOutputByteArray.get();
         baos.reset();
 
-        Hessian2Output hessian2Output = new Hessian2Output(baos);
+        Hessian2Output hessian2Output = null;
         try {
+            hessian2Output = hessianFactory.createHessian2Output(baos);
             hessian2Output.writeObject(obj);
             hessian2Output.close();
         } catch (IOException e) {
             throw new SerializeException("serialize fail.", e);
+        } finally {
+            hessianFactory.freeHessian2Output(hessian2Output);
         }
 
         return baos.toByteArray();
     }
 
     @Override
-    public <T> T deserialize(byte[] data, String clazz) throws DeserializeException {
+    public <T> T deserialize(byte[] data, Class<T> clazz) throws DeserializeException {
         ByteArrayInputStream bais = new ByteArrayInputStream(data);
-        Hessian2Input hessian2Input = new Hessian2Input(bais);
-        Object obj = null;
+        Hessian2Input hessian2Input = null;
+        Object obj;
         try {
+            hessian2Input = hessianFactory.createHessian2Input(bais);
             obj = hessian2Input.readObject();
             hessian2Input.close();
         } catch (IOException e) {
             throw new DeserializeException("deserialize fail.", e);
+        } finally {
+            hessianFactory.freeHessian2Input(hessian2Input);
         }
         return (T) obj;
     }
