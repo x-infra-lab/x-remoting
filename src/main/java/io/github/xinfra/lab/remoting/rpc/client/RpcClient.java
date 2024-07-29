@@ -58,9 +58,10 @@ public class RpcClient extends AbstractLifeCycle {
     }
 
     public void registerUserProcessor(UserProcessor<?> userProcessor) {
-        UserProcessor<?> oldUserProcessor = userProcessors.put(userProcessor.interest(), userProcessor);
+        UserProcessor<?> oldUserProcessor = userProcessors.putIfAbsent(userProcessor.interest(), userProcessor);
         if (oldUserProcessor != null) {
-            log.warn("registered userProcessor change from:{} to:{}", oldUserProcessor, userProcessor);
+            String msg= "interest key:" + userProcessor.interest() + " has already been registered to rpc client.";
+            throw new RuntimeException(msg);
         }
     }
 }
