@@ -1,6 +1,8 @@
 package io.github.xinfra.lab.remoting.message;
 
 
+import io.github.xinfra.lab.remoting.rpc.message.ResponseStatus;
+
 import java.net.SocketAddress;
 
 public interface MessageFactory {

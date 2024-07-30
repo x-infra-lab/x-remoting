@@ -1,10 +1,16 @@
-package io.github.xinfra.lab.remoting.rpc.message;
+package io.github.xinfra.lab.remoting.rpc.processor;
 
 import io.github.xinfra.lab.remoting.RemotingContext;
 import io.github.xinfra.lab.remoting.message.MessageType;
-import io.github.xinfra.lab.remoting.message.ResponseStatus;
+import io.github.xinfra.lab.remoting.rpc.message.ResponseStatus;
 import io.github.xinfra.lab.remoting.processor.RemotingProcessor;
 import io.github.xinfra.lab.remoting.processor.UserProcessor;
+import io.github.xinfra.lab.remoting.rpc.message.RpcDeserializeLevel;
+import io.github.xinfra.lab.remoting.rpc.message.RpcMessage;
+import io.github.xinfra.lab.remoting.rpc.message.RpcMessageFactory;
+import io.github.xinfra.lab.remoting.rpc.message.RpcRequestMessage;
+import io.github.xinfra.lab.remoting.rpc.message.RpcResponseMessage;
+import io.github.xinfra.lab.remoting.rpc.message.RpcResponses;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.Executor;
@@ -26,7 +32,7 @@ public class RpcRequestMessageProcessor implements RemotingProcessor<RpcMessage>
     public void handleMessage(RemotingContext remotingContext, RpcMessage message) throws Exception {
         RpcRequestMessage requestMessage = (RpcRequestMessage) message;
 
-        if (!deserialize(remotingContext, requestMessage, RpcDeserializeLevel.content_type)) {
+        if (!deserialize(remotingContext, requestMessage, RpcDeserializeLevel.CONTENT_TYPE)) {
             return;
         }
 
@@ -43,7 +49,7 @@ public class RpcRequestMessageProcessor implements RemotingProcessor<RpcMessage>
         Executor userProcessorExecutor;
         if (userProcessor.executorSelector() != null) {
 
-            if (!deserialize(remotingContext, requestMessage, RpcDeserializeLevel.header)) {
+            if (!deserialize(remotingContext, requestMessage, RpcDeserializeLevel.HEADER)) {
                 return;
             }
 
@@ -64,7 +70,7 @@ public class RpcRequestMessageProcessor implements RemotingProcessor<RpcMessage>
                          UserProcessor userProcessor,
                          RpcRequestMessage requestMessage) {
 
-        if (!deserialize(remotingContext, requestMessage, RpcDeserializeLevel.all)) {
+        if (!deserialize(remotingContext, requestMessage, RpcDeserializeLevel.ALL)) {
             return;
         }
 

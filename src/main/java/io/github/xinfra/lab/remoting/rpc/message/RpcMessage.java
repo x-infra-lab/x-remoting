@@ -30,7 +30,7 @@ public abstract class RpcMessage implements Message {
 
     @Setter
     @Getter
-    private String header;
+    private RpcMessageHeader header;
 
     @Setter
     @Getter
@@ -111,7 +111,11 @@ public abstract class RpcMessage implements Message {
     }
 
     public void serializeHeader() throws SerializeException {
-        // TODO
+        if (header != null) {
+            Serializer serializer = SerializationManager.getSerializer(serializationType);
+            byte[] bytes = serializer.serialize(header);
+            setHeaderData(bytes);
+        }
     }
 
     public void setHeaderData(byte[] bytes) {
@@ -146,9 +150,9 @@ public abstract class RpcMessage implements Message {
     }
 
     public void deserialize(RpcDeserializeLevel level) throws DeserializeException {
-        if (level.ordinal() == RpcDeserializeLevel.content_type.ordinal()) {
+        if (level.ordinal() == RpcDeserializeLevel.CONTENT_TYPE.ordinal()) {
             deserializeContentType();
-        } else if (level.ordinal() == RpcDeserializeLevel.header.ordinal()) {
+        } else if (level.ordinal() == RpcDeserializeLevel.HEADER.ordinal()) {
             deserializeContentType();
             deserializeHeader();
         } else {
@@ -168,9 +172,9 @@ public abstract class RpcMessage implements Message {
         }
     }
 
-    private void deserializeHeader() {
+    private void deserializeHeader() throws DeserializeException {
         if (header == null && headerData != null) {
-            // TODO
+            this.header = SerializationManager.getSerializer(serializationType).deserialize(headerData, RpcMessageHeader.class);
         }
     }
 
