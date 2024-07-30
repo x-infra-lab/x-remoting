@@ -36,7 +36,7 @@ public class RpcMessageFactory implements MessageFactory {
     }
 
     @Override
-    public Message createHeartbeatRequestMessage() {
+    public RpcRequestMessage createHeartbeatRequestMessage() {
         return new RpcHeartbeatRequestMessage(IDGenerator.nextRequestId());
     }
 
@@ -55,21 +55,25 @@ public class RpcMessageFactory implements MessageFactory {
 
     @Override
     public RpcResponseMessage createExceptionResponse(int id, Throwable t, String errorMsg) {
+        // todo
         return null;
     }
 
     @Override
     public RpcResponseMessage createExceptionResponse(int id, String errorMsg) {
+        // todo
         return null;
     }
 
     @Override
     public RpcResponseMessage createExceptionResponse(int id, Throwable t) {
+        // todo
         return null;
     }
 
     @Override
     public RpcResponseMessage createExceptionResponse(int id, ResponseStatus status) {
+        // todo
         return null;
     }
 
@@ -85,7 +89,7 @@ public class RpcMessageFactory implements MessageFactory {
     }
 
     @Override
-    public Message createConnectionClosedMessage(int id, SocketAddress remoteAddress) {
+    public RpcResponseMessage createConnectionClosedMessage(int id, SocketAddress remoteAddress) {
         RpcResponseMessage rpcResponseMessage = new RpcResponseMessage(id);
         rpcResponseMessage.setStatus(ResponseStatus.CONNECTION_CLOSED.getCode());
         rpcResponseMessage.setCause(new ConnectionClosedException());
