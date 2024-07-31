@@ -1,7 +1,7 @@
 package io.github.xinfra.lab.remoting.server;
 
 import io.github.xinfra.lab.remoting.Endpoint;
-import io.github.xinfra.lab.remoting.common.Until;
+import io.github.xinfra.lab.remoting.common.Wait;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.connection.ConnectionFactory;
 import io.github.xinfra.lab.remoting.connection.DefaultConnectionFactory;
@@ -64,7 +64,7 @@ public class BaseRemotingServerTest {
         Assertions.assertNotNull(connection);
 
         BaseRemotingServer finalServer = server;
-        Until.untilIsTrue(() -> {
+        Wait.untilIsTrue(() -> {
             try {
                 verify(finalServer, atLeastOnce()).createConnection(any());
                 return true;
@@ -103,7 +103,7 @@ public class BaseRemotingServerTest {
         InetSocketAddress clientAddress = ((InetSocketAddress) clientConnection.getChannel().localAddress());
 
         Endpoint endpoint = new Endpoint(test, clientAddress.getHostName(), clientAddress.getPort());
-        Until.untilIsTrue(() -> {
+        Wait.untilIsTrue(() -> {
             return connectionManager.get(endpoint) != null;
         }, 30, 100);
 

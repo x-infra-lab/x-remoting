@@ -1,6 +1,7 @@
 package io.github.xinfra.lab.remoting.rpc.processor;
 
 import io.github.xinfra.lab.remoting.RemotingContext;
+import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.message.MessageType;
 import io.github.xinfra.lab.remoting.rpc.message.ResponseStatus;
 import io.github.xinfra.lab.remoting.processor.RemotingProcessor;
@@ -75,8 +76,6 @@ public class RpcRequestMessageProcessor implements RemotingProcessor<RpcMessage>
         }
 
         // TODO async
-
-
         ClassLoader contextClassLoader = null;
         try {
             if (userProcessor.getBizClassLoader() != null) {
@@ -112,6 +111,9 @@ public class RpcRequestMessageProcessor implements RemotingProcessor<RpcMessage>
         } catch (Throwable t) {
             log.error("Deserialize message fail. id:{} deserializeLevel:{}", requestMessage.id(), level, t);
 
+            if (!(t instanceof DeserializeException)) {
+                t = new DeserializeException("Deserialize requestMessage fail.", t);
+            }
             RpcResponseMessage responseMessage = rpcMessageFactory.createExceptionResponse(requestMessage.id(), t,
                     ResponseStatus.SERVER_DESERIAL_EXCEPTION);
 

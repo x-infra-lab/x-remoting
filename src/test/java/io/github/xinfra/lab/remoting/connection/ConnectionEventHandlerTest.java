@@ -2,7 +2,7 @@ package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.common.TestServerUtils;
-import io.github.xinfra.lab.remoting.common.Until;
+import io.github.xinfra.lab.remoting.common.Wait;
 import io.github.xinfra.lab.remoting.heartbeat.HeartbeatTrigger;
 import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
@@ -152,7 +152,7 @@ public class ConnectionEventHandlerTest {
         Assertions.assertTrue(channelFuture.isDone());
 
         ConnectionManager tempConnectionManager = connectionManager;
-        Until.untilIsTrue(() -> {
+        Wait.untilIsTrue(() -> {
             try {
                 verify(tempConnectionManager, times(1)).reconnect(eq(endpoint));
                 return true;
@@ -198,7 +198,7 @@ public class ConnectionEventHandlerTest {
         Assertions.assertTrue(channelFuture.isDone());
 
         ConnectionManager tempConnectionManager = connectionManager;
-        Until.untilIsTrue(() -> {
+        Wait.untilIsTrue(() -> {
             try {
                 verify(tempConnectionManager, times(1)).reconnect(eq(endpoint));
                 return true;
@@ -244,7 +244,7 @@ public class ConnectionEventHandlerTest {
         connection.getChannel().pipeline().fireExceptionCaught(new RuntimeException("testChannelExceptionCaught"));
 
         ConnectionManager tempConnectionManager = connectionManager;
-        Until.untilIsTrue(() -> {
+        Wait.untilIsTrue(() -> {
             try {
                 verify(tempConnectionManager, times(1)).reconnect(eq(endpoint));
                 return true;

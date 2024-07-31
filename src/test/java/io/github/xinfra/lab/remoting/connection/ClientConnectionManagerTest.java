@@ -2,7 +2,7 @@ package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.common.TestServerUtils;
-import io.github.xinfra.lab.remoting.common.Until;
+import io.github.xinfra.lab.remoting.common.Wait;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.netty.channel.Channel;
@@ -288,7 +288,7 @@ public class ClientConnectionManagerTest {
         connectionManager.removeAndClose(connection);
         Assertions.assertTrue(!connections.containsKey(endpoint));
 
-        Until.untilIsTrue(
+        Wait.untilIsTrue(
                 () -> {
                     ConnectionHolder connectionHolder = connections.get(endpoint);
                     if (connectionHolder != null && connectionHolder.get() != null) {

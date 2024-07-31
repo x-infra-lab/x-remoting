@@ -5,7 +5,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
-public class Until {
+public class Wait {
 
     /**
      * @param condition

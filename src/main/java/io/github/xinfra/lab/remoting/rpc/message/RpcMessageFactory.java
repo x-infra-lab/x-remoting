@@ -42,13 +42,8 @@ public class RpcMessageFactory implements MessageFactory {
     public RpcResponseMessage createExceptionResponse(int id, Throwable t, ResponseStatus status) {
         RpcResponseMessage rpcResponseMessage = new RpcResponseMessage(id);
         rpcResponseMessage.setStatus(status.getCode());
-
-        // TODO to be RpcServerException
-
-        rpcResponseMessage.setContent(t);
-        rpcResponseMessage.setContentType(t.getClass().getName());
-        // TODO
-        return null;
+        rpcResponseMessage.setCause(t);
+        return rpcResponseMessage;
     }
 
     @Override

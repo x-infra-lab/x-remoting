@@ -3,6 +3,8 @@ package io.github.xinfra.lab.remoting.rpc.codec;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.exception.CodecException;
 import io.github.xinfra.lab.remoting.message.Message;
+import io.github.xinfra.lab.remoting.message.MessageType;
+import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
 import io.github.xinfra.lab.remoting.rpc.message.ResponseStatus;
 import io.github.xinfra.lab.remoting.rpc.message.RpcMessageHeader;
 import io.github.xinfra.lab.remoting.rpc.message.RpcRequestMessage;
@@ -19,8 +21,7 @@ public class RpcMessageEncoderTest {
 
 
     @Test
-    public void testEncode1() throws Exception {
-
+    public void testEncodeRequest1() throws Exception {
         // build a requestMessage
         String content = "this is rpc content";
         String contentType = content.getClass().getName();
@@ -31,17 +32,44 @@ public class RpcMessageEncoderTest {
         requestMessage.setHeader(header);
         requestMessage.setContent(content);
         requestMessage.setContentType(contentType);
+        requestMessage.serialize();
 
         RpcMessageEncoder encoder = new RpcMessageEncoder();
         ByteBuf byteBuf = AbstractByteBufAllocator.DEFAULT.buffer();
         encoder.encode(mock(ChannelHandlerContext.class), requestMessage, byteBuf);
 
         Assertions.assertTrue(byteBuf.readableBytes() > 0);
+
+        byte[] protocolCodes = RpcProtocol.RPC.protocolCode();
+        byte[] dataProtocolCodes = new byte[protocolCodes.length];
+        byteBuf.readBytes(dataProtocolCodes);
+        Assertions.assertArrayEquals(protocolCodes, dataProtocolCodes);
+        Assertions.assertEquals(byteBuf.readByte(), MessageType.request.data());
+        Assertions.assertEquals(byteBuf.readInt(), requestId);
+        Assertions.assertEquals(byteBuf.readByte(), requestMessage.serializationType().data());
+        Assertions.assertEquals(byteBuf.readShort(), requestMessage.getContentTypeLength());
+        Assertions.assertEquals(byteBuf.readShort(), requestMessage.getHeaderLength());
+        Assertions.assertEquals(byteBuf.readInt(), requestMessage.getContentLength());
+
+        byte[] dataContentType = new byte[requestMessage.getContentTypeLength()];
+        byteBuf.readBytes(dataContentType);
+        Assertions.assertArrayEquals(requestMessage.getContentTypeData(), dataContentType);
+
+
+        byte[] dataHeader = new byte[requestMessage.getHeaderLength()];
+        byteBuf.readBytes(dataHeader);
+        Assertions.assertArrayEquals(requestMessage.getHeaderData(), dataHeader);
+
+
+        byte[] dataContent = new byte[requestMessage.getContentLength()];
+        byteBuf.readBytes(dataContent);
+        Assertions.assertArrayEquals(requestMessage.getContentData(), dataContent);
+
+        byteBuf.release();
     }
 
     @Test
-    public void testEncode2() throws Exception {
-
+    public void testEncodeResponse2() throws Exception {
         // build a responseMessage
         String content = "this is rpc content";
         String contentType = content.getClass().getName();
@@ -55,16 +83,45 @@ public class RpcMessageEncoderTest {
         responseMessage.setContent(content);
         responseMessage.setContentType(contentType);
         responseMessage.setStatus(ResponseStatus.SUCCESS.getCode());
+        responseMessage.serialize();
 
         RpcMessageEncoder encoder = new RpcMessageEncoder();
         ByteBuf byteBuf = AbstractByteBufAllocator.DEFAULT.buffer();
         encoder.encode(mock(ChannelHandlerContext.class), responseMessage, byteBuf);
 
         Assertions.assertTrue(byteBuf.readableBytes() > 0);
+
+        byte[] protocolCodes = RpcProtocol.RPC.protocolCode();
+        byte[] dataProtocolCodes = new byte[protocolCodes.length];
+        byteBuf.readBytes(dataProtocolCodes);
+        Assertions.assertArrayEquals(protocolCodes, dataProtocolCodes);
+        Assertions.assertEquals(byteBuf.readByte(), MessageType.response.data());
+        Assertions.assertEquals(byteBuf.readInt(), requestId);
+        Assertions.assertEquals(byteBuf.readByte(), responseMessage.serializationType().data());
+        Assertions.assertEquals(byteBuf.readShort(), responseMessage.getStatus());
+        Assertions.assertEquals(byteBuf.readShort(), responseMessage.getContentTypeLength());
+        Assertions.assertEquals(byteBuf.readShort(), responseMessage.getHeaderLength());
+        Assertions.assertEquals(byteBuf.readInt(), responseMessage.getContentLength());
+
+        byte[] dataContentType = new byte[responseMessage.getContentTypeLength()];
+        byteBuf.readBytes(dataContentType);
+        Assertions.assertArrayEquals(responseMessage.getContentTypeData(), dataContentType);
+
+
+        byte[] dataHeader = new byte[responseMessage.getHeaderLength()];
+        byteBuf.readBytes(dataHeader);
+        Assertions.assertArrayEquals(responseMessage.getHeaderData(), dataHeader);
+
+
+        byte[] dataContent = new byte[responseMessage.getContentLength()];
+        byteBuf.readBytes(dataContent);
+        Assertions.assertArrayEquals(responseMessage.getContentData(), dataContent);
+
+        byteBuf.release();
     }
 
     @Test
-    public void testEncode3() throws Exception {
+    public void testEncodeException1() throws Exception {
 
 
         RpcMessageEncoder encoder = new RpcMessageEncoder();

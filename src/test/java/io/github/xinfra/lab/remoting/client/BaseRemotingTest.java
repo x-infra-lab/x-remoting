@@ -3,7 +3,7 @@ package io.github.xinfra.lab.remoting.client;
 import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.RemotingContext;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
-import io.github.xinfra.lab.remoting.common.Until;
+import io.github.xinfra.lab.remoting.common.Wait;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
@@ -77,7 +77,7 @@ public class BaseRemotingTest {
         // complete invokeFuture
         executor.submit(() -> {
             try {
-                Until.untilIsTrue(
+                Wait.untilIsTrue(
                         () -> {
                             InvokeFuture invokeFuture = connection.removeInvokeFuture(requestId);
                             if (invokeFuture != null) {
@@ -190,7 +190,7 @@ public class BaseRemotingTest {
         // complete invokeFuture
         executor.submit(() -> {
             try {
-                Until.untilIsTrue(
+                Wait.untilIsTrue(
                         () -> {
                             InvokeFuture future = connection.removeInvokeFuture(requestId);
                             if (future != null) {
@@ -340,7 +340,7 @@ public class BaseRemotingTest {
                 });
 
 
-        Until.untilIsTrue(() -> {
+        Wait.untilIsTrue(() -> {
             if (callbackMessage.get() != null) {
                 return true;
             }
@@ -378,7 +378,7 @@ public class BaseRemotingTest {
                 });
 
 
-        Until.untilIsTrue(() -> {
+        Wait.untilIsTrue(() -> {
             if (callbackMessage.get() != null) {
                 return true;
             }
@@ -414,7 +414,7 @@ public class BaseRemotingTest {
                 });
 
 
-        Until.untilIsTrue(() -> {
+        Wait.untilIsTrue(() -> {
             if (callbackMessage.get() != null) {
                 return true;
             }
@@ -444,7 +444,7 @@ public class BaseRemotingTest {
 
         // complete invokeFuture
         Channel finalChannel = channel;
-        Until.untilIsTrue(
+        Wait.untilIsTrue(
                 () -> {
                     try {
                         verify(finalChannel, atLeastOnce()).writeAndFlush(any());
@@ -480,7 +480,7 @@ public class BaseRemotingTest {
 
         // complete invokeFuture
         Channel finalChannel = channel;
-        Until.untilIsTrue(
+        Wait.untilIsTrue(
                 () -> {
                     try {
                         verify(finalChannel, atLeastOnce()).writeAndFlush(any());
@@ -516,7 +516,7 @@ public class BaseRemotingTest {
 
         // complete invokeFuture
         Channel finalChannel = channel;
-        Until.untilIsTrue(
+        Wait.untilIsTrue(
                 () -> {
                     try {
                         verify(finalChannel, atLeastOnce()).writeAndFlush(any());
