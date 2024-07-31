@@ -30,6 +30,7 @@ public class RpcHeartbeatTrigger implements HeartbeatTrigger {
     public RpcHeartbeatTrigger(RpcMessageFactory messageFactory) {
         this.messageFactory = messageFactory;
         baseRemoting = new BaseRemoting(messageFactory);
+        baseRemoting.startup();
     }
 
     @Override
@@ -47,7 +48,6 @@ public class RpcHeartbeatTrigger implements HeartbeatTrigger {
         baseRemoting.asyncCall(heartbeatRequestMessage, connection, heartbeatTimeoutMills,
                 message -> {
                     RpcResponseMessage heartbeatResponseMessage = (RpcResponseMessage) message;
-                    // todo remoteAddress is null
                     SocketAddress remoteAddress = heartbeatResponseMessage.getRemoteAddress();
 
                     if (heartbeatResponseMessage.getStatus() == ResponseStatus.SUCCESS.getCode()) {

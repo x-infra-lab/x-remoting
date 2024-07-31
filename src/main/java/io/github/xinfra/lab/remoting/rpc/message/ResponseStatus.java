@@ -21,9 +21,6 @@ public enum ResponseStatus {
 
     SERVER_DESERIAL_EXCEPTION((short) 8),
 
-    CLIENT_SERIAL_EXCEPTION((short) 9),
-
-    CLIENT_DESERIAL_EXCEPTION((short) 10),
     ;
 
     @Getter

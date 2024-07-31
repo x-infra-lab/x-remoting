@@ -6,6 +6,7 @@ import io.github.xinfra.lab.remoting.exception.SendMessageException;
 import io.github.xinfra.lab.remoting.exception.TimeoutException;
 import io.github.xinfra.lab.remoting.message.MessageType;
 import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
+import io.github.xinfra.lab.remoting.rpc.exception.RpcServerException;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -80,7 +81,7 @@ public class RpcMessageFactoryTest {
     }
 
     @Test
-    public void testCreateResponse() {
+    public void testCreateResponse1() {
         String responseContent = "this is response content";
         RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
         RpcResponseMessage response = rpcMessageFactory.createResponse(IDGenerator.nextRequestId(), responseContent);
@@ -90,5 +91,33 @@ public class RpcMessageFactoryTest {
         Assertions.assertEquals(response.protocolType(), RpcProtocol.RPC);
         Assertions.assertEquals(response.getStatus(), ResponseStatus.SUCCESS.getCode());
         Assertions.assertEquals(response.getContent(), responseContent);
+    }
+
+    @Test
+    public void testCreateExceptionResponse1() {
+        String errorMsg = "testCreateExceptionResponse1";
+        RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
+        RpcResponseMessage response = rpcMessageFactory.createExceptionResponse(IDGenerator.nextRequestId(), errorMsg);
+
+        Assertions.assertNotNull(response);
+        Assertions.assertEquals(response.messageType(), MessageType.response);
+        Assertions.assertEquals(response.protocolType(), RpcProtocol.RPC);
+        Assertions.assertEquals(response.getStatus(), ResponseStatus.SERVER_EXCEPTION.getCode());
+        Assertions.assertInstanceOf(RpcServerException.class, response.getContent());
+    }
+
+    @Test
+    public void testCreateExceptionResponse2() {
+        String errorMsg = "testCreateExceptionResponse2";
+        RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
+        RpcResponseMessage response = rpcMessageFactory.createExceptionResponse(IDGenerator.nextRequestId(),
+                new RuntimeException("testCreateExceptionResponse2"),
+                errorMsg);
+
+        Assertions.assertNotNull(response);
+        Assertions.assertEquals(response.messageType(), MessageType.response);
+        Assertions.assertEquals(response.protocolType(), RpcProtocol.RPC);
+        Assertions.assertEquals(response.getStatus(), ResponseStatus.SERVER_EXCEPTION.getCode());
+        Assertions.assertInstanceOf(RpcServerException.class, response.getContent());
     }
 }

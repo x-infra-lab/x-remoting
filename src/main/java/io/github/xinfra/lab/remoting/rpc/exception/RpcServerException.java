@@ -12,4 +12,7 @@ public class RpcServerException extends RemotingException {
         super(cause);
     }
 
+    public RpcServerException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

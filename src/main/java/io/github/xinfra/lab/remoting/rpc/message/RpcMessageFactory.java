@@ -51,14 +51,22 @@ public class RpcMessageFactory implements MessageFactory {
 
     @Override
     public RpcResponseMessage createExceptionResponse(int id, Throwable t, String errorMsg) {
-        // todo
-        return null;
+        RpcResponseMessage rpcResponseMessage = new RpcResponseMessage(id);
+        rpcResponseMessage.setStatus(ResponseStatus.SERVER_EXCEPTION.getCode());
+        RpcServerException rpcServerException = new RpcServerException(errorMsg, t);
+        rpcResponseMessage.setContent(rpcServerException);
+        rpcResponseMessage.setContentType(RpcServerException.class.getName());
+        return rpcResponseMessage;
     }
 
     @Override
     public RpcResponseMessage createExceptionResponse(int id, String errorMsg) {
-        // todo
-        return null;
+        RpcResponseMessage rpcResponseMessage = new RpcResponseMessage(id);
+        rpcResponseMessage.setStatus(ResponseStatus.SERVER_EXCEPTION.getCode());
+        RpcServerException rpcServerException = new RpcServerException(errorMsg);
+        rpcResponseMessage.setContent(rpcServerException);
+        rpcResponseMessage.setContentType(RpcServerException.class.getName());
+        return rpcResponseMessage;
     }
 
     @Override
