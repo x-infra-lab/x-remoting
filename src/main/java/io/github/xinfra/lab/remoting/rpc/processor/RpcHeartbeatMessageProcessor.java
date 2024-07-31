@@ -1,4 +1,4 @@
-package io.github.xinfra.lab.remoting.rpc.heartbeat;
+package io.github.xinfra.lab.remoting.rpc.processor;
 
 import io.github.xinfra.lab.remoting.RemotingContext;
 import io.github.xinfra.lab.remoting.processor.RemotingProcessor;

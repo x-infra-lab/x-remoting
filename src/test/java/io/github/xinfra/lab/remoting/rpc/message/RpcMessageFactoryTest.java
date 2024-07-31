@@ -78,4 +78,17 @@ public class RpcMessageFactoryTest {
         Assertions.assertEquals(requestMessage.messageType(), MessageType.heartbeatRequest);
         Assertions.assertEquals(requestMessage.protocolType(), RpcProtocol.RPC);
     }
+
+    @Test
+    public void testCreateResponse() {
+        String responseContent = "this is response content";
+        RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
+        RpcResponseMessage response = rpcMessageFactory.createResponse(IDGenerator.nextRequestId(), responseContent);
+
+        Assertions.assertNotNull(response);
+        Assertions.assertEquals(response.messageType(), MessageType.response);
+        Assertions.assertEquals(response.protocolType(), RpcProtocol.RPC);
+        Assertions.assertEquals(response.getStatus(), ResponseStatus.SUCCESS.getCode());
+        Assertions.assertEquals(response.getContent(), responseContent);
+    }
 }

@@ -5,7 +5,7 @@ import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
 import io.github.xinfra.lab.remoting.message.MessageType;
 import io.github.xinfra.lab.remoting.processor.RemotingProcessor;
-import io.github.xinfra.lab.remoting.rpc.heartbeat.RpcHeartbeatMessageProcessor;
+import io.github.xinfra.lab.remoting.rpc.processor.RpcHeartbeatMessageProcessor;
 import io.github.xinfra.lab.remoting.rpc.processor.RpcRequestMessageProcessor;
 import io.github.xinfra.lab.remoting.rpc.processor.RpcResponseMessageProcessor;
 import lombok.extern.slf4j.Slf4j;

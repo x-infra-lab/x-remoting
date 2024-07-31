@@ -3,7 +3,7 @@ package io.github.xinfra.lab.remoting.rpc.codec;
 import io.github.xinfra.lab.remoting.codec.MessageDecoder;
 import io.github.xinfra.lab.remoting.exception.CodecException;
 import io.github.xinfra.lab.remoting.message.MessageType;
-import io.github.xinfra.lab.remoting.rpc.heartbeat.RpcHeartbeatRequestMessage;
+import io.github.xinfra.lab.remoting.rpc.message.RpcHeartbeatRequestMessage;
 import io.github.xinfra.lab.remoting.rpc.message.RpcMessage;
 import io.github.xinfra.lab.remoting.rpc.message.RpcRequestMessage;
 import io.github.xinfra.lab.remoting.rpc.message.RpcResponseMessage;

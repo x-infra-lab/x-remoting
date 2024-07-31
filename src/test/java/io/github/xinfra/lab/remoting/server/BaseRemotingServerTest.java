@@ -7,6 +7,7 @@ import io.github.xinfra.lab.remoting.connection.ConnectionFactory;
 import io.github.xinfra.lab.remoting.connection.DefaultConnectionFactory;
 import io.github.xinfra.lab.remoting.connection.ServerConnectionManager;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
+import io.github.xinfra.lab.remoting.processor.UserProcessor;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.codec.http.HttpClientCodec;
@@ -92,7 +93,6 @@ public class BaseRemotingServerTest {
         };
 
         server.startup();
-        InetSocketAddress serverAddress = server.localAddress;
 
         ServerConnectionManager connectionManager = server.connectionManager;
         Assertions.assertNotNull(connectionManager);
@@ -109,6 +109,56 @@ public class BaseRemotingServerTest {
 
         Connection serverConnection = connectionManager.get(endpoint);
         Assertions.assertNotNull(serverConnection);
+
+        server.shutdown();
+    }
+
+    @Test
+    public void testRegisterUserProcessor() throws RemotingException, InterruptedException, TimeoutException {
+        RemotingServerConfig config = new RemotingServerConfig();
+        config.setPort(findAvailableTcpPort());
+        config.setManageConnection(true);
+
+        BaseRemotingServer server = new BaseRemotingServer(config) {
+            @Override
+            public ProtocolType protocolType() {
+                return test;
+            }
+        };
+
+        server.startup();
+
+        UserProcessor<String> userProcessor1 = new UserProcessor<String>() {
+            @Override
+            public String interest() {
+                return String.class.getName();
+            }
+
+            @Override
+            public Object handRequest(String request) {
+                // do nothing
+                return null;
+            }
+        };
+
+        server.registerUserProcessor(userProcessor1);
+
+        UserProcessor<String> userProcessor2 = new UserProcessor<String>() {
+            @Override
+            public String interest() {
+                return String.class.getName();
+            }
+
+            @Override
+            public Object handRequest(String request) {
+                // do nothing
+                return null;
+            }
+        };
+
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            server.registerUserProcessor(userProcessor2);
+        });
 
         server.shutdown();
     }
