@@ -6,6 +6,7 @@ import io.github.xinfra.lab.remoting.common.Wait;
 import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
 import io.github.xinfra.lab.remoting.processor.UserProcessor;
+import io.github.xinfra.lab.remoting.rpc.exception.RpcServerException;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.Test;
@@ -161,13 +162,13 @@ public class RpcMessageHandlerTest {
                         if (argument.getStatus() != ResponseStatus.SERVER_DESERIAL_EXCEPTION.getCode()) {
                             return false;
                         }
-                        if (!(argument.getCause() instanceof DeserializeException)) {
+                        if (argument.getCause() != null) {
                             return false;
                         }
-                        if (!Objects.equals(argument.getContentType(), null)) {
+                        if (!Objects.equals(argument.getContentType(), RpcServerException.class.getName())) {
                             return false;
                         }
-                        if (!Objects.equals(argument.getContent(), null)) {
+                        if (!(argument.getContent() instanceof RpcServerException)) {
                             return false;
                         }
                         return true;

@@ -5,6 +5,7 @@ import io.github.xinfra.lab.remoting.exception.ConnectionClosedException;
 import io.github.xinfra.lab.remoting.exception.SendMessageException;
 import io.github.xinfra.lab.remoting.exception.TimeoutException;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
+import io.github.xinfra.lab.remoting.rpc.exception.RpcServerException;
 
 import java.net.SocketAddress;
 
@@ -42,7 +43,9 @@ public class RpcMessageFactory implements MessageFactory {
     public RpcResponseMessage createExceptionResponse(int id, Throwable t, ResponseStatus status) {
         RpcResponseMessage rpcResponseMessage = new RpcResponseMessage(id);
         rpcResponseMessage.setStatus(status.getCode());
-        rpcResponseMessage.setCause(t);
+        RpcServerException rpcServerException = new RpcServerException(t);
+        rpcResponseMessage.setContent(rpcServerException);
+        rpcResponseMessage.setContentType(RpcServerException.class.getName());
         return rpcResponseMessage;
     }
 

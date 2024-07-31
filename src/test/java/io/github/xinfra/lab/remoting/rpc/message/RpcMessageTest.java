@@ -3,10 +3,13 @@ package io.github.xinfra.lab.remoting.rpc.message;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
+import io.github.xinfra.lab.remoting.message.MessageType;
+import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
+import io.github.xinfra.lab.remoting.rpc.exception.RpcServerException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class RpcRequestMessageTest {
+public class RpcMessageTest {
 
     @Test
     public void testRpcRequest1() throws SerializeException, DeserializeException {
@@ -72,7 +75,7 @@ public class RpcRequestMessageTest {
         Assertions.assertEquals(responseMessage.getContentData().length, responseMessage.getContentLength());
 
 
-        RpcRequestMessage responseMessage2 = new RpcRequestMessage(requestId);
+        RpcResponseMessage responseMessage2 = new RpcResponseMessage(requestId);
         responseMessage2.setContentTypeData(responseMessage.getContentTypeData());
         responseMessage2.setHeaderData(responseMessage.getHeaderData());
         responseMessage2.setContentData(responseMessage.getContentData());
@@ -93,5 +96,45 @@ public class RpcRequestMessageTest {
         Assertions.assertEquals(responseMessage2.getContentType(), responseMessage.getContentType());
         Assertions.assertEquals(responseMessage2.getHeader(), responseMessage.getHeader());
         Assertions.assertEquals(responseMessage2.getContent(), responseMessage.getContent());
+    }
+
+    @Test
+    public void testExceptionRpcResponse1() throws SerializeException, DeserializeException {
+        int requestId = IDGenerator.nextRequestId();
+        RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
+        RpcResponseMessage responseMessage = rpcMessageFactory.createExceptionResponse(requestId,
+                new RuntimeException("testCreateExceptionResponse1"),
+                ResponseStatus.SERVER_DESERIAL_EXCEPTION);
+
+
+        responseMessage.serialize();
+
+        Assertions.assertNotNull(responseMessage.getContentTypeData());
+        Assertions.assertEquals(responseMessage.getContentTypeData().length, responseMessage.getContentTypeLength());
+
+        Assertions.assertNotNull(responseMessage.getContentData());
+        Assertions.assertEquals(responseMessage.getContentData().length, responseMessage.getContentLength());
+
+
+
+        RpcResponseMessage responseMessage2 = new RpcResponseMessage(requestId);
+        responseMessage2.setContentTypeData(responseMessage.getContentTypeData());
+        responseMessage2.setContentData(responseMessage.getContentData());
+
+        responseMessage2.deserialize(RpcDeserializeLevel.CONTENT_TYPE);
+        Assertions.assertNotNull(responseMessage2.getContentType());
+        Assertions.assertNull(responseMessage2.getContent());
+
+        responseMessage2.deserialize(RpcDeserializeLevel.HEADER);
+        Assertions.assertNotNull(responseMessage2.getContentType());
+        Assertions.assertNull(responseMessage2.getContent());
+
+        responseMessage2.deserialize(RpcDeserializeLevel.ALL);
+
+
+        Assertions.assertEquals(responseMessage2.getContentType(), responseMessage.getContentType());
+        Assertions.assertEquals(responseMessage2.getHeader(), responseMessage.getHeader());
+        Assertions.assertTrue(responseMessage2.getContent() instanceof RpcServerException);
+
     }
 }
