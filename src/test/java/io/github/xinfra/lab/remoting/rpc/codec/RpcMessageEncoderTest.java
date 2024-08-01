@@ -130,5 +130,7 @@ public class RpcMessageEncoderTest {
         Assertions.assertThrows(CodecException.class, () -> {
             encoder.encode(mock(ChannelHandlerContext.class), mock(Message.class), byteBuf);
         });
+
+        byteBuf.release();
     }
 }
