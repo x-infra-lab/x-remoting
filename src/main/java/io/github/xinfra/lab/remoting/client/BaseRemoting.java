@@ -28,7 +28,7 @@ public class BaseRemoting extends AbstractLifeCycle {
     public Message syncCall(Message message, Connection connection, int timeoutMills) throws InterruptedException {
         ensureStarted();
         int requestId = message.id();
-        InvokeFuture invokeFuture = new InvokeFuture(requestId);
+        InvokeFuture invokeFuture = new InvokeFuture(requestId, connection.getProtocol());
         try {
             connection.addInvokeFuture(invokeFuture);
             connection.getChannel().writeAndFlush(message).addListener(
@@ -64,7 +64,7 @@ public class BaseRemoting extends AbstractLifeCycle {
     public InvokeFuture asyncCall(Message message, Connection connection, int timeoutMills) {
         ensureStarted();
         int requestId = message.id();
-        InvokeFuture invokeFuture = new InvokeFuture(requestId);
+        InvokeFuture invokeFuture = new InvokeFuture(requestId, connection.getProtocol());
 
         Timeout timeout = timer.newTimeout((t) -> {
             InvokeFuture future = connection.removeInvokeFuture(requestId);
@@ -108,7 +108,7 @@ public class BaseRemoting extends AbstractLifeCycle {
                           InvokeCallBack invokeCallBack) {
         ensureStarted();
         int requestId = message.id();
-        InvokeFuture invokeFuture = new InvokeFuture(requestId);
+        InvokeFuture invokeFuture = new InvokeFuture(requestId, connection.getProtocol());
 
         Timeout timeout = timer.newTimeout((t) -> {
             InvokeFuture future = connection.removeInvokeFuture(requestId);

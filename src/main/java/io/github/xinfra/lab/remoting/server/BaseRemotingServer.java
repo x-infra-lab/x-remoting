@@ -1,6 +1,5 @@
 package io.github.xinfra.lab.remoting.server;
 
-import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
@@ -29,13 +28,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
 
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public abstract class BaseRemotingServer extends AbstractLifeCycle implements RemotingServer {
 
-    protected InetSocketAddress localAddress;
+    protected SocketAddress localAddress;
     private ServerBootstrap serverBootstrap;
 
     private ConcurrentHashMap<String, UserProcessor<?>> userProcessors = new ConcurrentHashMap<>();
@@ -124,9 +124,7 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 
     @AccessForTest
     protected void createConnection(SocketChannel channel) {
-        InetSocketAddress inetSocketAddress = channel.remoteAddress();
-        Endpoint endpoint = new Endpoint(protocolType(), inetSocketAddress.getHostName(), inetSocketAddress.getPort());
-        Connection connection = new Connection(endpoint, channel);
+        Connection connection = new Connection(protocol(), channel);
         if (config.isManageConnection()) {
             connectionManager.add(connection);
         }
@@ -141,7 +139,7 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
     }
 
     @Override
-    public InetSocketAddress localAddress() {
+    public SocketAddress localAddress() {
         return this.localAddress;
     }
 

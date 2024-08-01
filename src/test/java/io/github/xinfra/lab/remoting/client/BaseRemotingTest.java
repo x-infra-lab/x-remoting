@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.client;
 
-import io.github.xinfra.lab.remoting.Endpoint;
+import io.github.xinfra.lab.remoting.SocketAddress;
 import io.github.xinfra.lab.remoting.RemotingContext;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.common.Wait;
@@ -68,10 +68,10 @@ public class BaseRemotingTest {
 
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        Endpoint endpoint = mock(Endpoint.class);
+        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
-        doReturn(test).when(endpoint).getProtocolType();
-        Connection connection = new Connection(endpoint, channel);
+        doReturn(test).when(socketAddress).getProtocolType();
+        Connection connection = new Connection(socketAddress, channel);
 
         Message result = mock(Message.class);
         // complete invokeFuture
@@ -112,11 +112,11 @@ public class BaseRemotingTest {
         baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        Endpoint endpoint = mock(Endpoint.class);
+        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(endpoint).getProtocolType();
-        Connection connection = new Connection(endpoint, channel);
+        doReturn(test).when(socketAddress).getProtocolType();
+        Connection connection = new Connection(socketAddress, channel);
 
         doThrow(new RuntimeException("network error")).when(channel).writeAndFlush(any());
 
@@ -136,11 +136,11 @@ public class BaseRemotingTest {
         baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        Endpoint endpoint = mock(Endpoint.class);
+        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(endpoint).getProtocolType();
-        Connection connection = new Connection(endpoint, channel);
+        doReturn(test).when(socketAddress).getProtocolType();
+        Connection connection = new Connection(socketAddress, channel);
 
         doReturn(channel.newFailedFuture(new RuntimeException("network error"))).when(channel).writeAndFlush(any());
 
@@ -160,11 +160,11 @@ public class BaseRemotingTest {
         baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        Endpoint endpoint = mock(Endpoint.class);
+        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(endpoint).getProtocolType();
-        Connection connection = new Connection(endpoint, channel);
+        doReturn(test).when(socketAddress).getProtocolType();
+        Connection connection = new Connection(socketAddress, channel);
         Message msg = baseRemoting.syncCall(message, connection, 1000);
         Assertions.assertTrue(msg == timeoutMessage);
     }
@@ -180,11 +180,11 @@ public class BaseRemotingTest {
         baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        Endpoint endpoint = mock(Endpoint.class);
+        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(endpoint).getProtocolType();
-        Connection connection = new Connection(endpoint, channel);
+        doReturn(test).when(socketAddress).getProtocolType();
+        Connection connection = new Connection(socketAddress, channel);
         InvokeFuture invokeFuture = baseRemoting.asyncCall(message, connection, 1000);
 
         // complete invokeFuture
@@ -223,11 +223,11 @@ public class BaseRemotingTest {
         baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        Endpoint endpoint = mock(Endpoint.class);
+        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(endpoint).getProtocolType();
-        Connection connection = new Connection(endpoint, channel);
+        doReturn(test).when(socketAddress).getProtocolType();
+        Connection connection = new Connection(socketAddress, channel);
 
         doThrow(new RuntimeException("network error")).when(channel).writeAndFlush(any());
 
@@ -247,11 +247,11 @@ public class BaseRemotingTest {
         baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        Endpoint endpoint = mock(Endpoint.class);
+        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(endpoint).getProtocolType();
-        Connection connection = new Connection(endpoint, channel);
+        doReturn(test).when(socketAddress).getProtocolType();
+        Connection connection = new Connection(socketAddress, channel);
 
         doReturn(channel.newFailedFuture(new RuntimeException("network error"))).when(channel).writeAndFlush(any());
 
@@ -271,11 +271,11 @@ public class BaseRemotingTest {
         baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        Endpoint endpoint = mock(Endpoint.class);
+        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(endpoint).getProtocolType();
-        Connection connection = new Connection(endpoint, channel);
+        doReturn(test).when(socketAddress).getProtocolType();
+        Connection connection = new Connection(socketAddress, channel);
         InvokeFuture invokeFuture = baseRemoting.asyncCall(message, connection, 1000);
         Assertions.assertTrue(invokeFuture.get() == timeoutMessage);
     }
@@ -291,11 +291,11 @@ public class BaseRemotingTest {
         baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        Endpoint endpoint = mock(Endpoint.class);
+        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(endpoint).getProtocolType();
-        Connection connection = new Connection(endpoint, channel);
+        doReturn(test).when(socketAddress).getProtocolType();
+        Connection connection = new Connection(socketAddress, channel);
 
         AtomicReference<Message> callbackMessage = new AtomicReference<>();
         baseRemoting.asyncCall(message, connection, 1000,
@@ -325,11 +325,11 @@ public class BaseRemotingTest {
         baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        Endpoint endpoint = mock(Endpoint.class);
+        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(endpoint).getProtocolType();
-        Connection connection = new Connection(endpoint, channel);
+        doReturn(test).when(socketAddress).getProtocolType();
+        Connection connection = new Connection(socketAddress, channel);
 
         doThrow(new RuntimeException("network error")).when(channel).writeAndFlush(any());
 
@@ -363,11 +363,11 @@ public class BaseRemotingTest {
         baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        Endpoint endpoint = mock(Endpoint.class);
+        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(endpoint).getProtocolType();
-        Connection connection = new Connection(endpoint, channel);
+        doReturn(test).when(socketAddress).getProtocolType();
+        Connection connection = new Connection(socketAddress, channel);
 
         doReturn(channel.newFailedFuture(new RuntimeException("network error"))).when(channel).writeAndFlush(any());
 
@@ -401,11 +401,11 @@ public class BaseRemotingTest {
         baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        Endpoint endpoint = mock(Endpoint.class);
+        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(endpoint).getProtocolType();
-        Connection connection = new Connection(endpoint, channel);
+        doReturn(test).when(socketAddress).getProtocolType();
+        Connection connection = new Connection(socketAddress, channel);
 
         AtomicReference<Message> callbackMessage = new AtomicReference<>();
         baseRemoting.asyncCall(message, connection, 1000,
@@ -435,11 +435,11 @@ public class BaseRemotingTest {
         baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        Endpoint endpoint = mock(Endpoint.class);
+        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(endpoint).getProtocolType();
-        Connection connection = new Connection(endpoint, channel);
+        doReturn(test).when(socketAddress).getProtocolType();
+        Connection connection = new Connection(socketAddress, channel);
         baseRemoting.oneway(message, connection);
 
         // complete invokeFuture
@@ -468,11 +468,11 @@ public class BaseRemotingTest {
         baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        Endpoint endpoint = mock(Endpoint.class);
+        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(endpoint).getProtocolType();
-        Connection connection = new Connection(endpoint, channel);
+        doReturn(test).when(socketAddress).getProtocolType();
+        Connection connection = new Connection(socketAddress, channel);
 
         doThrow(new RuntimeException("network error")).when(channel).writeAndFlush(any());
 
@@ -504,11 +504,11 @@ public class BaseRemotingTest {
         baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        Endpoint endpoint = mock(Endpoint.class);
+        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(endpoint).getProtocolType();
-        Connection connection = new Connection(endpoint, channel);
+        doReturn(test).when(socketAddress).getProtocolType();
+        Connection connection = new Connection(socketAddress, channel);
 
         doReturn(channel.newFailedFuture(new RuntimeException("network error"))).when(channel).writeAndFlush(any());
 

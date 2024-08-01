@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.rpc.heartbeat;
 
-import io.github.xinfra.lab.remoting.Endpoint;
+import io.github.xinfra.lab.remoting.SocketAddress;
 import io.github.xinfra.lab.remoting.common.Wait;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.message.MessageType;
@@ -88,8 +88,8 @@ public class RpcHeartbeatTriggerTest {
         channel = spy(channel);
         doReturn(channel).when(context).channel();
 
-        Endpoint endpoint = new Endpoint(RpcProtocol.RPC, "localhost", 8080);
-        Connection connection = new Connection(endpoint, channel);
+        SocketAddress socketAddress = new SocketAddress(RpcProtocol.RPC, "localhost", 8080);
+        Connection connection = new Connection(socketAddress, channel);
         connection = spy(connection);
         channel.attr(CONNECTION).set(connection);
 

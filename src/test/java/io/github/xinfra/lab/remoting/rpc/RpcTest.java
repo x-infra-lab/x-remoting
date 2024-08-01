@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.rpc;
 
-import io.github.xinfra.lab.remoting.Endpoint;
+import io.github.xinfra.lab.remoting.SocketAddress;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.rpc.client.RpcClient;
 import io.github.xinfra.lab.remoting.rpc.server.RpcServer;
@@ -47,17 +47,17 @@ public class RpcTest {
 
         try {
             String result = rpcClient.syncCall(new SimpleRequest("test"),
-                    new Endpoint(RPC, remoteAddress.getHostName(), remoteAddress.getPort()),
+                    new SocketAddress(RPC, remoteAddress.getHostName(), remoteAddress.getPort()),
                     1000);
             Assertions.assertEquals("echo:test", result);
 
             result = rpcClient.syncCall(new SimpleRequest("test"),
-                    new Endpoint(RPC, remoteAddress.getHostName(), remoteAddress.getPort()),
+                    new SocketAddress(RPC, remoteAddress.getHostName(), remoteAddress.getPort()),
                     1000);
             Assertions.assertEquals("echo:test", result);
 
             result = rpcClient.syncCall(new SimpleRequest("test"),
-                    new Endpoint(RPC, remoteAddress.getHostName(), remoteAddress.getPort()),
+                    new SocketAddress(RPC, remoteAddress.getHostName(), remoteAddress.getPort()),
                     1000);
             Assertions.assertEquals("echo:test", result);
 

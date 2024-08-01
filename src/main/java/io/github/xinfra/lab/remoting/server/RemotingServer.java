@@ -2,14 +2,15 @@ package io.github.xinfra.lab.remoting.server;
 
 import io.github.xinfra.lab.remoting.common.LifeCycle;
 import io.github.xinfra.lab.remoting.processor.UserProcessor;
-import io.github.xinfra.lab.remoting.protocol.ProtocolType;
+import io.github.xinfra.lab.remoting.protocol.Protocol;
 
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 
 public interface RemotingServer extends LifeCycle {
-    InetSocketAddress localAddress();
+    SocketAddress localAddress();
 
     void registerUserProcessor(UserProcessor<?> userProcessor);
 
-    ProtocolType protocolType();
+    Protocol protocol();
 }

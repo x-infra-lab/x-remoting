@@ -1,26 +1,28 @@
 package io.github.xinfra.lab.remoting.rpc.client;
 
-import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.connection.ClientConnectionManager;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.processor.UserProcessor;
+import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.SocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
 
 
 @Slf4j
 public class RpcClient extends AbstractLifeCycle {
-
+    private RpcProtocol protocol;
     private RpcClientRemoting rpcClientRemoting;
     private ClientConnectionManager connectionManager;
     private ConcurrentHashMap<String, UserProcessor<?>> userProcessors = new ConcurrentHashMap<>();
 
 
     public RpcClient() {
-        this.connectionManager = new ClientConnectionManager(userProcessors);
-        rpcClientRemoting = new RpcClientRemoting(connectionManager);
+        this.protocol = new RpcProtocol();
+        this.connectionManager = new ClientConnectionManager(protocol, userProcessors);
+        rpcClientRemoting = new RpcClientRemoting(protocol, connectionManager);
     }
 
     @Override
@@ -37,24 +39,24 @@ public class RpcClient extends AbstractLifeCycle {
         rpcClientRemoting.shutdown();
     }
 
-    public <R> R syncCall(Object request, Endpoint endpoint, int timeoutMills)
+    public <R> R syncCall(Object request, SocketAddress socketAddress, int timeoutMills)
             throws RemotingException, InterruptedException {
 
-        return rpcClientRemoting.syncCall(request, endpoint, timeoutMills);
+        return rpcClientRemoting.syncCall(request, socketAddress, timeoutMills);
     }
 
-    public <R> RpcInvokeFuture<R> asyncCall(Object request, Endpoint endpoint, int timeoutMills)
+    public <R> RpcInvokeFuture<R> asyncCall(Object request, SocketAddress socketAddress, int timeoutMills)
             throws RemotingException {
-        return rpcClientRemoting.asyncCall(request, endpoint, timeoutMills);
+        return rpcClientRemoting.asyncCall(request, socketAddress, timeoutMills);
     }
 
-    public <R> void asyncCall(Object request, Endpoint endpoint, int timeoutMills,
+    public <R> void asyncCall(Object request, SocketAddress socketAddress, int timeoutMills,
                               RpcInvokeCallBack<R> rpcInvokeCallBack) throws RemotingException {
-        rpcClientRemoting.asyncCall(request, endpoint, timeoutMills, rpcInvokeCallBack);
+        rpcClientRemoting.asyncCall(request, socketAddress, timeoutMills, rpcInvokeCallBack);
     }
 
-    public void oneway(Object request, Endpoint endpoint) throws RemotingException {
-        rpcClientRemoting.oneway(request, endpoint);
+    public void oneway(Object request, SocketAddress socketAddress) throws RemotingException {
+        rpcClientRemoting.oneway(request, socketAddress);
     }
 
     public void registerUserProcessor(UserProcessor<?> userProcessor) {

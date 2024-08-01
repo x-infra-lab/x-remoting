@@ -1,33 +1,34 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import io.github.xinfra.lab.remoting.Endpoint;
 
+
+import java.net.SocketAddress;
 import java.util.concurrent.Future;
 
 public class ServerConnectionManager extends AbstractConnectionManager {
 
     @Override
-    public Connection getOrCreateIfAbsent(Endpoint endpoint) {
+    public Connection getOrCreateIfAbsent(SocketAddress socketAddress) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void reconnect(Endpoint endpoint) {
+    public void reconnect(SocketAddress socketAddress) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void disableReconnect(Endpoint endpoint) {
+    public void disableReconnect(SocketAddress socketAddress) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void enableReconnect(Endpoint endpoint) {
+    public void enableReconnect(SocketAddress socketAddress) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Future<Void> asyncReconnect(Endpoint endpoint) {
+    public Future<Void> asyncReconnect(SocketAddress socketAddress) {
         throw new UnsupportedOperationException();
     }
 

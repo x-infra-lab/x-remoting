@@ -1,21 +1,21 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
+import io.github.xinfra.lab.remoting.protocol.Protocol;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import java.net.SocketAddress;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Slf4j
 public abstract class AbstractConnectionManager extends AbstractLifeCycle implements ConnectionManager {
 
-    private static final Logger log = LoggerFactory.getLogger(AbstractConnectionManager.class);
     @AccessForTest
-    protected Map<Endpoint, ConnectionHolder> connections = new ConcurrentHashMap<>();
+    protected Map<SocketAddress, ConnectionHolder> connections = new ConcurrentHashMap<>();
 
     protected ConnectionFactory connectionFactory;
 
@@ -27,19 +27,20 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
     public AbstractConnectionManager() {
     }
 
-    public AbstractConnectionManager(ConnectionManagerConfig config) {
+    public AbstractConnectionManager( ConnectionManagerConfig config) {
         this.config = config;
     }
 
-    @Override
-    public synchronized Connection getOrCreateIfAbsent(Endpoint endpoint) throws RemotingException {
-        ensureStarted();
-        Validate.notNull(endpoint, "endpoint can not be null");
 
-        ConnectionHolder connectionHolder = connections.get(endpoint);
+    @Override
+    public synchronized Connection getOrCreateIfAbsent(SocketAddress socketAddress) throws RemotingException {
+        ensureStarted();
+        Validate.notNull(socketAddress, "socketAddress can not be null");
+
+        ConnectionHolder connectionHolder = connections.get(socketAddress);
         if (connectionHolder == null) {
-            connectionHolder = createConnectionHolder(endpoint);
-            createConnectionForHolder(endpoint, connectionHolder, config.getConnectionNumPreEndpoint());
+            connectionHolder = createConnectionHolder(socketAddress);
+            createConnectionForHolder(socketAddress, connectionHolder, config.getConnectionNumPreEndpoint());
         }
 
         return connectionHolder.get();
@@ -53,12 +54,12 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
         if (connection.getChannel() == null || !connection.getChannel().isActive()) {
             this.removeAndClose(connection);
             throw new RemotingException("Check connection failed for address: "
-                    + connection.getEndpoint());
+                    + connection.remoteAddress());
         }
         if (!connection.getChannel().isWritable()) {
             // No remove. Most of the time it is unwritable temporarily.
             throw new RemotingException("Check connection failed for address: "
-                    + connection.getEndpoint() + ", maybe write overflow!");
+                    + connection.remoteAddress() + ", maybe write overflow!");
         }
     }
 
@@ -67,24 +68,24 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
         ensureStarted();
         Validate.notNull(connection, "connection can not be null");
 
-        Endpoint endpoint = connection.getEndpoint();
-        ConnectionHolder connectionHolder = connections.get(endpoint);
+        SocketAddress socketAddress = connection.remoteAddress();
+        ConnectionHolder connectionHolder = connections.get(socketAddress);
         if (connectionHolder == null) {
             connection.close();
         } else {
             connectionHolder.removeAndClose(connection);
             if (connectionHolder.isEmpty()) {
-                connections.remove(endpoint);
+                connections.remove(socketAddress);
             }
         }
     }
 
     @Override
-    public Connection get(Endpoint endpoint) {
+    public Connection get(SocketAddress socketAddress) {
         ensureStarted();
-        Validate.notNull(endpoint, "endpoint can not be null");
+        Validate.notNull(socketAddress, "socketAddress can not be null");
 
-        ConnectionHolder connectionHolder = connections.get(endpoint);
+        ConnectionHolder connectionHolder = connections.get(socketAddress);
         if (connectionHolder == null) {
             return null;
         }
@@ -96,10 +97,10 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
         ensureStarted();
         Validate.notNull(connection, "connection can not be null");
 
-        Endpoint endpoint = connection.getEndpoint();
-        ConnectionHolder connectionHolder = connections.get(endpoint);
+        SocketAddress socketAddress = connection.remoteAddress();
+        ConnectionHolder connectionHolder = connections.get(socketAddress);
         if (connectionHolder == null) {
-            connectionHolder = createConnectionHolder(endpoint);
+            connectionHolder = createConnectionHolder(socketAddress);
             connectionHolder.add(connection);
         } else {
             connectionHolder.add(connection);
@@ -109,24 +110,24 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
     @Override
     public synchronized void shutdown() {
         super.shutdown();
-        for (Map.Entry<Endpoint, ConnectionHolder> entry : connections.entrySet()) {
-            Endpoint endpoint = entry.getKey();
+        for (Map.Entry<SocketAddress, ConnectionHolder> entry : connections.entrySet()) {
+            SocketAddress socketAddress = entry.getKey();
             ConnectionHolder connectionHolder = entry.getValue();
             connectionHolder.removeAndCloseAll();
-            connections.remove(endpoint);
+            connections.remove(socketAddress);
         }
 
     }
 
-    protected ConnectionHolder createConnectionHolder(Endpoint endpoint) {
+    protected ConnectionHolder createConnectionHolder(SocketAddress socketAddress) {
         ConnectionHolder connectionHolder = new ConnectionHolder(connectionSelectStrategy);
-        connections.put(endpoint, connectionHolder);
+        connections.put(socketAddress, connectionHolder);
         return connectionHolder;
     }
 
-    protected void createConnectionForHolder(Endpoint endpoint, ConnectionHolder connectionHolder, int size) throws RemotingException {
+    protected void createConnectionForHolder(SocketAddress socketAddress, ConnectionHolder connectionHolder, int size) throws RemotingException {
         for (int i = 0; i < size; i++) {
-            Connection connection = connectionFactory.create(endpoint);
+            Connection connection = connectionFactory.create(socketAddress);
             connectionHolder.add(connection);
         }
     }

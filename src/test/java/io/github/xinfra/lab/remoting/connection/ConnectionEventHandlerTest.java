@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import io.github.xinfra.lab.remoting.Endpoint;
+import io.github.xinfra.lab.remoting.SocketAddress;
 import io.github.xinfra.lab.remoting.common.TestServerUtils;
 import io.github.xinfra.lab.remoting.common.Wait;
 import io.github.xinfra.lab.remoting.heartbeat.HeartbeatTrigger;
@@ -133,8 +133,8 @@ public class ConnectionEventHandlerTest {
         connectionManager.startup();
 
         connectionManager = spy(connectionManager);
-        Endpoint endpoint = new Endpoint(test, remoteAddress, serverPort);
-        Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
+        SocketAddress socketAddress = new SocketAddress(test, remoteAddress, serverPort);
+        Connection connection = connectionManager.getOrCreateIfAbsent(socketAddress);
         connection = spy(connection);
         connection.getChannel().attr(CONNECTION).set(connection);
 
@@ -154,7 +154,7 @@ public class ConnectionEventHandlerTest {
         ConnectionManager tempConnectionManager = connectionManager;
         Wait.untilIsTrue(() -> {
             try {
-                verify(tempConnectionManager, times(1)).reconnect(eq(endpoint));
+                verify(tempConnectionManager, times(1)).reconnect(eq(socketAddress));
                 return true;
             } catch (Throwable e) {
                 return false;
@@ -168,7 +168,7 @@ public class ConnectionEventHandlerTest {
 
 
         verify(connectionEventHandler, times(1)).userEventTriggered(any(), eq(ConnectionEvent.CLOSE));
-        verify(connectionManager, times(1)).asyncReconnect(eq(endpoint));
+        verify(connectionManager, times(1)).asyncReconnect(eq(socketAddress));
 
         connectionManager.shutdown();
     }
@@ -180,8 +180,8 @@ public class ConnectionEventHandlerTest {
         connectionManager.startup();
 
         connectionManager = spy(connectionManager);
-        Endpoint endpoint = new Endpoint(test, remoteAddress, serverPort);
-        Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
+        SocketAddress socketAddress = new SocketAddress(test, remoteAddress, serverPort);
+        Connection connection = connectionManager.getOrCreateIfAbsent(socketAddress);
         connection = spy(connection);
         connection.getChannel().attr(CONNECTION).set(connection);
 
@@ -200,7 +200,7 @@ public class ConnectionEventHandlerTest {
         ConnectionManager tempConnectionManager = connectionManager;
         Wait.untilIsTrue(() -> {
             try {
-                verify(tempConnectionManager, times(1)).reconnect(eq(endpoint));
+                verify(tempConnectionManager, times(1)).reconnect(eq(socketAddress));
                 return true;
             } catch (Throwable e) {
                 return false;
@@ -216,7 +216,7 @@ public class ConnectionEventHandlerTest {
 
 
         verify(connectionEventHandler, times(1)).userEventTriggered(any(), eq(ConnectionEvent.CLOSE));
-        verify(connectionManager, times(1)).asyncReconnect(eq(endpoint));
+        verify(connectionManager, times(1)).asyncReconnect(eq(socketAddress));
 
         connectionManager.shutdown();
     }
@@ -227,8 +227,8 @@ public class ConnectionEventHandlerTest {
         connectionManager.startup();
 
         connectionManager = spy(connectionManager);
-        Endpoint endpoint = new Endpoint(test, remoteAddress, serverPort);
-        Connection connection = connectionManager.getOrCreateIfAbsent(endpoint);
+        SocketAddress socketAddress = new SocketAddress(test, remoteAddress, serverPort);
+        Connection connection = connectionManager.getOrCreateIfAbsent(socketAddress);
         connection = spy(connection);
         connection.getChannel().attr(CONNECTION).set(connection);
 
@@ -246,7 +246,7 @@ public class ConnectionEventHandlerTest {
         ConnectionManager tempConnectionManager = connectionManager;
         Wait.untilIsTrue(() -> {
             try {
-                verify(tempConnectionManager, times(1)).reconnect(eq(endpoint));
+                verify(tempConnectionManager, times(1)).reconnect(eq(socketAddress));
                 return true;
             } catch (Throwable e) {
                 return false;
@@ -261,7 +261,7 @@ public class ConnectionEventHandlerTest {
 
 
         verify(connectionEventHandler, times(1)).userEventTriggered(any(), eq(ConnectionEvent.CLOSE));
-        verify(connectionManager, times(1)).asyncReconnect(eq(endpoint));
+        verify(connectionManager, times(1)).asyncReconnect(eq(socketAddress));
 
         connectionManager.shutdown();
     }

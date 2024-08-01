@@ -4,8 +4,6 @@ package io.github.xinfra.lab.remoting.client;
 import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
-import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
-import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.netty.util.Timeout;
 import lombok.Getter;
 
@@ -25,6 +23,8 @@ public class InvokeFuture<T extends Message> implements Future {
     @Getter
     private final int requestId;
 
+    private Protocol protocol;
+
     private final CountDownLatch countDownLatch;
 
     private volatile Message message;
@@ -38,7 +38,7 @@ public class InvokeFuture<T extends Message> implements Future {
 
     private final ClassLoader classLoader;
 
-    public InvokeFuture(int requestId) {
+    public InvokeFuture(int requestId, Protocol protocol) {
         this.requestId = requestId;
         this.countDownLatch = new CountDownLatch(1);
         this.classLoader = Thread.currentThread().getContextClassLoader();
@@ -56,10 +56,7 @@ public class InvokeFuture<T extends Message> implements Future {
 
     public void asyncExecuteCallBack() {
         try {
-            ProtocolType protocolType = message.protocolType();
-            Protocol protocol = ProtocolManager.getProtocol(protocolType);
             Executor executor = protocol.messageHandler().executor();
-
             executor.execute(() -> {
                 try {
                     executeCallBack();

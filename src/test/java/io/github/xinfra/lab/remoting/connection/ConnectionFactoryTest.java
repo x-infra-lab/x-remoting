@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import io.github.xinfra.lab.remoting.Endpoint;
+import io.github.xinfra.lab.remoting.SocketAddress;
 import io.github.xinfra.lab.remoting.common.TestServerUtils;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
@@ -61,7 +61,7 @@ public class ConnectionFactoryTest {
         channelHandlerSuppliers.add(() -> new HttpClientCodec());
         ConnectionFactory connectionFactory = new DefaultConnectionFactory(channelHandlerSuppliers);
 
-        Connection connection = connectionFactory.create(new Endpoint(test, remoteAddress, serverPort));
+        Connection connection = connectionFactory.create(new SocketAddress(test, remoteAddress, serverPort));
         Assertions.assertNotNull(connection);
 
         Channel channel = connection.getChannel();
@@ -87,9 +87,9 @@ public class ConnectionFactoryTest {
         channelHandlerSuppliers.add(() -> new HttpClientCodec());
         ConnectionFactory connectionFactory = new DefaultConnectionFactory(channelHandlerSuppliers);
 
-        Endpoint invalidEndpoint = new Endpoint(test, remoteAddress, serverPort + 1);
+        SocketAddress invalidSocketAddress = new SocketAddress(test, remoteAddress, serverPort + 1);
         Assertions.assertThrows(RemotingException.class, () -> {
-            connectionFactory.create(invalidEndpoint);
+            connectionFactory.create(invalidSocketAddress);
         });
 
     }

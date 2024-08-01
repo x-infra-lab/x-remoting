@@ -63,7 +63,7 @@ public class ConnectionEventHandler extends ChannelDuplexHandler {
             ConnectionEvent connectionEvent = (ConnectionEvent) evt;
             if (connectionEvent == ConnectionEvent.CLOSE) {
                 if (connectionManager != null && connectionManager.isStarted()) {
-                    connectionManager.asyncReconnect(connection.getEndpoint());
+                    connectionManager.asyncReconnect(connection.remoteAddress());
                 }
             }
         } else {

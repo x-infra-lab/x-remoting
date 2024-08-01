@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.server;
 
-import io.github.xinfra.lab.remoting.Endpoint;
+import io.github.xinfra.lab.remoting.SocketAddress;
 import io.github.xinfra.lab.remoting.common.Wait;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.connection.ConnectionFactory;
@@ -38,8 +38,8 @@ public class BaseRemotingServerTest {
         List<Supplier<ChannelHandler>> channelHandlerSuppliers = new ArrayList<>();
         channelHandlerSuppliers.add(() -> new HttpClientCodec()); // anyone channel handler is ok
         ConnectionFactory connectionFactory = new DefaultConnectionFactory(channelHandlerSuppliers);
-        Endpoint endpoint = new Endpoint(test, serverAddress.getHostName(), serverAddress.getPort());
-        Connection connection = connectionFactory.create(endpoint);
+        SocketAddress socketAddress = new SocketAddress(test, serverAddress.getHostName(), serverAddress.getPort());
+        Connection connection = connectionFactory.create(socketAddress);
         return connection;
     }
 
@@ -102,12 +102,12 @@ public class BaseRemotingServerTest {
 
         InetSocketAddress clientAddress = ((InetSocketAddress) clientConnection.getChannel().localAddress());
 
-        Endpoint endpoint = new Endpoint(test, clientAddress.getHostName(), clientAddress.getPort());
+        SocketAddress socketAddress = new SocketAddress(test, clientAddress.getHostName(), clientAddress.getPort());
         Wait.untilIsTrue(() -> {
-            return connectionManager.get(endpoint) != null;
+            return connectionManager.get(socketAddress) != null;
         }, 30, 100);
 
-        Connection serverConnection = connectionManager.get(endpoint);
+        Connection serverConnection = connectionManager.get(socketAddress);
         Assertions.assertNotNull(serverConnection);
 
         server.shutdown();

@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import io.github.xinfra.lab.remoting.Endpoint;
+import io.github.xinfra.lab.remoting.SocketAddress;
 import io.github.xinfra.lab.remoting.RemotingContext;
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
@@ -36,22 +36,22 @@ public class ConnectionTest {
 
     @BeforeEach
     public void before() {
-        Endpoint endpoint = new Endpoint(test, "localhost", 0);
+        SocketAddress socketAddress = new SocketAddress(test, "localhost", 0);
         Channel channel = new EmbeddedChannel();
-        connection = new Connection(endpoint, channel);
+        connection = new Connection(socketAddress, channel);
     }
 
     @Test
     public void testNewInstance() {
-        Endpoint endpoint = new Endpoint(test, "localhost", 0);
+        SocketAddress socketAddress = new SocketAddress(test, "localhost", 0);
         Channel channel = new EmbeddedChannel();
-        Connection connection = new Connection(endpoint, channel);
+        Connection connection = new Connection(socketAddress, channel);
 
         Assertions.assertNotNull(connection);
         Assertions.assertEquals(connection.getChannel(), channel);
-        Assertions.assertEquals(connection.getEndpoint(), endpoint);
+        Assertions.assertEquals(connection.getSocketAddress(), socketAddress);
         Assertions.assertEquals(connection.remoteAddress(), channel.remoteAddress());
-        Assertions.assertEquals(connection.getChannel().attr(PROTOCOL).get(), endpoint.getProtocolType());
+        Assertions.assertEquals(connection.getChannel().attr(PROTOCOL).get(), socketAddress.getProtocolType());
         Assertions.assertEquals(connection.getChannel().attr(CONNECTION).get(), connection);
         Assertions.assertEquals((long) connection.getChannel().attr(HEARTBEAT_FAIL_COUNT).get(), 0L);
     }
@@ -62,14 +62,14 @@ public class ConnectionTest {
         final int requestId1 = IDGenerator.nextRequestId();
         Assertions.assertNull(connection.removeInvokeFuture(requestId1));
 
-        connection.addInvokeFuture(new InvokeFuture(requestId1));
+        connection.addInvokeFuture(new InvokeFuture(requestId1, connection.getProtocol()));
         Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            connection.addInvokeFuture(new InvokeFuture(requestId1));
+            connection.addInvokeFuture(new InvokeFuture(requestId1, connection.getProtocol()));
         });
 
 
         final int requestId2 = IDGenerator.nextRequestId();
-        InvokeFuture invokeFuture = new InvokeFuture(requestId2);
+        InvokeFuture invokeFuture = new InvokeFuture(requestId2, connection.getProtocol());
         connection.addInvokeFuture(invokeFuture);
 
         Assertions.assertEquals(invokeFuture, connection.removeInvokeFuture(requestId2));
@@ -93,7 +93,7 @@ public class ConnectionTest {
         for (int i = 0; i < times; i++) {
             Integer requestId = IDGenerator.nextRequestId();
             requestIds.add(requestId);
-            connection.addInvokeFuture(new InvokeFuture(requestId));
+            connection.addInvokeFuture(new InvokeFuture(requestId, connection.getProtocol()));
         }
         Assertions.assertEquals(requestIds.size(), times);
 

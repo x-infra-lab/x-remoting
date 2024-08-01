@@ -1,13 +1,14 @@
 package io.github.xinfra.lab.remoting.connection;
 
 
-import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.processor.UserProcessor;
+import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.netty.channel.ChannelHandler;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -25,35 +26,41 @@ import java.util.function.Supplier;
 
 @Slf4j
 public class ClientConnectionManager extends AbstractConnectionManager {
-
     private ExecutorService reconnector = new ThreadPoolExecutor(1, 1,
             0L, TimeUnit.MILLISECONDS,
             new ArrayBlockingQueue<>(1024),
             new NamedThreadFactory("Reconnector-Worker"));
 
-    private Set<Endpoint> disableReconnectEndpoints = new CopyOnWriteArraySet<>();
+    private Set<SocketAddress> disableReconnectSocketAddresses = new CopyOnWriteArraySet<>();
 
-    public ClientConnectionManager(ConcurrentHashMap<String, UserProcessor<?>> userProcessors) {
-
-        this.connectionFactory = new DefaultConnectionFactory(defaultChannelSuppliers(userProcessors));
+    public ClientConnectionManager(Protocol protocol,
+                                   ConcurrentHashMap<String, UserProcessor<?>> userProcessors) {
+        this.connectionFactory = new DefaultConnectionFactory(protocol,
+                defaultChannelSuppliers(userProcessors));
     }
 
-    public ClientConnectionManager(ConcurrentHashMap<String, UserProcessor<?>> userProcessors,
+    public ClientConnectionManager(Protocol protocol,
+                                   ConcurrentHashMap<String, UserProcessor<?>> userProcessors,
                                    ConnectionConfig connectionConfig) {
-        this.connectionFactory = new DefaultConnectionFactory(defaultChannelSuppliers(userProcessors), connectionConfig);
+        this.connectionFactory = new DefaultConnectionFactory(protocol,
+                defaultChannelSuppliers(userProcessors), connectionConfig);
     }
 
-    public ClientConnectionManager(ConcurrentHashMap<String, UserProcessor<?>> userProcessors,
+    public ClientConnectionManager(Protocol protocol,
+                                   ConcurrentHashMap<String, UserProcessor<?>> userProcessors,
                                    ConnectionManagerConfig connectionManagerConfig) {
-        super(connectionManagerConfig);
-        this.connectionFactory = new DefaultConnectionFactory(defaultChannelSuppliers(userProcessors));
+        super( connectionManagerConfig);
+        this.connectionFactory = new DefaultConnectionFactory(protocol,
+                defaultChannelSuppliers(userProcessors));
     }
 
-    public ClientConnectionManager(ConcurrentHashMap<String, UserProcessor<?>> userProcessors,
+    public ClientConnectionManager(Protocol protocol,
+                                   ConcurrentHashMap<String, UserProcessor<?>> userProcessors,
                                    ConnectionConfig connectionConfig,
                                    ConnectionManagerConfig connectionManagerConfig) {
-        super(connectionManagerConfig);
-        this.connectionFactory = new DefaultConnectionFactory(defaultChannelSuppliers(userProcessors), connectionConfig);
+        super( connectionManagerConfig);
+        this.connectionFactory = new DefaultConnectionFactory(protocol,
+                defaultChannelSuppliers(userProcessors), connectionConfig);
     }
 
     private List<Supplier<ChannelHandler>> defaultChannelSuppliers(ConcurrentHashMap<String, UserProcessor<?>> userProcessors) {
@@ -73,8 +80,8 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 
     @Override
     public synchronized void shutdown() {
-        for (Endpoint endpoint : connections.keySet()) {
-            disableReconnect(endpoint);
+        for (SocketAddress socketAddress : connections.keySet()) {
+            disableReconnect(socketAddress);
         }
         super.shutdown();
 
@@ -82,43 +89,43 @@ public class ClientConnectionManager extends AbstractConnectionManager {
     }
 
     @Override
-    public synchronized void reconnect(Endpoint endpoint) throws RemotingException {
+    public synchronized void reconnect(SocketAddress socketAddress) throws RemotingException {
         ensureStarted();
-        if (disableReconnectEndpoints.contains(endpoint)) {
-            log.warn("endpoint:{} is disable to reconnect", endpoint);
-            throw new RemotingException("endpoint is disable to reconnect:" + endpoint);
+        if (disableReconnectSocketAddresses.contains(socketAddress)) {
+            log.warn("socketAddress:{} is disable to reconnect", socketAddress);
+            throw new RemotingException("socketAddress is disable to reconnect:" + socketAddress);
         }
-        ConnectionHolder connectionHolder = connections.get(endpoint);
+        ConnectionHolder connectionHolder = connections.get(socketAddress);
         if (connectionHolder == null) {
-            connectionHolder = createConnectionHolder(endpoint);
-            createConnectionForHolder(endpoint, connectionHolder, config.getConnectionNumPreEndpoint());
+            connectionHolder = createConnectionHolder(socketAddress);
+            createConnectionForHolder(socketAddress, connectionHolder, config.getConnectionNumPreEndpoint());
         } else {
             int needCreateNum = config.getConnectionNumPreEndpoint() - connectionHolder.size();
             if (needCreateNum > 0) {
-                createConnectionForHolder(endpoint, connectionHolder, needCreateNum);
+                createConnectionForHolder(socketAddress, connectionHolder, needCreateNum);
             }
         }
     }
 
     @Override
-    public synchronized void disableReconnect(Endpoint endpoint) {
+    public synchronized void disableReconnect(SocketAddress socketAddress) {
         ensureStarted();
-        disableReconnectEndpoints.add(endpoint);
+        disableReconnectSocketAddresses.add(socketAddress);
     }
 
     @Override
-    public synchronized void enableReconnect(Endpoint endpoint) {
+    public synchronized void enableReconnect(SocketAddress socketAddress) {
         ensureStarted();
-        disableReconnectEndpoints.remove(endpoint);
+        disableReconnectSocketAddresses.remove(socketAddress);
     }
 
     @Override
-    public synchronized Future<Void> asyncReconnect(Endpoint endpoint) {
+    public synchronized Future<Void> asyncReconnect(SocketAddress socketAddress) {
         ensureStarted();
-        if (disableReconnectEndpoints.contains(endpoint)) {
-            log.warn("endpoint:{} is disable to asyncReconnect", endpoint);
+        if (disableReconnectSocketAddresses.contains(socketAddress)) {
+            log.warn("socketAddress:{} is disable to asyncReconnect", socketAddress);
             CompletableFuture<Void> future = new CompletableFuture<>();
-            future.completeExceptionally(new RemotingException("endpoint is disable to asyncReconnect:" + endpoint));
+            future.completeExceptionally(new RemotingException("socketAddress is disable to asyncReconnect:" + socketAddress));
             return future;
         }
 
@@ -126,9 +133,9 @@ public class ClientConnectionManager extends AbstractConnectionManager {
             @Override
             public Void call() throws Exception {
                 try {
-                    reconnect(endpoint);
+                    reconnect(socketAddress);
                 } catch (Exception e) {
-                    log.warn("reconnect endpoint:{} fail", endpoint, e);
+                    log.warn("reconnect socketAddress:{} fail", socketAddress, e);
                     throw e;
                 }
                 return null;

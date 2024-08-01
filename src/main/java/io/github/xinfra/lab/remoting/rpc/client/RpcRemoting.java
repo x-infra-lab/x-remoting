@@ -6,28 +6,18 @@ import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.connection.ConnectionManager;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
-import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
 import io.github.xinfra.lab.remoting.rpc.message.RpcMessageFactory;
 import io.github.xinfra.lab.remoting.rpc.message.RpcRequestMessage;
 import io.github.xinfra.lab.remoting.rpc.message.RpcResponseMessage;
-import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
 import io.github.xinfra.lab.remoting.rpc.message.RpcResponses;
 
 
 public class RpcRemoting extends BaseRemoting {
-
-    static {
-        ProtocolManager.registerProtocolIfAbsent(RpcProtocol.RPC, new RpcProtocol());
-    }
-
     protected RpcMessageFactory rpcMessageFactory;
 
-    protected ConnectionManager connectionManager;
-
-    public RpcRemoting(ConnectionManager connectionManager) {
-        super(ProtocolManager.getProtocol(RpcProtocol.RPC).messageFactory());
-        this.rpcMessageFactory = (RpcMessageFactory) ProtocolManager.getProtocol(RpcProtocol.RPC).messageFactory();
-        this.connectionManager = connectionManager;
+    public RpcRemoting(RpcMessageFactory rpcMessageFactory) {
+        super(rpcMessageFactory);
+        this.rpcMessageFactory = rpcMessageFactory;
     }
 
     public <R> R syncCall(Object request, Connection connection, int timeoutMills)

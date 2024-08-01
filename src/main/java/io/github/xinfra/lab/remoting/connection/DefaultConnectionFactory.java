@@ -1,9 +1,9 @@
 package io.github.xinfra.lab.remoting.connection;
 
 
-import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
+import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -32,6 +32,7 @@ import java.util.function.Supplier;
 @Slf4j
 public class DefaultConnectionFactory implements ConnectionFactory {
 
+    private Protocol protocol;
 
     private List<Supplier<ChannelHandler>> channelHandlerSuppliers;
 
@@ -55,8 +56,8 @@ public class DefaultConnectionFactory implements ConnectionFactory {
      *
      * @param channelHandlerSuppliers
      */
-    public DefaultConnectionFactory(List<Supplier<ChannelHandler>> channelHandlerSuppliers) {
-        this(channelHandlerSuppliers, new ConnectionConfig());
+    public DefaultConnectionFactory(Protocol protocol, List<Supplier<ChannelHandler>> channelHandlerSuppliers) {
+        this(protocol, channelHandlerSuppliers, new ConnectionConfig());
     }
 
     /**
@@ -66,10 +67,13 @@ public class DefaultConnectionFactory implements ConnectionFactory {
      * @param channelHandlerSuppliers
      * @param connectionConfig
      */
-    public DefaultConnectionFactory(List<Supplier<ChannelHandler>> channelHandlerSuppliers,
+    public DefaultConnectionFactory(Protocol protocol,
+                                    List<Supplier<ChannelHandler>> channelHandlerSuppliers,
                                     ConnectionConfig connectionConfig) {
+        Validate.notNull(protocol, "protocol can not be null");
         Validate.notNull(channelHandlerSuppliers, "channelHandlers can not be null");
         Validate.notNull(connectionConfig, "connectionConfig can not be null");
+        this.protocol = protocol;
         this.connectionConfig = connectionConfig;
         this.channelHandlerSuppliers = channelHandlerSuppliers;
 
@@ -86,7 +90,7 @@ public class DefaultConnectionFactory implements ConnectionFactory {
                                     connectionConfig.getIdleWriterTimeout(), connectionConfig.getIdleAllTimeout(),
                                     TimeUnit.MILLISECONDS));
                         }
-                        
+
                         for (Supplier<ChannelHandler> supplier : channelHandlerSuppliers) {
                             pipeline.addLast(supplier.get());
                         }
@@ -99,28 +103,27 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 
 
     @Override
-    public Connection create(Endpoint endpoint) throws RemotingException {
-        SocketAddress address = new InetSocketAddress(endpoint.getIp(), endpoint.getPort());
+    public Connection create(SocketAddress socketAddress) throws RemotingException {
         bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionConfig.getConnectTimeout());
-        ChannelFuture future = bootstrap.connect(address);
+        ChannelFuture future = bootstrap.connect(socketAddress);
         future.awaitUninterruptibly();
         if (!future.isDone()) {
-            String errMsg = "Create connection to " + address + " timeout!";
+            String errMsg = "Create connection to " + socketAddress + " timeout!";
             log.warn(errMsg);
             throw new RemotingException(errMsg);
         }
         if (future.isCancelled()) {
-            String errMsg = "Create connection to " + address + " cancelled by user!";
+            String errMsg = "Create connection to " + socketAddress + " cancelled by user!";
             log.warn(errMsg);
             throw new RemotingException(errMsg);
         }
         if (!future.isSuccess()) {
-            String errMsg = "Create connection to " + address + " error!";
+            String errMsg = "Create connection to " + socketAddress + " error!";
             log.warn(errMsg);
             throw new RemotingException(errMsg, future.cause());
         }
         Channel channel = future.channel();
-        return new Connection(endpoint, channel);
+        return new Connection(protocol, channel);
     }
 
 }

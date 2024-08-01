@@ -32,7 +32,7 @@ public class InvokeFutureTest {
 
     private InvokeFuture newInvokeFuture() {
         final int requestId1 = IDGenerator.nextRequestId();
-        return new InvokeFuture(requestId1);
+        return new InvokeFuture(requestId1, connection.getProtocol());
     }
 
 

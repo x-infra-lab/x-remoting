@@ -8,6 +8,7 @@ import io.github.xinfra.lab.remoting.message.MessageHandler;
 
 
 public interface Protocol {
+    byte[] protocolCode();
 
     MessageEncoder encoder();
 

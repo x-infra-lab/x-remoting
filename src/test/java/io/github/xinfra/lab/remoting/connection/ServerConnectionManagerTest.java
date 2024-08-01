@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import io.github.xinfra.lab.remoting.Endpoint;
+import io.github.xinfra.lab.remoting.SocketAddress;
 import io.github.xinfra.lab.remoting.common.TestServerUtils;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.protocol.ProtocolType;
@@ -60,7 +60,7 @@ public class ServerConnectionManagerTest {
     @Test
     public void testGetOrCreateIfAbsent() {
         Assertions.assertThrows(UnsupportedOperationException.class, () -> {
-            connectionManager.getOrCreateIfAbsent(new Endpoint(test, remoteAddress, serverPort));
+            connectionManager.getOrCreateIfAbsent(new SocketAddress(test, remoteAddress, serverPort));
         });
 
     }
@@ -68,53 +68,53 @@ public class ServerConnectionManagerTest {
 
     @Test
     public void testGet1() throws RemotingException {
-        // valid endpoint
-        Endpoint endpoint = new Endpoint(test, remoteAddress, serverPort);
+        // valid socketAddress
+        SocketAddress socketAddress = new SocketAddress(test, remoteAddress, serverPort);
 
         // no connection
-        Connection connection1 = connectionManager.get(endpoint);
+        Connection connection1 = connectionManager.get(socketAddress);
         Assertions.assertNull(connection1);
 
         Assertions.assertThrows(UnsupportedOperationException.class, () -> {
-            connectionManager.getOrCreateIfAbsent(endpoint);
+            connectionManager.getOrCreateIfAbsent(socketAddress);
         });
 
-        connection1 = connectionManager.get(endpoint);
+        connection1 = connectionManager.get(socketAddress);
         Assertions.assertNull(connection1);
     }
 
     @Test
     public void testAdd() {
         Connection connection1 = mock(Connection.class);
-        Endpoint endpoint1 = new Endpoint(test, "localhost", 8080);
-        doReturn(endpoint1).when(connection1).getEndpoint();
+        SocketAddress socketAddress1 = new SocketAddress(test, "localhost", 8080);
+        doReturn(socketAddress1).when(connection1).getSocketAddress();
 
         Connection connection2 = mock(Connection.class);
-        Endpoint endpoint2 = new Endpoint(test, "localhost", 8081);
-        doReturn(endpoint2).when(connection2).getEndpoint();
+        SocketAddress socketAddress2 = new SocketAddress(test, "localhost", 8081);
+        doReturn(socketAddress2).when(connection2).getSocketAddress();
 
 
         connectionManager.add(connection1);
         connectionManager.add(connection2);
-        Assertions.assertTrue(connection1 == connectionManager.get(endpoint1));
-        Assertions.assertTrue(connection2 == connectionManager.get(endpoint2));
+        Assertions.assertTrue(connection1 == connectionManager.get(socketAddress1));
+        Assertions.assertTrue(connection2 == connectionManager.get(socketAddress2));
 
         connectionManager.removeAndClose(connection1);
         verify(connection1, times(1)).close();
-        Assertions.assertNull(connectionManager.get(endpoint1));
-        Assertions.assertTrue(connection2 == connectionManager.get(endpoint2));
+        Assertions.assertNull(connectionManager.get(socketAddress1));
+        Assertions.assertTrue(connection2 == connectionManager.get(socketAddress2));
     }
 
 
     @Test
     public void testShutdown() {
         Connection connection1 = mock(Connection.class);
-        Endpoint endpoint1 = new Endpoint(test, "localhost", 8080);
-        doReturn(endpoint1).when(connection1).getEndpoint();
+        SocketAddress socketAddress1 = new SocketAddress(test, "localhost", 8080);
+        doReturn(socketAddress1).when(connection1).getSocketAddress();
 
         Connection connection2 = mock(Connection.class);
-        Endpoint endpoint2 = new Endpoint(test, "localhost", 8081);
-        doReturn(endpoint2).when(connection2).getEndpoint();
+        SocketAddress socketAddress2 = new SocketAddress(test, "localhost", 8081);
+        doReturn(socketAddress2).when(connection2).getSocketAddress();
 
 
         connectionManager.add(connection1);

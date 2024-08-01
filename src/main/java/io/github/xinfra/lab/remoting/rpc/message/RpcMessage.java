@@ -4,7 +4,6 @@ import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageType;
-import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
 import io.github.xinfra.lab.remoting.serialization.SerializationManager;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
@@ -16,11 +15,10 @@ import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
 
 public abstract class RpcMessage implements Message {
+    private  byte[] protocolCode;
     private int id;
 
     private MessageType messageType;
-
-    private ProtocolType protocolType;
 
     private SerializationType serializationType;
 
@@ -61,8 +59,13 @@ public abstract class RpcMessage implements Message {
     public RpcMessage(int id, MessageType messageType, SerializationType serializationType) {
         this.id = id;
         this.messageType = messageType;
-        this.protocolType = RpcProtocol.RPC;
+        this.protocolCode = RpcProtocol.PROTOCOL_CODE;
         this.serializationType = serializationType;
+    }
+
+    @Override
+    public byte[] protocolCode() {
+        return this.protocolCode;
     }
 
     @Override
@@ -73,11 +76,6 @@ public abstract class RpcMessage implements Message {
     @Override
     public MessageType messageType() {
         return messageType;
-    }
-
-    @Override
-    public ProtocolType protocolType() {
-        return protocolType;
     }
 
     @Override

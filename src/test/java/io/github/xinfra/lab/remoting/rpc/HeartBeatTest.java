@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.rpc;
 
-import io.github.xinfra.lab.remoting.Endpoint;
+import io.github.xinfra.lab.remoting.SocketAddress;
 import io.github.xinfra.lab.remoting.client.BaseRemoting;
 import io.github.xinfra.lab.remoting.connection.ClientConnectionManager;
 import io.github.xinfra.lab.remoting.connection.Connection;
@@ -57,7 +57,7 @@ public class HeartBeatTest {
         baseRemoting.startup();
         Message heartbeatRequestMessage = messageFactory.createHeartbeatRequestMessage();
 
-        Connection connection = connectionManager.getOrCreateIfAbsent(new Endpoint(RPC, remoteAddress.getHostName(), remoteAddress.getPort()));
+        Connection connection = connectionManager.getOrCreateIfAbsent(new SocketAddress(RPC, remoteAddress.getHostName(), remoteAddress.getPort()));
 
         Message heartbeatResponseMessage = baseRemoting.syncCall(heartbeatRequestMessage, connection,
                 1000);

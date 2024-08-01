@@ -1,12 +1,9 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
-import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
-import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
@@ -22,7 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Slf4j
 public class Connection {
 
-    public static final AttributeKey<ProtocolType> PROTOCOL = AttributeKey.valueOf("protocol");
+    public static final AttributeKey<Protocol> PROTOCOL = AttributeKey.valueOf("protocol");
 
     public static final AttributeKey<Connection> CONNECTION = AttributeKey.valueOf("connection");
 
@@ -36,17 +33,17 @@ public class Connection {
     private Channel channel;
 
     @Getter
-    private Endpoint endpoint;
+    private Protocol protocol;
 
     private final AtomicBoolean closed = new AtomicBoolean(false);
 
 
-    public Connection(Endpoint endpoint, Channel channel) {
-        Validate.notNull(endpoint, "endpoint can not be null");
+    public Connection(Protocol protocol, Channel channel) {
+        Validate.notNull(protocol, "protocol can not be null");
         Validate.notNull(channel, "channel can not be null");
-        this.endpoint = endpoint;
+        this.protocol = protocol;
         this.channel = channel;
-        this.channel.attr(PROTOCOL).set(endpoint.getProtocolType());
+        this.channel.attr(PROTOCOL).set(protocol);
         this.channel.attr(CONNECTION).set(this);
         this.channel.attr(HEARTBEAT_FAIL_COUNT).set(0);
     }
@@ -90,7 +87,6 @@ public class Connection {
     }
 
     private Message createConnectionClosedMessage(int requestId) {
-        Protocol protocol = ProtocolManager.getProtocol(endpoint.getProtocolType());
         return protocol.messageFactory().createConnectionClosedMessage(requestId, remoteAddress());
     }
 }
