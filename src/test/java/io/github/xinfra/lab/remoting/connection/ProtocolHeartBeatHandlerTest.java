@@ -2,8 +2,6 @@ package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.heartbeat.HeartbeatTrigger;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
-import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
-import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -19,11 +17,9 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 public class ProtocolHeartBeatHandlerTest {
-
+    TestProtocol testProtocol = new TestProtocol();
     @Test
     public void testHeartBeat() throws InterruptedException {
-        ProtocolType testProtocol = new ProtocolType("testHeartBeat", "testHeartBeat".getBytes());
-        ProtocolManager.registerProtocolIfAbsent(testProtocol, new TestProtocol());
 
         ProtocolHeartBeatHandler protocolHeartBeatHandler = new ProtocolHeartBeatHandler();
 
@@ -39,8 +35,8 @@ public class ProtocolHeartBeatHandlerTest {
         };
 
         HeartbeatTrigger spyHeartbeatTrigger = spy(heartbeatTrigger);
-        Protocol protocol = ProtocolManager.getProtocol(testProtocol);
-        ((TestProtocol) protocol).setTestHeartbeatTrigger(spyHeartbeatTrigger);
+
+       testProtocol.setTestHeartbeatTrigger(spyHeartbeatTrigger);
 
         // simulate IdleStateHandler#fireUserEventTriggered
         channel.pipeline().firstContext().fireUserEventTriggered(ALL_IDLE_STATE_EVENT);

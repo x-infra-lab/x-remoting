@@ -1,6 +1,5 @@
 package io.github.xinfra.lab.remoting.client;
 
-import io.github.xinfra.lab.remoting.SocketAddress;
 import io.github.xinfra.lab.remoting.RemotingContext;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.common.Wait;
@@ -8,13 +7,12 @@ import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
-import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
-import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.Channel;
 import io.netty.channel.embedded.EmbeddedChannel;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.Executor;
@@ -38,11 +36,17 @@ public class BaseRemotingTest {
 
     private static final ExecutorService executor = Executors.newCachedThreadPool();
 
-    private static ProtocolType test = new ProtocolType("BaseRemotingTest", new byte[]{0xb});
+    TestProtocol testProtocol;
 
-    @BeforeAll
-    public static void beforeAll() {
-        TestProtocol testProtocol = new TestProtocol();
+    BaseRemoting baseRemoting;
+
+    int requestId;
+
+    MessageFactory messageFactory;
+
+    @BeforeEach
+    public void beforeEach() {
+        testProtocol = new TestProtocol();
         // set message handler
         testProtocol.setTestMessageHandler(new MessageHandler() {
             @Override
@@ -55,23 +59,29 @@ public class BaseRemotingTest {
                 // do notiong
             }
         });
-        ProtocolManager.registerProtocolIfAbsent(test, testProtocol);
+
+
+        requestId = IDGenerator.nextRequestId();
+        messageFactory = mock(MessageFactory.class);
+
+        baseRemoting = new BaseRemoting(messageFactory);
+        baseRemoting.startup();
+    }
+
+    @AfterEach
+    public void afterEach() {
+        baseRemoting.shutdown();
     }
 
     @Test
-    public void testSyncCall() throws InterruptedException, TimeoutException {
-        int requestId = IDGenerator.nextRequestId();
-        MessageFactory messageFactory = mock(MessageFactory.class);
+    public void testSyncCall() throws InterruptedException {
 
-        BaseRemoting baseRemoting = new BaseRemoting(messageFactory);
-        baseRemoting.startup();
 
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        SocketAddress socketAddress = mock(SocketAddress.class);
+
         Channel channel = new EmbeddedChannel();
-        doReturn(test).when(socketAddress).getProtocolType();
-        Connection connection = new Connection(socketAddress, channel);
+        Connection connection = new Connection(testProtocol, channel);
 
         Message result = mock(Message.class);
         // complete invokeFuture
@@ -87,9 +97,7 @@ public class BaseRemotingTest {
                             return false;
                         }, 30, 100
                 );
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            } catch (TimeoutException e) {
+            } catch (InterruptedException | TimeoutException e) {
                 throw new RuntimeException(e);
             }
         });
@@ -102,21 +110,15 @@ public class BaseRemotingTest {
 
     @Test
     public void testSyncCallSendFailed1() throws InterruptedException, TimeoutException {
-        int requestId = IDGenerator.nextRequestId();
-        MessageFactory messageFactory = mock(MessageFactory.class);
 
         Message sendFailedMessage = mock(Message.class);
         doReturn(sendFailedMessage).when(messageFactory).createSendFailResponseMessage(anyInt(), any(), any());
 
-        BaseRemoting baseRemoting = new BaseRemoting(messageFactory);
-        baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(socketAddress).getProtocolType();
-        Connection connection = new Connection(socketAddress, channel);
+        Connection connection = new Connection(testProtocol, channel);
 
         doThrow(new RuntimeException("network error")).when(channel).writeAndFlush(any());
 
@@ -126,21 +128,15 @@ public class BaseRemotingTest {
 
     @Test
     public void testSyncCallSendFailed2() throws InterruptedException, TimeoutException {
-        int requestId = IDGenerator.nextRequestId();
-        MessageFactory messageFactory = mock(MessageFactory.class);
 
         Message sendFailedMessage = mock(Message.class);
         doReturn(sendFailedMessage).when(messageFactory).createSendFailResponseMessage(anyInt(), any(), any());
 
-        BaseRemoting baseRemoting = new BaseRemoting(messageFactory);
-        baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(socketAddress).getProtocolType();
-        Connection connection = new Connection(socketAddress, channel);
+        Connection connection = new Connection(testProtocol, channel);
 
         doReturn(channel.newFailedFuture(new RuntimeException("network error"))).when(channel).writeAndFlush(any());
 
@@ -150,62 +146,42 @@ public class BaseRemotingTest {
 
     @Test
     public void testSyncCallTimeout() throws InterruptedException, TimeoutException {
-        int requestId = IDGenerator.nextRequestId();
-        MessageFactory messageFactory = mock(MessageFactory.class);
 
         Message timeoutMessage = mock(Message.class);
         doReturn(timeoutMessage).when(messageFactory).createTimeoutResponseMessage(anyInt(), any());
 
-        BaseRemoting baseRemoting = new BaseRemoting(messageFactory);
-        baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(socketAddress).getProtocolType();
-        Connection connection = new Connection(socketAddress, channel);
+        Connection connection = new Connection(testProtocol, channel);
         Message msg = baseRemoting.syncCall(message, connection, 1000);
         Assertions.assertTrue(msg == timeoutMessage);
     }
 
     @Test
-    public void testAsyncCall() throws InterruptedException {
-        int requestId = IDGenerator.nextRequestId();
-        MessageFactory messageFactory = mock(MessageFactory.class);
+    public void testAsyncCall() throws InterruptedException, TimeoutException {
 
         Message result = mock(Message.class);
 
-        BaseRemoting baseRemoting = new BaseRemoting(messageFactory);
-        baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(socketAddress).getProtocolType();
-        Connection connection = new Connection(socketAddress, channel);
+        Connection connection = new Connection(testProtocol, channel);
         InvokeFuture invokeFuture = baseRemoting.asyncCall(message, connection, 1000);
 
         // complete invokeFuture
-        executor.submit(() -> {
-            try {
-                Wait.untilIsTrue(
-                        () -> {
-                            InvokeFuture future = connection.removeInvokeFuture(requestId);
-                            if (future != null) {
-                                future.complete(result);
-                                return true;
-                            }
-                            return false;
-                        }, 30, 100
-                );
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            } catch (TimeoutException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        Wait.untilIsTrue(
+                () -> {
+                    InvokeFuture future = connection.removeInvokeFuture(requestId);
+                    if (future != null) {
+                        future.complete(result);
+                        return true;
+                    }
+                    return false;
+                }, 30, 100
+        );
 
         Assertions.assertTrue(invokeFuture.get() == result);
 
@@ -213,21 +189,15 @@ public class BaseRemotingTest {
 
     @Test
     public void testAsyncCallSendFailed1() throws InterruptedException, TimeoutException {
-        int requestId = IDGenerator.nextRequestId();
-        MessageFactory messageFactory = mock(MessageFactory.class);
 
         Message sendFailedMessage = mock(Message.class);
         doReturn(sendFailedMessage).when(messageFactory).createSendFailResponseMessage(anyInt(), any(), any());
 
-        BaseRemoting baseRemoting = new BaseRemoting(messageFactory);
-        baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(socketAddress).getProtocolType();
-        Connection connection = new Connection(socketAddress, channel);
+        Connection connection = new Connection(testProtocol, channel);
 
         doThrow(new RuntimeException("network error")).when(channel).writeAndFlush(any());
 
@@ -237,21 +207,15 @@ public class BaseRemotingTest {
 
     @Test
     public void testAsyncCallSendFailed2() throws InterruptedException, TimeoutException {
-        int requestId = IDGenerator.nextRequestId();
-        MessageFactory messageFactory = mock(MessageFactory.class);
 
         Message sendFailedMessage = mock(Message.class);
         doReturn(sendFailedMessage).when(messageFactory).createSendFailResponseMessage(anyInt(), any(), any());
 
-        BaseRemoting baseRemoting = new BaseRemoting(messageFactory);
-        baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(socketAddress).getProtocolType();
-        Connection connection = new Connection(socketAddress, channel);
+        Connection connection = new Connection(testProtocol, channel);
 
         doReturn(channel.newFailedFuture(new RuntimeException("network error"))).when(channel).writeAndFlush(any());
 
@@ -261,41 +225,29 @@ public class BaseRemotingTest {
 
     @Test
     public void testAsyncCallTimeout() throws InterruptedException, TimeoutException {
-        int requestId = IDGenerator.nextRequestId();
-        MessageFactory messageFactory = mock(MessageFactory.class);
 
         Message timeoutMessage = mock(Message.class);
         doReturn(timeoutMessage).when(messageFactory).createTimeoutResponseMessage(anyInt(), any());
 
-        BaseRemoting baseRemoting = new BaseRemoting(messageFactory);
-        baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(socketAddress).getProtocolType();
-        Connection connection = new Connection(socketAddress, channel);
+        Connection connection = new Connection(testProtocol, channel);
         InvokeFuture invokeFuture = baseRemoting.asyncCall(message, connection, 1000);
         Assertions.assertTrue(invokeFuture.get() == timeoutMessage);
     }
 
     @Test
     public void testAsyncCallWithCallback() throws InterruptedException {
-        int requestId = IDGenerator.nextRequestId();
-        MessageFactory messageFactory = mock(MessageFactory.class);
 
         Message result = mock(Message.class);
 
-        BaseRemoting baseRemoting = new BaseRemoting(messageFactory);
-        baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(socketAddress).getProtocolType();
-        Connection connection = new Connection(socketAddress, channel);
+        Connection connection = new Connection(testProtocol, channel);
 
         AtomicReference<Message> callbackMessage = new AtomicReference<>();
         baseRemoting.asyncCall(message, connection, 1000,
@@ -314,22 +266,15 @@ public class BaseRemotingTest {
 
     @Test
     public void testAsyncCallWithCallbackSendFailed1() throws InterruptedException, TimeoutException {
-        int requestId = IDGenerator.nextRequestId();
-        MessageFactory messageFactory = mock(MessageFactory.class);
 
         Message sendFailedMessage = mock(Message.class);
         doReturn(sendFailedMessage).when(messageFactory).createSendFailResponseMessage(anyInt(), any(), any());
-        doReturn(test).when(sendFailedMessage).protocolType();
 
-        BaseRemoting baseRemoting = new BaseRemoting(messageFactory);
-        baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(socketAddress).getProtocolType();
-        Connection connection = new Connection(socketAddress, channel);
+        Connection connection = new Connection(testProtocol, channel);
 
         doThrow(new RuntimeException("network error")).when(channel).writeAndFlush(any());
 
@@ -352,22 +297,15 @@ public class BaseRemotingTest {
 
     @Test
     public void testAsyncCallWithCallbackSendFailed2() throws InterruptedException, TimeoutException {
-        int requestId = IDGenerator.nextRequestId();
-        MessageFactory messageFactory = mock(MessageFactory.class);
 
         Message sendFailedMessage = mock(Message.class);
         doReturn(sendFailedMessage).when(messageFactory).createSendFailResponseMessage(anyInt(), any(), any());
-        doReturn(test).when(sendFailedMessage).protocolType();
 
-        BaseRemoting baseRemoting = new BaseRemoting(messageFactory);
-        baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(socketAddress).getProtocolType();
-        Connection connection = new Connection(socketAddress, channel);
+        Connection connection = new Connection(testProtocol, channel);
 
         doReturn(channel.newFailedFuture(new RuntimeException("network error"))).when(channel).writeAndFlush(any());
 
@@ -390,22 +328,15 @@ public class BaseRemotingTest {
 
     @Test
     public void testAsyncCallWithCallbackTimeout() throws InterruptedException, TimeoutException {
-        int requestId = IDGenerator.nextRequestId();
-        MessageFactory messageFactory = mock(MessageFactory.class);
 
         Message timeoutMessage = mock(Message.class);
         doReturn(timeoutMessage).when(messageFactory).createTimeoutResponseMessage(anyInt(), any());
-        doReturn(test).when(timeoutMessage).protocolType();
 
-        BaseRemoting baseRemoting = new BaseRemoting(messageFactory);
-        baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(socketAddress).getProtocolType();
-        Connection connection = new Connection(socketAddress, channel);
+        Connection connection = new Connection(testProtocol, channel);
 
         AtomicReference<Message> callbackMessage = new AtomicReference<>();
         baseRemoting.asyncCall(message, connection, 1000,
@@ -427,19 +358,12 @@ public class BaseRemotingTest {
 
     @Test
     public void testOneway() throws InterruptedException, TimeoutException {
-        int requestId = IDGenerator.nextRequestId();
-        MessageFactory messageFactory = mock(MessageFactory.class);
 
-
-        BaseRemoting baseRemoting = new BaseRemoting(messageFactory);
-        baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(socketAddress).getProtocolType();
-        Connection connection = new Connection(socketAddress, channel);
+        Connection connection = new Connection(testProtocol, channel);
         baseRemoting.oneway(message, connection);
 
         // complete invokeFuture
@@ -460,19 +384,13 @@ public class BaseRemotingTest {
 
     @Test
     public void testOnewaySendFailed1() throws InterruptedException, TimeoutException {
-        int requestId = IDGenerator.nextRequestId();
-        MessageFactory messageFactory = mock(MessageFactory.class);
 
 
-        BaseRemoting baseRemoting = new BaseRemoting(messageFactory);
-        baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(socketAddress).getProtocolType();
-        Connection connection = new Connection(socketAddress, channel);
+        Connection connection = new Connection(testProtocol, channel);
 
         doThrow(new RuntimeException("network error")).when(channel).writeAndFlush(any());
 
@@ -496,19 +414,13 @@ public class BaseRemotingTest {
 
     @Test
     public void testOnewaySendFailed2() throws InterruptedException, TimeoutException {
-        int requestId = IDGenerator.nextRequestId();
-        MessageFactory messageFactory = mock(MessageFactory.class);
 
 
-        BaseRemoting baseRemoting = new BaseRemoting(messageFactory);
-        baseRemoting.startup();
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
-        SocketAddress socketAddress = mock(SocketAddress.class);
         Channel channel = new EmbeddedChannel();
         channel = spy(channel);
-        doReturn(test).when(socketAddress).getProtocolType();
-        Connection connection = new Connection(socketAddress, channel);
+        Connection connection = new Connection(testProtocol, channel);
 
         doReturn(channel.newFailedFuture(new RuntimeException("network error"))).when(channel).writeAndFlush(any());
 

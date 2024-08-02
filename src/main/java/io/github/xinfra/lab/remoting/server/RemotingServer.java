@@ -8,6 +8,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 
 public interface RemotingServer extends LifeCycle {
+
     SocketAddress localAddress();
 
     void registerUserProcessor(UserProcessor<?> userProcessor);

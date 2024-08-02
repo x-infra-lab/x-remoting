@@ -4,8 +4,6 @@ import io.github.xinfra.lab.remoting.RemotingContext;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
-import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
-import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timeout;
@@ -29,16 +27,31 @@ import static org.mockito.Mockito.when;
 
 public class InvokeFutureTest {
     private InvokeFuture invokeFuture;
-
-    private InvokeFuture newInvokeFuture() {
-        final int requestId1 = IDGenerator.nextRequestId();
-        return new InvokeFuture(requestId1, connection.getProtocol());
-    }
-
+    TestProtocol testProtocol;
 
     @BeforeEach
     public void before() {
-        invokeFuture = newInvokeFuture();
+
+        testProtocol = new TestProtocol();
+
+        ExecutorService executor = Executors.newCachedThreadPool();
+
+        // set message handler
+        testProtocol.setTestMessageHandler(new MessageHandler() {
+            @Override
+            public Executor executor() {
+                return executor;
+            }
+
+            @Override
+            public void handleMessage(RemotingContext remotingContext, Object msg) {
+                // do notiong
+            }
+        });
+
+
+        final int requestId1 = IDGenerator.nextRequestId();
+        invokeFuture = new InvokeFuture(requestId1, testProtocol);
     }
 
     @Test
@@ -75,7 +88,7 @@ public class InvokeFutureTest {
             invokeFuture.complete(message);
         });
 
-        Assertions.assertThrows(TimeoutException.class, ()->{
+        Assertions.assertThrows(TimeoutException.class, () -> {
             invokeFuture.get(1, TimeUnit.SECONDS);
         });
         Assertions.assertFalse(invokeFuture.isDone());
@@ -98,7 +111,7 @@ public class InvokeFutureTest {
             URLClassLoader urlClassLoader = new URLClassLoader(new URL[]{}, contextClassLoader);
             Thread.currentThread().setContextClassLoader(urlClassLoader);
 
-            InvokeFuture future = newInvokeFuture();
+            InvokeFuture future = new InvokeFuture(IDGenerator.nextRequestId(), testProtocol);
             Assertions.assertSame(future.getAppClassLoader(), urlClassLoader);
         } finally {
             // recover current thread context classLoader
@@ -136,23 +149,7 @@ public class InvokeFutureTest {
 
     @Test
     public void testCallBackAsync() throws InterruptedException {
-        ProtocolType test = new ProtocolType("testCallBackAsync", "testCallBackAsync".getBytes());
-        ProtocolManager.registerProtocolIfAbsent(test, new TestProtocol() {
-            @Override
-            public MessageHandler messageHandler() {
-                return new MessageHandler() {
-                    @Override
-                    public Executor executor() {
-                        return Executors.newSingleThreadExecutor();
-                    }
 
-                    @Override
-                    public void handleMessage(RemotingContext remotingContext, Object msg) {
-
-                    }
-                };
-            }
-        });
 
         AtomicBoolean callbackExecuted = new AtomicBoolean(false);
         AtomicInteger callBackExecuteTimes = new AtomicInteger(0);
@@ -169,7 +166,6 @@ public class InvokeFutureTest {
         });
 
         Message message = mock(Message.class);
-        when(message.protocolType()).thenReturn(test);
 
         invokeFuture.complete(message);
 

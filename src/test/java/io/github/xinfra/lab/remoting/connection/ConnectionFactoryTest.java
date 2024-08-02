@@ -1,9 +1,9 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import io.github.xinfra.lab.remoting.SocketAddress;
 import io.github.xinfra.lab.remoting.common.TestServerUtils;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
-import io.github.xinfra.lab.remoting.protocol.ProtocolType;
+import io.github.xinfra.lab.remoting.protocol.Protocol;
+import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
@@ -22,12 +22,13 @@ import java.util.stream.Collectors;
 
 public class ConnectionFactoryTest {
 
-    private ProtocolType test = new ProtocolType("ConnectionFactoryTest", "ConnectionFactoryTest".getBytes());
 
     private static String remoteAddress;
     private static int serverPort;
 
     private static NioServerSocketChannel serverSocketChannel;
+    private static Protocol testProtocol = new TestProtocol();
+
 
     @BeforeAll
     public static void beforeAll() throws InterruptedException {
@@ -48,20 +49,22 @@ public class ConnectionFactoryTest {
         });
 
         Assertions.assertThrows(NullPointerException.class, () -> {
-            new DefaultConnectionFactory(null);
+            new DefaultConnectionFactory(testProtocol, null);
         });
 
         // empty channelHandlers is fine
-        Assertions.assertNotNull(new DefaultConnectionFactory(new ArrayList<>()));
+        Assertions.assertNotNull(new DefaultConnectionFactory(testProtocol, new ArrayList<>()));
     }
 
     @Test
     public void testCreateSuccess() throws RemotingException {
         List<Supplier<ChannelHandler>> channelHandlerSuppliers = new ArrayList<>();
         channelHandlerSuppliers.add(() -> new HttpClientCodec());
-        ConnectionFactory connectionFactory = new DefaultConnectionFactory(channelHandlerSuppliers);
+        ConnectionFactory connectionFactory = new DefaultConnectionFactory(testProtocol, channelHandlerSuppliers);
 
-        Connection connection = connectionFactory.create(new SocketAddress(test, remoteAddress, serverPort));
+        InetSocketAddress socketAddress = new InetSocketAddress(remoteAddress, serverPort);
+
+        Connection connection = connectionFactory.create(socketAddress);
         Assertions.assertNotNull(connection);
 
         Channel channel = connection.getChannel();
@@ -85,9 +88,9 @@ public class ConnectionFactoryTest {
     public void testCreateFail() {
         List<Supplier<ChannelHandler>> channelHandlerSuppliers = new ArrayList<>();
         channelHandlerSuppliers.add(() -> new HttpClientCodec());
-        ConnectionFactory connectionFactory = new DefaultConnectionFactory(channelHandlerSuppliers);
+        ConnectionFactory connectionFactory = new DefaultConnectionFactory(testProtocol, channelHandlerSuppliers);
 
-        SocketAddress invalidSocketAddress = new SocketAddress(test, remoteAddress, serverPort + 1);
+        InetSocketAddress invalidSocketAddress = new InetSocketAddress(remoteAddress, serverPort+ 1);
         Assertions.assertThrows(RemotingException.class, () -> {
             connectionFactory.create(invalidSocketAddress);
         });

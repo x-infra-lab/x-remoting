@@ -1,14 +1,10 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import io.github.xinfra.lab.remoting.SocketAddress;
 import io.github.xinfra.lab.remoting.common.TestServerUtils;
 import io.github.xinfra.lab.remoting.common.Wait;
-import io.github.xinfra.lab.remoting.heartbeat.HeartbeatTrigger;
-import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
-import io.github.xinfra.lab.remoting.protocol.ProtocolType;
+import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.ChannelFuture;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.junit.jupiter.api.AfterAll;
@@ -16,6 +12,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.net.InetSocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static io.github.xinfra.lab.remoting.connection.Connection.CONNECTION;
@@ -28,24 +25,11 @@ import static org.mockito.Mockito.verify;
 
 public class ConnectionEventHandlerTest {
 
-    private static ProtocolType test = new ProtocolType("ConnectionEventHandlerTest", "ConnectionEventHandlerTest".getBytes());
 
-    static {
-        ProtocolManager.registerProtocolIfAbsent(test, new TestProtocol() {
-            @Override
-            public HeartbeatTrigger heartbeatTrigger() {
-                return new HeartbeatTrigger() {
-                    @Override
-                    public void triggerHeartBeat(ChannelHandlerContext ctx) {
-                        // do nothing
-                    }
-                };
-            }
-        });
-    }
 
     private static String remoteAddress;
     private static int serverPort;
+    private static Protocol testProtocol = new TestProtocol();
 
     private static NioServerSocketChannel serverSocketChannel;
 
@@ -129,11 +113,11 @@ public class ConnectionEventHandlerTest {
 
     @Test
     public void testChannelClose_withConnectionManager() throws Exception {
-        ConnectionManager connectionManager = new ClientConnectionManager(new ConcurrentHashMap<>());
+        ConnectionManager connectionManager = new ClientConnectionManager(testProtocol, new ConcurrentHashMap<>());
         connectionManager.startup();
 
         connectionManager = spy(connectionManager);
-        SocketAddress socketAddress = new SocketAddress(test, remoteAddress, serverPort);
+        InetSocketAddress socketAddress = new InetSocketAddress(remoteAddress, serverPort);
         Connection connection = connectionManager.getOrCreateIfAbsent(socketAddress);
         connection = spy(connection);
         connection.getChannel().attr(CONNECTION).set(connection);
@@ -176,11 +160,11 @@ public class ConnectionEventHandlerTest {
 
     @Test
     public void testChannelInactive_withConnectionManager() throws Exception {
-        ConnectionManager connectionManager = new ClientConnectionManager(new ConcurrentHashMap<>());
+        ConnectionManager connectionManager = new ClientConnectionManager(testProtocol, new ConcurrentHashMap<>());
         connectionManager.startup();
 
         connectionManager = spy(connectionManager);
-        SocketAddress socketAddress = new SocketAddress(test, remoteAddress, serverPort);
+        InetSocketAddress socketAddress = new InetSocketAddress(remoteAddress, serverPort);
         Connection connection = connectionManager.getOrCreateIfAbsent(socketAddress);
         connection = spy(connection);
         connection.getChannel().attr(CONNECTION).set(connection);
@@ -223,11 +207,11 @@ public class ConnectionEventHandlerTest {
 
     @Test
     public void testChannelExceptionCaught_withConnectionManager() throws Exception {
-        ConnectionManager connectionManager = new ClientConnectionManager(new ConcurrentHashMap<>());
+        ConnectionManager connectionManager = new ClientConnectionManager(testProtocol, new ConcurrentHashMap<>());
         connectionManager.startup();
 
         connectionManager = spy(connectionManager);
-        SocketAddress socketAddress = new SocketAddress(test, remoteAddress, serverPort);
+        InetSocketAddress socketAddress = new InetSocketAddress(remoteAddress, serverPort);
         Connection connection = connectionManager.getOrCreateIfAbsent(socketAddress);
         connection = spy(connection);
         connection.getChannel().attr(CONNECTION).set(connection);

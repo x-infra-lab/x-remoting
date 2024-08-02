@@ -1,9 +1,8 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import io.github.xinfra.lab.remoting.SocketAddress;
 import io.github.xinfra.lab.remoting.common.TestServerUtils;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
-import io.github.xinfra.lab.remoting.protocol.ProtocolType;
+import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -11,6 +10,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -21,8 +23,8 @@ import static org.mockito.Mockito.verify;
 public class ServerConnectionManagerTest {
     private ConnectionManager connectionManager;
     private boolean skipAfter;
-    private ProtocolType test = new ProtocolType("ServerConnectionManagerTest", "ServerConnectionManagerTest".getBytes());
 
+    static TestProtocol testProtocol = new TestProtocol();
     private static String remoteAddress;
     private static int serverPort;
 
@@ -59,8 +61,9 @@ public class ServerConnectionManagerTest {
 
     @Test
     public void testGetOrCreateIfAbsent() {
+        SocketAddress socketAddress = new InetSocketAddress(remoteAddress, serverPort);
         Assertions.assertThrows(UnsupportedOperationException.class, () -> {
-            connectionManager.getOrCreateIfAbsent(new SocketAddress(test, remoteAddress, serverPort));
+            connectionManager.getOrCreateIfAbsent(socketAddress);
         });
 
     }
@@ -69,7 +72,7 @@ public class ServerConnectionManagerTest {
     @Test
     public void testGet1() throws RemotingException {
         // valid socketAddress
-        SocketAddress socketAddress = new SocketAddress(test, remoteAddress, serverPort);
+        SocketAddress socketAddress = new InetSocketAddress(remoteAddress, serverPort);
 
         // no connection
         Connection connection1 = connectionManager.get(socketAddress);
@@ -86,12 +89,12 @@ public class ServerConnectionManagerTest {
     @Test
     public void testAdd() {
         Connection connection1 = mock(Connection.class);
-        SocketAddress socketAddress1 = new SocketAddress(test, "localhost", 8080);
-        doReturn(socketAddress1).when(connection1).getSocketAddress();
+        SocketAddress socketAddress1 = new InetSocketAddress( "localhost", 8080);
+        doReturn(socketAddress1).when(connection1).remoteAddress();
 
         Connection connection2 = mock(Connection.class);
-        SocketAddress socketAddress2 = new SocketAddress(test, "localhost", 8081);
-        doReturn(socketAddress2).when(connection2).getSocketAddress();
+        SocketAddress socketAddress2 = new InetSocketAddress( "localhost", 8081);
+        doReturn(socketAddress2).when(connection2).remoteAddress();
 
 
         connectionManager.add(connection1);
@@ -109,12 +112,12 @@ public class ServerConnectionManagerTest {
     @Test
     public void testShutdown() {
         Connection connection1 = mock(Connection.class);
-        SocketAddress socketAddress1 = new SocketAddress(test, "localhost", 8080);
-        doReturn(socketAddress1).when(connection1).getSocketAddress();
+        SocketAddress socketAddress1 = new InetSocketAddress( "localhost", 8080);
+        doReturn(socketAddress1).when(connection1).remoteAddress();
 
         Connection connection2 = mock(Connection.class);
-        SocketAddress socketAddress2 = new SocketAddress(test, "localhost", 8081);
-        doReturn(socketAddress2).when(connection2).getSocketAddress();
+        SocketAddress socketAddress2 = new InetSocketAddress( "localhost", 8081);
+        doReturn(socketAddress2).when(connection2).remoteAddress();
 
 
         connectionManager.add(connection1);

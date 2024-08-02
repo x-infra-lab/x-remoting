@@ -1,6 +1,5 @@
 package io.github.xinfra.lab.remoting.rpc;
 
-import io.github.xinfra.lab.remoting.SocketAddress;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.rpc.client.RpcClient;
 import io.github.xinfra.lab.remoting.rpc.server.RpcServer;
@@ -10,10 +9,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 
 import static io.github.xinfra.lab.remoting.common.TestSocketUtils.findAvailableTcpPort;
-import static io.github.xinfra.lab.remoting.rpc.RpcProtocol.RPC;
 
 public class RpcTest {
 
@@ -43,21 +41,21 @@ public class RpcTest {
 
     @Test
     public void testBasicCall1() {
-        InetSocketAddress remoteAddress = rpcServer.localAddress();
+        SocketAddress remoteAddress = rpcServer.localAddress();
 
         try {
             String result = rpcClient.syncCall(new SimpleRequest("test"),
-                    new SocketAddress(RPC, remoteAddress.getHostName(), remoteAddress.getPort()),
+                    remoteAddress,
                     1000);
             Assertions.assertEquals("echo:test", result);
 
             result = rpcClient.syncCall(new SimpleRequest("test"),
-                    new SocketAddress(RPC, remoteAddress.getHostName(), remoteAddress.getPort()),
+                    remoteAddress,
                     1000);
             Assertions.assertEquals("echo:test", result);
 
             result = rpcClient.syncCall(new SimpleRequest("test"),
-                    new SocketAddress(RPC, remoteAddress.getHostName(), remoteAddress.getPort()),
+                    remoteAddress,
                     1000);
             Assertions.assertEquals("echo:test", result);
 

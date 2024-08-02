@@ -1,10 +1,9 @@
 package io.github.xinfra.lab.remoting.rpc.heartbeat;
 
-import io.github.xinfra.lab.remoting.SocketAddress;
 import io.github.xinfra.lab.remoting.common.Wait;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.message.MessageType;
-import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
+import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
 import io.github.xinfra.lab.remoting.rpc.message.RpcMessageFactory;
 import io.github.xinfra.lab.remoting.rpc.message.RpcRequestMessage;
@@ -29,9 +28,8 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 public class RpcHeartbeatTriggerTest {
-    static {
-        ProtocolManager.registerProtocolIfAbsent(RpcProtocol.RPC, new RpcProtocol());
-    }
+
+    Protocol protocol = new RpcProtocol();
 
     @Test
     public void testHeartbeat() throws InterruptedException, TimeoutException {
@@ -88,8 +86,7 @@ public class RpcHeartbeatTriggerTest {
         channel = spy(channel);
         doReturn(channel).when(context).channel();
 
-        SocketAddress socketAddress = new SocketAddress(RpcProtocol.RPC, "localhost", 8080);
-        Connection connection = new Connection(socketAddress, channel);
+        Connection connection = new Connection(protocol, channel);
         connection = spy(connection);
         channel.attr(CONNECTION).set(connection);
 

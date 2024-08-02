@@ -4,8 +4,6 @@ import io.github.xinfra.lab.remoting.codec.MessageEncoder;
 import io.github.xinfra.lab.remoting.exception.CodecException;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
-import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
-import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -20,11 +18,9 @@ import java.nio.charset.StandardCharsets;
 import static org.mockito.Mockito.mock;
 
 public class ProtocolEncoderTest {
-
+    TestProtocol testProtocol = new TestProtocol();
     @Test
     public void testEncode() {
-        ProtocolType testProtocol = new ProtocolType("testEncode", "testEncode".getBytes());
-        ProtocolManager.registerProtocolIfAbsent(testProtocol, new TestProtocol());
 
         ProtocolEncoder protocolEncoder = new ProtocolEncoder();
         Message message = mock(Message.class);
@@ -44,8 +40,7 @@ public class ProtocolEncoderTest {
         };
 
 
-        Protocol protocol = ProtocolManager.getProtocol(testProtocol);
-        ((TestProtocol) protocol).setTestMessageEncoder(messageEncoder);
+       testProtocol.setTestMessageEncoder(messageEncoder);
 
         channel.writeOutbound(message);
         Assertions.assertTrue(channel.finish());
@@ -65,8 +60,6 @@ public class ProtocolEncoderTest {
 
     @Test
     public void testEncodeException() {
-        ProtocolType testProtocol = new ProtocolType("testEncodeException", "testEncodeException".getBytes());
-        ProtocolManager.registerProtocolIfAbsent(testProtocol, new TestProtocol());
 
         ProtocolEncoder protocolEncoder = new ProtocolEncoder();
         Message message = mock(Message.class);
@@ -84,8 +77,7 @@ public class ProtocolEncoderTest {
         };
 
 
-        Protocol protocol = ProtocolManager.getProtocol(testProtocol);
-        ((TestProtocol) protocol).setTestMessageEncoder(messageEncoder);
+        testProtocol.setTestMessageEncoder(messageEncoder);
 
         EncoderException encoderException = Assertions.assertThrows(EncoderException.class, () -> {
             channel.writeOutbound(message);

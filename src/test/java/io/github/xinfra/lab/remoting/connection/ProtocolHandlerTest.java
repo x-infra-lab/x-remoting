@@ -3,9 +3,6 @@ package io.github.xinfra.lab.remoting.connection;
 import io.github.xinfra.lab.remoting.RemotingContext;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
-import io.github.xinfra.lab.remoting.protocol.Protocol;
-import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
-import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.Assertions;
@@ -21,11 +18,9 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 public class ProtocolHandlerTest {
-
+    TestProtocol testProtocol = new TestProtocol();
     @Test
     public void testProtocolHandler() {
-        ProtocolType testProtocol = new ProtocolType("testProtocolHandler", "testProtocolHandler".getBytes());
-        ProtocolManager.registerProtocolIfAbsent(testProtocol, new TestProtocol());
         ProtocolHandler protocolHandler = new ProtocolHandler(new ConcurrentHashMap<>());
 
         EmbeddedChannel channel = new EmbeddedChannel();
@@ -46,8 +41,7 @@ public class ProtocolHandlerTest {
         };
 
         MessageHandler spyMessageHandler = spy(messageHandler);
-        Protocol protocol = ProtocolManager.getProtocol(testProtocol);
-        ((TestProtocol) protocol).setTestMessageHandler(spyMessageHandler);
+        testProtocol.setTestMessageHandler(spyMessageHandler);
 
         Object object = new Object();
         channel.writeInbound(object);

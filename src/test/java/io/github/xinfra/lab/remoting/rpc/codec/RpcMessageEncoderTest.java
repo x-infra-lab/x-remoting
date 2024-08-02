@@ -40,7 +40,7 @@ public class RpcMessageEncoderTest {
 
         Assertions.assertTrue(byteBuf.readableBytes() > 0);
 
-        byte[] protocolCodes = RpcProtocol.RPC.protocolCode();
+        byte[] protocolCodes = RpcProtocol.PROTOCOL_CODE;
         byte[] dataProtocolCodes = new byte[protocolCodes.length];
         byteBuf.readBytes(dataProtocolCodes);
         Assertions.assertArrayEquals(protocolCodes, dataProtocolCodes);
@@ -91,7 +91,7 @@ public class RpcMessageEncoderTest {
 
         Assertions.assertTrue(byteBuf.readableBytes() > 0);
 
-        byte[] protocolCodes = RpcProtocol.RPC.protocolCode();
+        byte[] protocolCodes = RpcProtocol.PROTOCOL_CODE;
         byte[] dataProtocolCodes = new byte[protocolCodes.length];
         byteBuf.readBytes(dataProtocolCodes);
         Assertions.assertArrayEquals(protocolCodes, dataProtocolCodes);

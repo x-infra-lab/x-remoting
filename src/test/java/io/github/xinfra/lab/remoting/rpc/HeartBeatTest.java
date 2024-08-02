@@ -1,6 +1,5 @@
 package io.github.xinfra.lab.remoting.rpc;
 
-import io.github.xinfra.lab.remoting.SocketAddress;
 import io.github.xinfra.lab.remoting.client.BaseRemoting;
 import io.github.xinfra.lab.remoting.connection.ClientConnectionManager;
 import io.github.xinfra.lab.remoting.connection.Connection;
@@ -9,7 +8,6 @@ import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
-import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
 import io.github.xinfra.lab.remoting.rpc.server.RpcServer;
 import io.github.xinfra.lab.remoting.rpc.server.RpcServerConfig;
 import org.junit.jupiter.api.AfterEach;
@@ -18,12 +16,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static io.github.xinfra.lab.remoting.common.TestSocketUtils.findAvailableTcpPort;
-import static io.github.xinfra.lab.remoting.rpc.RpcProtocol.RPC;
 
 public class HeartBeatTest {
 
@@ -46,18 +44,19 @@ public class HeartBeatTest {
 
     @Test
     public void heartbeatTest1() throws RemotingException, InterruptedException {
-        InetSocketAddress remoteAddress = rpcServer.localAddress();
+        SocketAddress remoteAddress = rpcServer.localAddress();
 
-        ConnectionManager connectionManager = new ClientConnectionManager(new ConcurrentHashMap<>());
+        Protocol protocol = new RpcProtocol();
+        ConnectionManager connectionManager = new ClientConnectionManager(protocol, new ConcurrentHashMap<>());
         connectionManager.startup();
 
-        Protocol protocol = ProtocolManager.getProtocol(RPC);
+
         MessageFactory messageFactory = protocol.messageFactory();
         BaseRemoting baseRemoting = new BaseRemoting(messageFactory);
         baseRemoting.startup();
         Message heartbeatRequestMessage = messageFactory.createHeartbeatRequestMessage();
 
-        Connection connection = connectionManager.getOrCreateIfAbsent(new SocketAddress(RPC, remoteAddress.getHostName(), remoteAddress.getPort()));
+        Connection connection = connectionManager.getOrCreateIfAbsent(remoteAddress);
 
         Message heartbeatResponseMessage = baseRemoting.syncCall(heartbeatRequestMessage, connection,
                 1000);

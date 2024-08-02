@@ -4,8 +4,6 @@ import io.github.xinfra.lab.remoting.codec.MessageDecoder;
 import io.github.xinfra.lab.remoting.exception.CodecException;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
-import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
-import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -21,11 +19,10 @@ import static org.mockito.Mockito.mock;
 
 
 public class ProtocolDecoderTest {
+   TestProtocol testProtocol = new TestProtocol();
 
     @Test
     public void testDecode() {
-        ProtocolType testProtocol = new ProtocolType("testDecode", "testDecode".getBytes());
-        ProtocolManager.registerProtocolIfAbsent(testProtocol, new TestProtocol());
         ProtocolDecoder protocolDecoder = new ProtocolDecoder();
 
         EmbeddedChannel channel = new EmbeddedChannel();
@@ -42,8 +39,7 @@ public class ProtocolDecoderTest {
                 out.add(decodeMockMessage);
             }
         };
-        Protocol protocol = ProtocolManager.getProtocol(testProtocol);
-        ((TestProtocol) protocol).setTestMessageDecoder(messageDecoder);
+        testProtocol.setTestMessageDecoder(messageDecoder);
 
         ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer(testProtocol.protocolCode().length);
         byteBuf.writeBytes(testProtocol.protocolCode());
@@ -55,8 +51,6 @@ public class ProtocolDecoderTest {
 
     @Test
     public void testDecodePartial() {
-        ProtocolType testProtocol = new ProtocolType("testDecodePartial", "testDecodePartial".getBytes());
-        ProtocolManager.registerProtocolIfAbsent(testProtocol, new TestProtocol());
         ProtocolDecoder protocolDecoder = new ProtocolDecoder();
 
         EmbeddedChannel channel = new EmbeddedChannel();
@@ -73,8 +67,7 @@ public class ProtocolDecoderTest {
                 out.add(decodeMockMessage);
             }
         };
-        Protocol protocol = ProtocolManager.getProtocol(testProtocol);
-        ((TestProtocol) protocol).setTestMessageDecoder(messageDecoder);
+       testProtocol.setTestMessageDecoder(messageDecoder);
 
         // split data
         byte[] bytes = testProtocol.protocolCode();
@@ -108,8 +101,6 @@ public class ProtocolDecoderTest {
 
     @Test
     public void testDecodeException() {
-        ProtocolType testProtocol = new ProtocolType("testDecodeException", "testDecodeException".getBytes());
-        ProtocolManager.registerProtocolIfAbsent(testProtocol, new TestProtocol());
         ProtocolDecoder protocolDecoder = new ProtocolDecoder();
 
         EmbeddedChannel channel = new EmbeddedChannel();

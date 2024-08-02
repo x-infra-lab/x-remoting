@@ -10,7 +10,8 @@ import lombok.Setter;
 
 public class TestProtocol implements Protocol {
 
-
+    @Setter
+    private byte[] protocolCode;
     @Setter
     private MessageEncoder testMessageEncoder;
     @Setter
@@ -21,6 +22,11 @@ public class TestProtocol implements Protocol {
     private RpcMessageFactory testMessageFactory;
     @Setter
     private HeartbeatTrigger testHeartbeatTrigger;
+
+    @Override
+    public byte[] protocolCode() {
+        return protocolCode;
+    }
 
     @Override
     public MessageEncoder encoder() {

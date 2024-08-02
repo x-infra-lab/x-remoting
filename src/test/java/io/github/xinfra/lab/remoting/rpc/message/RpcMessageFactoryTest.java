@@ -23,7 +23,7 @@ public class RpcMessageFactoryTest {
         RpcRequestMessage requestMessage = rpcMessageFactory.createRequestMessage();
         Assertions.assertNotNull(requestMessage);
         Assertions.assertEquals(requestMessage.messageType(), MessageType.request);
-        Assertions.assertEquals(requestMessage.protocolType(), RpcProtocol.RPC);
+        Assertions.assertArrayEquals(requestMessage.protocolCode(), RpcProtocol.PROTOCOL_CODE);
         Assertions.assertEquals(requestMessage.serializationType(), SerializationType.HESSION);
     }
 
@@ -38,7 +38,7 @@ public class RpcMessageFactoryTest {
         Assertions.assertEquals(responseMessage.getStatus(), ResponseStatus.CLIENT_SEND_ERROR.getCode());
         Assertions.assertTrue(responseMessage.getCause() instanceof SendMessageException);
         Assertions.assertEquals(responseMessage.messageType(), MessageType.response);
-        Assertions.assertEquals(responseMessage.protocolType(), RpcProtocol.RPC);
+        Assertions.assertArrayEquals(responseMessage.protocolCode(), RpcProtocol.PROTOCOL_CODE);
         Assertions.assertEquals(responseMessage.serializationType(), SerializationType.HESSION);
     }
 
@@ -53,7 +53,7 @@ public class RpcMessageFactoryTest {
         Assertions.assertEquals(responseMessage.getStatus(), ResponseStatus.TIMEOUT.getCode());
         Assertions.assertTrue(responseMessage.getCause() instanceof TimeoutException);
         Assertions.assertEquals(responseMessage.messageType(), MessageType.response);
-        Assertions.assertEquals(responseMessage.protocolType(), RpcProtocol.RPC);
+        Assertions.assertArrayEquals(responseMessage.protocolCode(), RpcProtocol.PROTOCOL_CODE);
     }
 
     @Test
@@ -67,7 +67,7 @@ public class RpcMessageFactoryTest {
         Assertions.assertEquals(responseMessage.getStatus(), ResponseStatus.CONNECTION_CLOSED.getCode());
         Assertions.assertTrue(responseMessage.getCause() instanceof ConnectionClosedException);
         Assertions.assertEquals(responseMessage.messageType(), MessageType.response);
-        Assertions.assertEquals(responseMessage.protocolType(), RpcProtocol.RPC);
+        Assertions.assertArrayEquals(responseMessage.protocolCode(), RpcProtocol.PROTOCOL_CODE);
     }
 
     @Test
@@ -77,7 +77,7 @@ public class RpcMessageFactoryTest {
         RpcRequestMessage requestMessage = rpcMessageFactory.createHeartbeatRequestMessage();
         Assertions.assertNotNull(requestMessage);
         Assertions.assertEquals(requestMessage.messageType(), MessageType.heartbeatRequest);
-        Assertions.assertEquals(requestMessage.protocolType(), RpcProtocol.RPC);
+        Assertions.assertArrayEquals(requestMessage.protocolCode(), RpcProtocol.PROTOCOL_CODE);
     }
 
     @Test
@@ -88,7 +88,7 @@ public class RpcMessageFactoryTest {
 
         Assertions.assertNotNull(response);
         Assertions.assertEquals(response.messageType(), MessageType.response);
-        Assertions.assertEquals(response.protocolType(), RpcProtocol.RPC);
+        Assertions.assertArrayEquals(response.protocolCode(), RpcProtocol.PROTOCOL_CODE);
         Assertions.assertEquals(response.getStatus(), ResponseStatus.SUCCESS.getCode());
         Assertions.assertEquals(response.getContent(), responseContent);
     }
@@ -101,7 +101,7 @@ public class RpcMessageFactoryTest {
 
         Assertions.assertNotNull(response);
         Assertions.assertEquals(response.messageType(), MessageType.response);
-        Assertions.assertEquals(response.protocolType(), RpcProtocol.RPC);
+        Assertions.assertArrayEquals(response.protocolCode(), RpcProtocol.PROTOCOL_CODE);
         Assertions.assertEquals(response.getStatus(), ResponseStatus.SERVER_EXCEPTION.getCode());
         Assertions.assertInstanceOf(RpcServerException.class, response.getContent());
     }
@@ -116,7 +116,7 @@ public class RpcMessageFactoryTest {
 
         Assertions.assertNotNull(response);
         Assertions.assertEquals(response.messageType(), MessageType.response);
-        Assertions.assertEquals(response.protocolType(), RpcProtocol.RPC);
+        Assertions.assertArrayEquals(response.protocolCode(), RpcProtocol.PROTOCOL_CODE);
         Assertions.assertEquals(response.getStatus(), ResponseStatus.SERVER_EXCEPTION.getCode());
         Assertions.assertInstanceOf(RpcServerException.class, response.getContent());
     }

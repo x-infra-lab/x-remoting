@@ -1,6 +1,5 @@
 package io.github.xinfra.lab.remoting.server;
 
-import io.github.xinfra.lab.remoting.SocketAddress;
 import io.github.xinfra.lab.remoting.common.Wait;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.connection.ConnectionFactory;
@@ -8,13 +7,15 @@ import io.github.xinfra.lab.remoting.connection.DefaultConnectionFactory;
 import io.github.xinfra.lab.remoting.connection.ServerConnectionManager;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.processor.UserProcessor;
-import io.github.xinfra.lab.remoting.protocol.ProtocolType;
+import io.github.xinfra.lab.remoting.protocol.Protocol;
+import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.codec.http.HttpClientCodec;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
@@ -29,17 +30,15 @@ import static org.mockito.Mockito.verify;
 
 public class BaseRemotingServerTest {
 
-    private static ProtocolType test = new ProtocolType("BaseRemotingServerTest",
-            new byte[]{0xb});
+    TestProtocol testProtocol = new TestProtocol();
 
     private Connection getConnection(BaseRemotingServer server) throws RemotingException {
-        InetSocketAddress serverAddress = server.localAddress;
+        SocketAddress serverAddress = server.localAddress;
 
         List<Supplier<ChannelHandler>> channelHandlerSuppliers = new ArrayList<>();
         channelHandlerSuppliers.add(() -> new HttpClientCodec()); // anyone channel handler is ok
-        ConnectionFactory connectionFactory = new DefaultConnectionFactory(channelHandlerSuppliers);
-        SocketAddress socketAddress = new SocketAddress(test, serverAddress.getHostName(), serverAddress.getPort());
-        Connection connection = connectionFactory.create(socketAddress);
+        ConnectionFactory connectionFactory = new DefaultConnectionFactory(testProtocol, channelHandlerSuppliers);
+        Connection connection = connectionFactory.create(serverAddress);
         return connection;
     }
 
@@ -51,8 +50,8 @@ public class BaseRemotingServerTest {
 
         BaseRemotingServer server = new BaseRemotingServer(config) {
             @Override
-            public ProtocolType protocolType() {
-                return test;
+            public Protocol protocol() {
+                return testProtocol;
             }
         };
         server = spy(server);
@@ -87,8 +86,8 @@ public class BaseRemotingServerTest {
 
         BaseRemotingServer server = new BaseRemotingServer(config) {
             @Override
-            public ProtocolType protocolType() {
-                return test;
+            public Protocol protocol() {
+                return testProtocol;
             }
         };
 
@@ -100,14 +99,13 @@ public class BaseRemotingServerTest {
         Connection clientConnection = getConnection(server);
         Assertions.assertNotNull(clientConnection);
 
-        InetSocketAddress clientAddress = ((InetSocketAddress) clientConnection.getChannel().localAddress());
+        SocketAddress clientAddress =  clientConnection.getChannel().localAddress();
 
-        SocketAddress socketAddress = new SocketAddress(test, clientAddress.getHostName(), clientAddress.getPort());
         Wait.untilIsTrue(() -> {
-            return connectionManager.get(socketAddress) != null;
+            return connectionManager.get(clientAddress) != null;
         }, 30, 100);
 
-        Connection serverConnection = connectionManager.get(socketAddress);
+        Connection serverConnection = connectionManager.get(clientAddress);
         Assertions.assertNotNull(serverConnection);
 
         server.shutdown();
@@ -121,8 +119,8 @@ public class BaseRemotingServerTest {
 
         BaseRemotingServer server = new BaseRemotingServer(config) {
             @Override
-            public ProtocolType protocolType() {
-                return test;
+            public Protocol protocol() {
+                return testProtocol;
             }
         };
 
