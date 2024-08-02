@@ -3,7 +3,6 @@ package io.github.xinfra.lab.remoting.connection;
 import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
-import io.github.xinfra.lab.remoting.protocol.Protocol;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
 
@@ -27,7 +26,7 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
     public AbstractConnectionManager() {
     }
 
-    public AbstractConnectionManager( ConnectionManagerConfig config) {
+    public AbstractConnectionManager(ConnectionManagerConfig config) {
         this.config = config;
     }
 

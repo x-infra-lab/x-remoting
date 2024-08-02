@@ -4,47 +4,49 @@ import io.github.xinfra.lab.remoting.client.BaseRemoting;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.heartbeat.HeartbeatTrigger;
 import io.github.xinfra.lab.remoting.message.Message;
-import io.github.xinfra.lab.remoting.message.MessageFactory;
+import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.rpc.message.ResponseStatus;
-import io.github.xinfra.lab.remoting.rpc.message.RpcMessageFactory;
 import io.github.xinfra.lab.remoting.rpc.message.RpcResponseMessage;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Validate;
 
 import java.net.SocketAddress;
 
 import static io.github.xinfra.lab.remoting.connection.Connection.CONNECTION;
-import static io.github.xinfra.lab.remoting.connection.Connection.HEARTBEAT_FAIL_COUNT;
 
 @Slf4j
 public class RpcHeartbeatTrigger implements HeartbeatTrigger {
-    private MessageFactory messageFactory;
 
     private int heartbeatTimeoutMills = 1000;
 
     private int maxFailCount = 3;
 
-    private BaseRemoting baseRemoting;
+    private volatile BaseRemoting baseRemoting;
 
-
-    public RpcHeartbeatTrigger(RpcMessageFactory messageFactory) {
-        this.messageFactory = messageFactory;
-        baseRemoting = new BaseRemoting(messageFactory);
-        baseRemoting.startup();
+    public RpcHeartbeatTrigger() {
     }
 
     @Override
     public void triggerHeartBeat(ChannelHandlerContext ctx) {
-        Message heartbeatRequestMessage = messageFactory.createHeartbeatRequestMessage();
         Connection connection = ctx.channel().attr(CONNECTION).get();
-        Integer heartbeatFailCount = ctx.channel().attr(HEARTBEAT_FAIL_COUNT).get();
-
+        int heartbeatFailCount = connection.getHeartbeatFailCnt();
         if (heartbeatFailCount > maxFailCount) {
             connection.close();
             log.error("close connection after heartbeat fail {} times", heartbeatFailCount);
             return;
         }
 
+        Protocol protocol = connection.getProtocol();
+        if (baseRemoting == null) {
+            synchronized (this) {
+                if (baseRemoting == null) {
+                    this.baseRemoting = new BaseRemoting(protocol);
+                }
+            }
+        }
+
+        Message heartbeatRequestMessage = protocol.messageFactory().createHeartbeatRequestMessage();
         baseRemoting.asyncCall(heartbeatRequestMessage, connection, heartbeatTimeoutMills,
                 message -> {
                     RpcResponseMessage heartbeatResponseMessage = (RpcResponseMessage) message;
@@ -52,16 +54,28 @@ public class RpcHeartbeatTrigger implements HeartbeatTrigger {
 
                     if (heartbeatResponseMessage.getStatus() == ResponseStatus.SUCCESS.getCode()) {
                         log.debug("heartbeat success. remote address:{}", remoteAddress);
-                        ctx.channel().attr(HEARTBEAT_FAIL_COUNT).set(0);
+                        connection.setHeartbeatFailCnt(0);
                     } else {
-                        Integer failCount = ctx.channel().attr(HEARTBEAT_FAIL_COUNT).get();
+                        int failCount = connection.getHeartbeatFailCnt() + 1;
                         log.warn("heartbeat fail {} times. remote address:{}", failCount, remoteAddress);
-                        ctx.channel().attr(HEARTBEAT_FAIL_COUNT).set(failCount + 1);
+                        connection.setHeartbeatFailCnt(failCount);
                     }
 
                 }
         );
 
 
+    }
+
+    @Override
+    public void setHeartbeatMaxFailCount(int failCount) {
+        Validate.isTrue(failCount >= 0, "failCount must >= 0");
+        this.maxFailCount = failCount;
+    }
+
+    @Override
+    public void setHeartbeatTimeoutMills(int timeoutMills) {
+        Validate.isTrue(timeoutMills > 0, "timeoutMills must > 0");
+        this.heartbeatTimeoutMills = timeoutMills;
     }
 }

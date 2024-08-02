@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.rpc.message;
 
-import io.github.xinfra.lab.remoting.RemotingContext;
+import io.github.xinfra.lab.remoting.message.MessageHandlerContext;
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.common.Wait;
@@ -64,7 +64,7 @@ public class RpcMessageHandlerTest {
         requestMessage.setContent(null);
 
         RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
-        RpcMessageHandler messageHandler = new RpcMessageHandler(rpcMessageFactory);
+        RpcMessageHandler messageHandler = new RpcMessageHandler();
 
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         EmbeddedChannel channel = new EmbeddedChannel();
@@ -76,8 +76,8 @@ public class RpcMessageHandlerTest {
         ConcurrentHashMap<String, UserProcessor<?>> userProcessors = new ConcurrentHashMap<>();
         userProcessors.put(echoProcessor.interest(), echoProcessor);
 
-        RemotingContext remotingContext = new RemotingContext(context, userProcessors);
-        messageHandler.handleMessage(remotingContext, requestMessage);
+        MessageHandlerContext messageHandlerContext = new MessageHandlerContext(context);
+        messageHandler.handleMessage(messageHandlerContext, requestMessage);
 
         Wait.untilIsTrue(() -> {
             try {
@@ -132,7 +132,7 @@ public class RpcMessageHandlerTest {
 
 
         RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
-        RpcMessageHandler messageHandler = new RpcMessageHandler(rpcMessageFactory);
+        RpcMessageHandler messageHandler = new RpcMessageHandler();
 
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         EmbeddedChannel channel = new EmbeddedChannel();
@@ -144,8 +144,8 @@ public class RpcMessageHandlerTest {
         ConcurrentHashMap<String, UserProcessor<?>> userProcessors = new ConcurrentHashMap<>();
         userProcessors.put(echoProcessor.interest(), echoProcessor);
 
-        RemotingContext remotingContext = new RemotingContext(context, userProcessors);
-        messageHandler.handleMessage(remotingContext, requestMessage);
+        MessageHandlerContext messageHandlerContext = new MessageHandlerContext(context);
+        messageHandler.handleMessage(messageHandlerContext, requestMessage);
 
         Wait.untilIsTrue(() -> {
             try {
@@ -199,7 +199,7 @@ public class RpcMessageHandlerTest {
 
 
         RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
-        RpcMessageHandler messageHandler = new RpcMessageHandler(rpcMessageFactory);
+        RpcMessageHandler messageHandler = new RpcMessageHandler();
 
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         EmbeddedChannel channel = new EmbeddedChannel();
@@ -215,8 +215,8 @@ public class RpcMessageHandlerTest {
         // mock
         doReturn(null).when(userProcessors).get(any());
 
-        RemotingContext remotingContext = new RemotingContext(context, userProcessors);
-        messageHandler.handleMessage(remotingContext, requestMessage);
+        MessageHandlerContext messageHandlerContext = new MessageHandlerContext(context);
+        messageHandler.handleMessage(messageHandlerContext, requestMessage);
 
         Wait.untilIsTrue(() -> {
             try {
@@ -270,7 +270,7 @@ public class RpcMessageHandlerTest {
 
 
         RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
-        RpcMessageHandler messageHandler = new RpcMessageHandler(rpcMessageFactory);
+        RpcMessageHandler messageHandler = new RpcMessageHandler();
 
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         EmbeddedChannel channel = new EmbeddedChannel();
@@ -287,8 +287,8 @@ public class RpcMessageHandlerTest {
         userProcessors.put(echoProcessor.interest(), echoProcessor);
 
 
-        RemotingContext remotingContext = new RemotingContext(context, userProcessors);
-        messageHandler.handleMessage(remotingContext, requestMessage);
+        MessageHandlerContext messageHandlerContext = new MessageHandlerContext(context);
+        messageHandler.handleMessage(messageHandlerContext, requestMessage);
 
         Wait.untilIsTrue(() -> {
             try {
@@ -331,15 +331,15 @@ public class RpcMessageHandlerTest {
         requestMessage.serialize();
 
         RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
-        RpcMessageHandler messageHandler = new RpcMessageHandler(rpcMessageFactory);
+        RpcMessageHandler messageHandler = new RpcMessageHandler();
 
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         EmbeddedChannel channel = new EmbeddedChannel();
         doReturn(channel).when(context).channel();
         doReturn(channel.newSucceededFuture()).when(context).writeAndFlush(any());
 
-        RemotingContext remotingContext = new RemotingContext(context, new ConcurrentHashMap<>());
-        messageHandler.handleMessage(remotingContext, requestMessage);
+        MessageHandlerContext messageHandlerContext = new MessageHandlerContext(context);
+        messageHandler.handleMessage(messageHandlerContext, requestMessage);
 
         Wait.untilIsTrue(() -> {
             try {
@@ -390,7 +390,7 @@ public class RpcMessageHandlerTest {
         responseMessage.setContent(null);
 
         RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
-        RpcMessageHandler messageHandler = new RpcMessageHandler(rpcMessageFactory);
+        RpcMessageHandler messageHandler = new RpcMessageHandler();
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         EmbeddedChannel channel = new EmbeddedChannel();
         channel = spy(channel);
@@ -402,8 +402,8 @@ public class RpcMessageHandlerTest {
         InvokeFuture future = mock(InvokeFuture.class);
         doReturn(future).when(connection).removeInvokeFuture(eq(requestId));
 
-        RemotingContext remotingContext = new RemotingContext(context, new ConcurrentHashMap<>());
-        messageHandler.handleMessage(remotingContext, responseMessage);
+        MessageHandlerContext messageHandlerContext = new MessageHandlerContext(context);
+        messageHandler.handleMessage(messageHandlerContext, responseMessage);
 
         Wait.untilIsTrue(() -> {
             try {
@@ -440,7 +440,7 @@ public class RpcMessageHandlerTest {
         responseMessage.setContent(null);
 
         RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
-        RpcMessageHandler messageHandler = new RpcMessageHandler(rpcMessageFactory);
+        RpcMessageHandler messageHandler = new RpcMessageHandler();
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         EmbeddedChannel channel = new EmbeddedChannel();
         channel = spy(channel);
@@ -454,8 +454,8 @@ public class RpcMessageHandlerTest {
 
         doThrow(new RuntimeException("testHandleResponseCallbackException")).when(future).executeCallBack();
 
-        RemotingContext remotingContext = new RemotingContext(context, new ConcurrentHashMap<>());
-        messageHandler.handleMessage(remotingContext, responseMessage);
+        MessageHandlerContext messageHandlerContext = new MessageHandlerContext(context);
+        messageHandler.handleMessage(messageHandlerContext, responseMessage);
 
         Wait.untilIsTrue(() -> {
             try {

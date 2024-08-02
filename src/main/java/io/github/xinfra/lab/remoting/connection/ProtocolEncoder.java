@@ -8,9 +8,6 @@ import io.netty.handler.codec.MessageToByteEncoder;
 public class ProtocolEncoder extends MessageToByteEncoder<Message> {
 
 
-    public ProtocolEncoder() {
-    }
-
     @Override
     protected void encode(ChannelHandlerContext ctx, Message msg, ByteBuf out) throws Exception {
         Connection connection = ctx.channel().attr(Connection.CONNECTION).get();

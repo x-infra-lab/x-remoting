@@ -15,10 +15,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static io.github.xinfra.lab.remoting.common.TestSocketUtils.findAvailableTcpPort;
@@ -47,13 +47,12 @@ public class HeartBeatTest {
         SocketAddress remoteAddress = rpcServer.localAddress();
 
         Protocol protocol = new RpcProtocol();
-        ConnectionManager connectionManager = new ClientConnectionManager(protocol, new ConcurrentHashMap<>());
+        ConnectionManager connectionManager = new ClientConnectionManager(protocol);
         connectionManager.startup();
 
 
         MessageFactory messageFactory = protocol.messageFactory();
-        BaseRemoting baseRemoting = new BaseRemoting(messageFactory);
-        baseRemoting.startup();
+        BaseRemoting baseRemoting = new BaseRemoting(protocol);
         Message heartbeatRequestMessage = messageFactory.createHeartbeatRequestMessage();
 
         Connection connection = connectionManager.getOrCreateIfAbsent(remoteAddress);
@@ -73,10 +72,9 @@ public class HeartBeatTest {
                 }
         );
 
-        countDownLatch.await();
+        countDownLatch.await(3 , TimeUnit.SECONDS);
         Assertions.assertNotNull(messageAtomicReference.get());
 
         connectionManager.shutdown();
-        baseRemoting.shutdown();
     }
 }

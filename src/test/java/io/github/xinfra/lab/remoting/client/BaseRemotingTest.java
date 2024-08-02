@@ -1,6 +1,5 @@
 package io.github.xinfra.lab.remoting.client;
 
-import io.github.xinfra.lab.remoting.RemotingContext;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.common.Wait;
 import io.github.xinfra.lab.remoting.connection.Connection;
@@ -10,12 +9,13 @@ import io.github.xinfra.lab.remoting.message.MessageHandler;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.Channel;
 import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.util.HashedWheelTimer;
+import io.netty.util.Timer;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeoutException;
@@ -34,7 +34,9 @@ import static org.mockito.Mockito.verify;
 
 public class BaseRemotingTest {
 
-    private static final ExecutorService executor = Executors.newCachedThreadPool();
+    ExecutorService executor;
+
+    Timer timer;
 
     TestProtocol testProtocol;
 
@@ -47,36 +49,31 @@ public class BaseRemotingTest {
     @BeforeEach
     public void beforeEach() {
         testProtocol = new TestProtocol();
+        executor = Executors.newCachedThreadPool();
         // set message handler
-        testProtocol.setTestMessageHandler(new MessageHandler() {
-            @Override
-            public Executor executor() {
-                return executor;
-            }
 
-            @Override
-            public void handleMessage(RemotingContext remotingContext, Object msg) {
-                // do notiong
-            }
-        });
+        MessageHandler messageHandler = mock(MessageHandler.class);
+        doReturn(executor).when(messageHandler).executor();
+
+        timer = new HashedWheelTimer();
+        doReturn(timer).when(messageHandler).timer();
+        testProtocol.setTestMessageHandler(messageHandler);
+
+        messageFactory = mock(MessageFactory.class);
+        testProtocol.setTestMessageFactory(messageFactory);
 
 
         requestId = IDGenerator.nextRequestId();
-        messageFactory = mock(MessageFactory.class);
-
-        baseRemoting = new BaseRemoting(messageFactory);
-        baseRemoting.startup();
+        baseRemoting = new BaseRemoting(testProtocol);
     }
 
     @AfterEach
     public void afterEach() {
-        baseRemoting.shutdown();
+        executor.shutdownNow();
     }
 
     @Test
     public void testSyncCall() throws InterruptedException {
-
-
         Message message = mock(Message.class);
         doReturn(requestId).when(message).id();
 

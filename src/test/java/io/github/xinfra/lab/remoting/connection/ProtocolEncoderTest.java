@@ -3,7 +3,6 @@ package io.github.xinfra.lab.remoting.connection;
 import io.github.xinfra.lab.remoting.codec.MessageEncoder;
 import io.github.xinfra.lab.remoting.exception.CodecException;
 import io.github.xinfra.lab.remoting.message.Message;
-import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -19,16 +18,15 @@ import static org.mockito.Mockito.mock;
 
 public class ProtocolEncoderTest {
     TestProtocol testProtocol = new TestProtocol();
+
     @Test
     public void testEncode() {
-
         ProtocolEncoder protocolEncoder = new ProtocolEncoder();
-        Message message = mock(Message.class);
-
         EmbeddedChannel channel = new EmbeddedChannel();
         channel.pipeline().addLast(protocolEncoder);
-        channel.attr(Connection.PROTOCOL).set(testProtocol);
+        new Connection(testProtocol, channel);
 
+        Message message = mock(Message.class);
         byte[] data = "testEncode".getBytes(StandardCharsets.UTF_8);
 
         MessageEncoder messageEncoder = new MessageEncoder() {
@@ -40,7 +38,7 @@ public class ProtocolEncoderTest {
         };
 
 
-       testProtocol.setTestMessageEncoder(messageEncoder);
+        testProtocol.setTestMessageEncoder(messageEncoder);
 
         channel.writeOutbound(message);
         Assertions.assertTrue(channel.finish());
@@ -60,14 +58,12 @@ public class ProtocolEncoderTest {
 
     @Test
     public void testEncodeException() {
-
         ProtocolEncoder protocolEncoder = new ProtocolEncoder();
-        Message message = mock(Message.class);
-
         EmbeddedChannel channel = new EmbeddedChannel();
         channel.pipeline().addLast(protocolEncoder);
-        channel.attr(Connection.PROTOCOL).set(testProtocol);
+        new Connection(testProtocol, channel);
 
+        Message message = mock(Message.class);
 
         MessageEncoder messageEncoder = new MessageEncoder() {
             @Override

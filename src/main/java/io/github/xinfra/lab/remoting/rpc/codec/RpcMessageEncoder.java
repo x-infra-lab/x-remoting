@@ -11,6 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RpcMessageEncoder implements MessageEncoder {
+
     @Override
     public void encode(ChannelHandlerContext ctx, Message msg, ByteBuf out) throws Exception {
         if (msg instanceof RpcMessage) {

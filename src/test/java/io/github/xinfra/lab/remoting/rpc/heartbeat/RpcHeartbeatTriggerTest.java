@@ -17,7 +17,6 @@ import java.util.Objects;
 import java.util.concurrent.TimeoutException;
 
 import static io.github.xinfra.lab.remoting.connection.Connection.CONNECTION;
-import static io.github.xinfra.lab.remoting.connection.Connection.HEARTBEAT_FAIL_COUNT;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.atLeastOnce;
@@ -34,7 +33,7 @@ public class RpcHeartbeatTriggerTest {
     @Test
     public void testHeartbeat() throws InterruptedException, TimeoutException {
         RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
-        RpcHeartbeatTrigger trigger = new RpcHeartbeatTrigger(rpcMessageFactory);
+        RpcHeartbeatTrigger trigger = new RpcHeartbeatTrigger();
 
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         EmbeddedChannel channel = new EmbeddedChannel();
@@ -44,7 +43,7 @@ public class RpcHeartbeatTriggerTest {
         Connection connection = mock(Connection.class);
         doReturn(channel).when(connection).getChannel();
         channel.attr(CONNECTION).set(connection);
-        channel.attr(HEARTBEAT_FAIL_COUNT).set(0);
+        connection.setHeartbeatFailCnt(0);
         doReturn(channel.newSucceededFuture()).when(channel).writeAndFlush(any());
 
         trigger.triggerHeartBeat(context);
@@ -79,7 +78,7 @@ public class RpcHeartbeatTriggerTest {
     @Test
     public void testHeartbeatFailed() throws InterruptedException, TimeoutException {
         RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
-        RpcHeartbeatTrigger trigger = new RpcHeartbeatTrigger(rpcMessageFactory);
+        RpcHeartbeatTrigger trigger = new RpcHeartbeatTrigger();
 
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         EmbeddedChannel channel = new EmbeddedChannel();
@@ -93,52 +92,52 @@ public class RpcHeartbeatTriggerTest {
         doReturn(channel.newFailedFuture(new RuntimeException("testHeartbeatFailed"))).when(channel).writeAndFlush(any());
 
         trigger.triggerHeartBeat(context);
-        EmbeddedChannel finalChannel = channel;
+        Connection finalConnection = connection;
         Wait.untilIsTrue(() -> {
             try {
-                return finalChannel.attr(HEARTBEAT_FAIL_COUNT).get() > 0;
+                return finalConnection.getHeartbeatFailCnt() > 0;
             } catch (Throwable t) {
                 return false;
             }
         }, 30, 100);
 
-        Assertions.assertEquals(channel.attr(HEARTBEAT_FAIL_COUNT).get(), 1);
+        Assertions.assertEquals(finalConnection.getHeartbeatFailCnt() , 1);
 
         // again
         trigger.triggerHeartBeat(context);
         Wait.untilIsTrue(() -> {
             try {
-                return finalChannel.attr(HEARTBEAT_FAIL_COUNT).get() > 1;
+                return finalConnection.getHeartbeatFailCnt()  > 1;
             } catch (Throwable t) {
                 return false;
             }
         }, 30, 100);
 
-        Assertions.assertEquals(channel.attr(HEARTBEAT_FAIL_COUNT).get(), 2);
+        Assertions.assertEquals(finalConnection.getHeartbeatFailCnt() , 2);
 
         // again
         trigger.triggerHeartBeat(context);
         Wait.untilIsTrue(() -> {
             try {
-                return finalChannel.attr(HEARTBEAT_FAIL_COUNT).get() > 2;
+                return finalConnection.getHeartbeatFailCnt()  > 2;
             } catch (Throwable t) {
                 return false;
             }
         }, 30, 100);
 
-        Assertions.assertEquals(channel.attr(HEARTBEAT_FAIL_COUNT).get(), 3);
+        Assertions.assertEquals(finalConnection.getHeartbeatFailCnt() , 3);
 
         // again
         trigger.triggerHeartBeat(context);
         Wait.untilIsTrue(() -> {
             try {
-                return finalChannel.attr(HEARTBEAT_FAIL_COUNT).get() > 3;
+                return finalConnection.getHeartbeatFailCnt()  > 3;
             } catch (Throwable t) {
                 return false;
             }
         }, 30, 100);
 
-        Assertions.assertEquals(channel.attr(HEARTBEAT_FAIL_COUNT).get(), 4);
+        Assertions.assertEquals(finalConnection.getHeartbeatFailCnt() , 4);
 
         // again
         trigger.triggerHeartBeat(context);
@@ -148,7 +147,7 @@ public class RpcHeartbeatTriggerTest {
     @Test
     public void testHeartbeatOverThreshold() throws InterruptedException, TimeoutException {
         RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
-        RpcHeartbeatTrigger trigger = new RpcHeartbeatTrigger(rpcMessageFactory);
+        RpcHeartbeatTrigger trigger = new RpcHeartbeatTrigger();
 
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         EmbeddedChannel channel = new EmbeddedChannel();
@@ -158,7 +157,7 @@ public class RpcHeartbeatTriggerTest {
         Connection connection = mock(Connection.class);
         doReturn(channel).when(connection).getChannel();
         channel.attr(CONNECTION).set(connection);
-        channel.attr(HEARTBEAT_FAIL_COUNT).set(4);
+        connection.setHeartbeatFailCnt(4);
         doReturn(channel.newSucceededFuture()).when(channel).writeAndFlush(any());
 
         trigger.triggerHeartBeat(context);

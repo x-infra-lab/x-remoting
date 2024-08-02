@@ -6,15 +6,16 @@ import io.github.xinfra.lab.remoting.connection.ConnectionFactory;
 import io.github.xinfra.lab.remoting.connection.DefaultConnectionFactory;
 import io.github.xinfra.lab.remoting.connection.ServerConnectionManager;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
+import io.github.xinfra.lab.remoting.message.MessageHandler;
 import io.github.xinfra.lab.remoting.processor.UserProcessor;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.ChannelHandler;
 import io.netty.handler.codec.http.HttpClientCodec;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,14 +24,22 @@ import java.util.function.Supplier;
 
 import static io.github.xinfra.lab.remoting.common.TestSocketUtils.findAvailableTcpPort;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 public class BaseRemotingServerTest {
 
-    TestProtocol testProtocol = new TestProtocol();
+    TestProtocol testProtocol;
+
+    @BeforeEach
+    public void beforeEach() {
+        testProtocol = new TestProtocol();
+    }
 
     private Connection getConnection(BaseRemotingServer server) throws RemotingException {
         SocketAddress serverAddress = server.localAddress;
@@ -99,7 +108,7 @@ public class BaseRemotingServerTest {
         Connection clientConnection = getConnection(server);
         Assertions.assertNotNull(clientConnection);
 
-        SocketAddress clientAddress =  clientConnection.getChannel().localAddress();
+        SocketAddress clientAddress = clientConnection.getChannel().localAddress();
 
         Wait.untilIsTrue(() -> {
             return connectionManager.get(clientAddress) != null;
@@ -113,6 +122,10 @@ public class BaseRemotingServerTest {
 
     @Test
     public void testRegisterUserProcessor() throws RemotingException, InterruptedException, TimeoutException {
+        testProtocol = spy(testProtocol);
+        MessageHandler messageHandler = mock(MessageHandler.class);
+        doReturn(messageHandler).when(testProtocol).messageHandler();
+
         RemotingServerConfig config = new RemotingServerConfig();
         config.setPort(findAvailableTcpPort());
         config.setManageConnection(true);
@@ -141,23 +154,6 @@ public class BaseRemotingServerTest {
 
         server.registerUserProcessor(userProcessor1);
 
-        UserProcessor<String> userProcessor2 = new UserProcessor<String>() {
-            @Override
-            public String interest() {
-                return String.class.getName();
-            }
-
-            @Override
-            public Object handRequest(String request) {
-                // do nothing
-                return null;
-            }
-        };
-
-        Assertions.assertThrows(RuntimeException.class, () -> {
-            server.registerUserProcessor(userProcessor2);
-        });
-
-        server.shutdown();
+        verify(messageHandler, times(1)).registerUserProcessor(eq(userProcessor1));
     }
 }

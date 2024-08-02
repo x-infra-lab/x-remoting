@@ -8,10 +8,13 @@ import io.github.xinfra.lab.remoting.message.MessageHandler;
 import io.github.xinfra.lab.remoting.rpc.message.RpcMessageFactory;
 import lombok.Setter;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+
 public class TestProtocol implements Protocol {
 
     @Setter
-    private byte[] protocolCode;
+    private byte[] protocolCode = "test".getBytes(StandardCharsets.UTF_8);
     @Setter
     private MessageEncoder testMessageEncoder;
     @Setter
@@ -19,7 +22,7 @@ public class TestProtocol implements Protocol {
     @Setter
     private MessageHandler testMessageHandler;
     @Setter
-    private RpcMessageFactory testMessageFactory;
+    private MessageFactory testMessageFactory;
     @Setter
     private HeartbeatTrigger testHeartbeatTrigger;
 
@@ -51,5 +54,10 @@ public class TestProtocol implements Protocol {
     @Override
     public HeartbeatTrigger heartbeatTrigger() {
         return testHeartbeatTrigger;
+    }
+
+    @Override
+    public void close() throws IOException {
+        // do nothing
     }
 }

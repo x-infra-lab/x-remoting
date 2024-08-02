@@ -1,14 +1,13 @@
 package io.github.xinfra.lab.remoting.rpc.processor;
 
-import io.github.xinfra.lab.remoting.RemotingContext;
+import io.github.xinfra.lab.remoting.message.MessageHandlerContext;
 import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.message.MessageType;
+import io.github.xinfra.lab.remoting.processor.AbstractMessageProcessor;
 import io.github.xinfra.lab.remoting.rpc.message.ResponseStatus;
-import io.github.xinfra.lab.remoting.processor.RemotingProcessor;
 import io.github.xinfra.lab.remoting.processor.UserProcessor;
 import io.github.xinfra.lab.remoting.rpc.message.RpcDeserializeLevel;
 import io.github.xinfra.lab.remoting.rpc.message.RpcMessage;
-import io.github.xinfra.lab.remoting.rpc.message.RpcMessageFactory;
 import io.github.xinfra.lab.remoting.rpc.message.RpcRequestMessage;
 import io.github.xinfra.lab.remoting.rpc.message.RpcResponseMessage;
 import io.github.xinfra.lab.remoting.rpc.message.RpcResponses;
@@ -18,60 +17,57 @@ import java.util.concurrent.Executor;
 
 
 @Slf4j
-public class RpcRequestMessageProcessor implements RemotingProcessor<RpcMessage> {
-    private RpcMessageFactory rpcMessageFactory;
+public class RpcRequestMessageProcessor extends AbstractMessageProcessor<RpcMessage> {
 
-    private Executor executor;
-
-    public RpcRequestMessageProcessor(RpcMessageFactory rpcMessageFactory,
-                                      Executor executor) {
-        this.rpcMessageFactory = rpcMessageFactory;
-        this.executor = executor;
-    }
 
     @Override
-    public void handleMessage(RemotingContext remotingContext, RpcMessage message) throws Exception {
+    public void handleMessage(MessageHandlerContext messageHandlerContext, RpcMessage message) throws Exception {
         RpcRequestMessage requestMessage = (RpcRequestMessage) message;
-
-        if (!deserialize(remotingContext, requestMessage, RpcDeserializeLevel.CONTENT_TYPE)) {
+        if (!deserialize(messageHandlerContext, requestMessage, RpcDeserializeLevel.CONTENT_TYPE)) {
             return;
         }
 
-        UserProcessor<?> userProcessor = remotingContext.getUserProcessor(message.getContentType());
+        UserProcessor<?> userProcessor = messageHandlerContext.getUserProcessor(message.getContentType());
         if (userProcessor == null) {
             String errorMsg = String.format("No userProcessor for content-type: %s", message.getContentType());
             log.error(errorMsg);
-            sendResponse(remotingContext,
+            sendResponse(messageHandlerContext,
                     requestMessage,
-                    rpcMessageFactory.createExceptionResponse(message.id(), errorMsg));
+                    messageHandlerContext.getMessageFactory().createExceptionResponse(message.id(), errorMsg));
             return;
         }
 
-        Executor userProcessorExecutor;
+        //  use UserProcessor define executor
+        Executor processorExecutor;
         if (userProcessor.executorSelector() != null) {
-
-            if (!deserialize(remotingContext, requestMessage, RpcDeserializeLevel.HEADER)) {
+            if (!deserialize(messageHandlerContext, requestMessage, RpcDeserializeLevel.HEADER)) {
                 return;
             }
 
-            userProcessorExecutor = userProcessor.executorSelector()
+            processorExecutor = userProcessor.executorSelector()
                     .select(requestMessage.getContentType(), requestMessage.getHeader());
         } else {
-            userProcessorExecutor = userProcessor.executor();
+            processorExecutor = userProcessor.executor();
         }
 
-        if (userProcessorExecutor == null) {
-            userProcessorExecutor = this.executor;
+        if (processorExecutor == null) {
+            //  use MessageProcessor define executor
+            processorExecutor = executor();
+            if (processorExecutor == null) {
+                //  use MessageHandler define default executor
+                processorExecutor = messageHandlerContext.getMessageDefaultExecutor();
+            }
         }
 
-        userProcessorExecutor.execute(new ProcessTask(userProcessor, requestMessage, remotingContext));
+        processorExecutor.execute(new ProcessTask(userProcessor, requestMessage, messageHandlerContext));
     }
 
-    private void process(RemotingContext remotingContext,
+
+    private void process(MessageHandlerContext messageHandlerContext,
                          UserProcessor userProcessor,
                          RpcRequestMessage requestMessage) {
 
-        if (!deserialize(remotingContext, requestMessage, RpcDeserializeLevel.ALL)) {
+        if (!deserialize(messageHandlerContext, requestMessage, RpcDeserializeLevel.ALL)) {
             return;
         }
 
@@ -84,9 +80,9 @@ public class RpcRequestMessageProcessor implements RemotingProcessor<RpcMessage>
             }
 
             Object responseContent = userProcessor.handRequest(requestMessage.getContent());
-            sendResponse(remotingContext,
+            sendResponse(messageHandlerContext,
                     requestMessage,
-                    rpcMessageFactory.createResponse(requestMessage.id(), responseContent)
+                    messageHandlerContext.getMessageFactory().createResponse(requestMessage.id(), responseContent)
             );
         } finally {
             if (contextClassLoader != null) {
@@ -96,15 +92,15 @@ public class RpcRequestMessageProcessor implements RemotingProcessor<RpcMessage>
 
     }
 
-    private void sendResponse(RemotingContext remotingContext,
+    private void sendResponse(MessageHandlerContext messageHandlerContext,
                               RpcRequestMessage requestMessage,
                               RpcResponseMessage responseMessage) {
         if (requestMessage.messageType() != MessageType.onewayRequest) {
-            RpcResponses.sendResponse(remotingContext, responseMessage, rpcMessageFactory);
+            RpcResponses.sendResponse(messageHandlerContext, responseMessage);
         }
     }
 
-    private boolean deserialize(RemotingContext remotingContext, RpcRequestMessage requestMessage, RpcDeserializeLevel level) {
+    private boolean deserialize(MessageHandlerContext messageHandlerContext, RpcRequestMessage requestMessage, RpcDeserializeLevel level) {
         try {
             requestMessage.deserialize(level);
             return true;
@@ -114,10 +110,11 @@ public class RpcRequestMessageProcessor implements RemotingProcessor<RpcMessage>
             if (!(t instanceof DeserializeException)) {
                 t = new DeserializeException("Deserialize requestMessage fail.", t);
             }
-            RpcResponseMessage responseMessage = rpcMessageFactory.createExceptionResponse(requestMessage.id(), t,
-                    ResponseStatus.SERVER_DESERIAL_EXCEPTION);
+            RpcResponseMessage responseMessage = messageHandlerContext.getMessageFactory()
+                    .createExceptionResponse(requestMessage.id(), t,
+                            ResponseStatus.SERVER_DESERIAL_EXCEPTION);
 
-            sendResponse(remotingContext, requestMessage, responseMessage);
+            sendResponse(messageHandlerContext, requestMessage, responseMessage);
         }
         return false;
     }
@@ -127,27 +124,27 @@ public class RpcRequestMessageProcessor implements RemotingProcessor<RpcMessage>
 
         private UserProcessor<?> userProcessor;
         private RpcRequestMessage requestMessage;
-        private RemotingContext remotingContext;
+        private MessageHandlerContext messageHandlerContext;
 
 
         public ProcessTask(UserProcessor<?> userProcessor,
                            RpcRequestMessage requestMessage,
-                           RemotingContext remotingContext) {
+                           MessageHandlerContext messageHandlerContext) {
             this.userProcessor = userProcessor;
             this.requestMessage = requestMessage;
-            this.remotingContext = remotingContext;
+            this.messageHandlerContext = messageHandlerContext;
         }
 
         @Override
         public void run() {
             try {
-                process(remotingContext, userProcessor, requestMessage);
+                process(messageHandlerContext, userProcessor, requestMessage);
             } catch (Throwable t) {
                 int id = requestMessage.id();
                 String errorMsg = String.format("user process message fail. id: %s", id);
                 log.error(errorMsg, t);
-                sendResponse(remotingContext, requestMessage,
-                        rpcMessageFactory.createExceptionResponse(id, t, errorMsg));
+                sendResponse(messageHandlerContext, requestMessage,
+                        messageHandlerContext.getMessageFactory().createExceptionResponse(id, t, errorMsg));
             }
         }
     }

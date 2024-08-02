@@ -1,22 +1,16 @@
 package io.github.xinfra.lab.remoting.rpc.processor;
 
-import io.github.xinfra.lab.remoting.RemotingContext;
-import io.github.xinfra.lab.remoting.processor.RemotingProcessor;
+import io.github.xinfra.lab.remoting.message.MessageHandlerContext;
+import io.github.xinfra.lab.remoting.processor.AbstractMessageProcessor;
 import io.github.xinfra.lab.remoting.rpc.message.RpcMessage;
-import io.github.xinfra.lab.remoting.rpc.message.RpcMessageFactory;
 import io.github.xinfra.lab.remoting.rpc.message.RpcResponses;
 
-public class RpcHeartbeatMessageProcessor implements RemotingProcessor<RpcMessage> {
-    private RpcMessageFactory rpcMessageFactory;
-
-    public RpcHeartbeatMessageProcessor(RpcMessageFactory rpcMessageFactory) {
-        this.rpcMessageFactory = rpcMessageFactory;
-    }
+public class RpcHeartbeatMessageProcessor extends AbstractMessageProcessor<RpcMessage> {
 
     @Override
-    public void handleMessage(RemotingContext remotingContext, RpcMessage message) {
-        RpcResponses.sendResponse(remotingContext,
-                rpcMessageFactory.createResponse(message.id(), null),
-                rpcMessageFactory);
+    public void handleMessage(MessageHandlerContext messageHandlerContext, RpcMessage message) {
+        RpcResponses.sendResponse(messageHandlerContext,
+                messageHandlerContext.getMessageFactory().createResponse(message.id(), null)
+        );
     }
 }

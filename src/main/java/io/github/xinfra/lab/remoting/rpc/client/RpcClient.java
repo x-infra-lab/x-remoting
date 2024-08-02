@@ -7,8 +7,8 @@ import io.github.xinfra.lab.remoting.processor.UserProcessor;
 import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.net.SocketAddress;
-import java.util.concurrent.ConcurrentHashMap;
 
 
 @Slf4j
@@ -16,27 +16,29 @@ public class RpcClient extends AbstractLifeCycle {
     private RpcProtocol protocol;
     private RpcClientRemoting rpcClientRemoting;
     private ClientConnectionManager connectionManager;
-    private ConcurrentHashMap<String, UserProcessor<?>> userProcessors = new ConcurrentHashMap<>();
 
 
     public RpcClient() {
         this.protocol = new RpcProtocol();
-        this.connectionManager = new ClientConnectionManager(protocol, userProcessors);
-        rpcClientRemoting = new RpcClientRemoting(protocol, connectionManager);
+        this.connectionManager = new ClientConnectionManager(protocol);
+        this.rpcClientRemoting = new RpcClientRemoting(protocol, connectionManager);
     }
 
     @Override
     public void startup() {
         super.startup();
         connectionManager.startup();
-        rpcClientRemoting.startup();
     }
 
     @Override
     public void shutdown() {
         super.shutdown();
         connectionManager.shutdown();
-        rpcClientRemoting.shutdown();
+        try {
+            protocol.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public <R> R syncCall(Object request, SocketAddress socketAddress, int timeoutMills)
@@ -60,10 +62,6 @@ public class RpcClient extends AbstractLifeCycle {
     }
 
     public void registerUserProcessor(UserProcessor<?> userProcessor) {
-        UserProcessor<?> oldUserProcessor = userProcessors.putIfAbsent(userProcessor.interest(), userProcessor);
-        if (oldUserProcessor != null) {
-            String msg= "interest key:" + userProcessor.interest() + " has already been registered to rpc client.";
-            throw new RuntimeException(msg);
-        }
+        protocol.messageHandler().registerUserProcessor(userProcessor);
     }
 }

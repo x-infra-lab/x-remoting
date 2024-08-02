@@ -1,8 +1,9 @@
 package io.github.xinfra.lab.remoting.rpc.message;
 
-import io.github.xinfra.lab.remoting.RemotingContext;
+import io.github.xinfra.lab.remoting.message.MessageHandlerContext;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
+import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import lombok.extern.slf4j.Slf4j;
@@ -35,9 +36,9 @@ public class RpcResponses {
     }
 
 
-    public static void sendResponse(RemotingContext remotingContext,
-                                    RpcResponseMessage responseMessage,
-                                    RpcMessageFactory rpcMessageFactory) {
+    public static void sendResponse(MessageHandlerContext messageHandlerContext,
+                                    RpcResponseMessage responseMessage) {
+        MessageFactory messageFactory = messageHandlerContext.getMessageFactory();
         int id = responseMessage.id();
         short status = responseMessage.getStatus();
         try {
@@ -45,7 +46,8 @@ public class RpcResponses {
         } catch (SerializeException e) {
             String errorMsg = String.format("sendResponse SerializeException. id: %s", id);
             log.error(errorMsg, e);
-            responseMessage = rpcMessageFactory.createExceptionResponse(id,
+            responseMessage = messageFactory
+                    .createExceptionResponse(id,
                     e, ResponseStatus.SERVER_SERIAL_EXCEPTION);
 
             // serialize again
@@ -57,7 +59,7 @@ public class RpcResponses {
         } catch (Throwable t) {
             String errorMsg = String.format("sendResponse fail. id: %s", id);
             log.error(errorMsg, t);
-            responseMessage = rpcMessageFactory.createExceptionResponse(id, t, errorMsg);
+            responseMessage = messageFactory.createExceptionResponse(id, t, errorMsg);
 
             // serialize again
             try {
@@ -67,7 +69,7 @@ public class RpcResponses {
             }
         }
 
-        remotingContext.getChannelContext().writeAndFlush(responseMessage).addListener(
+        messageHandlerContext.getChannelContext().writeAndFlush(responseMessage).addListener(
                 new ChannelFutureListener() {
                     @Override
                     public void operationComplete(ChannelFuture future) throws Exception {

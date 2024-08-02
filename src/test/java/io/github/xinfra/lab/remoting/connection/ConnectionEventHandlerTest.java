@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import java.net.InetSocketAddress;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static io.github.xinfra.lab.remoting.connection.Connection.CONNECTION;
 import static org.mockito.ArgumentMatchers.any;
@@ -24,8 +23,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 public class ConnectionEventHandlerTest {
-
-
 
     private static String remoteAddress;
     private static int serverPort;
@@ -113,7 +110,7 @@ public class ConnectionEventHandlerTest {
 
     @Test
     public void testChannelClose_withConnectionManager() throws Exception {
-        ConnectionManager connectionManager = new ClientConnectionManager(testProtocol, new ConcurrentHashMap<>());
+        ConnectionManager connectionManager = new ClientConnectionManager(testProtocol);
         connectionManager.startup();
 
         connectionManager = spy(connectionManager);
@@ -160,7 +157,7 @@ public class ConnectionEventHandlerTest {
 
     @Test
     public void testChannelInactive_withConnectionManager() throws Exception {
-        ConnectionManager connectionManager = new ClientConnectionManager(testProtocol, new ConcurrentHashMap<>());
+        ConnectionManager connectionManager = new ClientConnectionManager(testProtocol);
         connectionManager.startup();
 
         connectionManager = spy(connectionManager);
@@ -207,7 +204,7 @@ public class ConnectionEventHandlerTest {
 
     @Test
     public void testChannelExceptionCaught_withConnectionManager() throws Exception {
-        ConnectionManager connectionManager = new ClientConnectionManager(testProtocol, new ConcurrentHashMap<>());
+        ConnectionManager connectionManager = new ClientConnectionManager(testProtocol);
         connectionManager.startup();
 
         connectionManager = spy(connectionManager);

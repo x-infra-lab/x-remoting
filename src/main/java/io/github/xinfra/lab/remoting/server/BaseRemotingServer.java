@@ -29,7 +29,6 @@ import org.apache.commons.lang3.Validate;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -37,8 +36,6 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 
     protected SocketAddress localAddress;
     private ServerBootstrap serverBootstrap;
-
-    private ConcurrentHashMap<String, UserProcessor<?>> userProcessors = new ConcurrentHashMap<>();
 
     private final EventLoopGroup bossGroup = Epoll.isAvailable() ?
             new EpollEventLoopGroup(1, new NamedThreadFactory("Remoting-Server-Boss")) :
@@ -66,7 +63,7 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
         Validate.inclusiveBetween(0, 0xFFFF, config.getPort(), "port out of range: " + config.getPort());
 
         this.config = config;
-        this.handler = new ProtocolHandler(userProcessors);
+        this.handler = new ProtocolHandler();
 
         this.localAddress = new InetSocketAddress(config.getPort());
         if (this.config.isManageConnection()) {
@@ -81,7 +78,7 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
     @Override
     public void startup() {
         super.startup();
-        if (this.connectionManager!=null) {
+        if (this.connectionManager != null) {
             this.connectionManager.startup();
         }
         this.serverBootstrap = new ServerBootstrap();
@@ -113,7 +110,6 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 
         try {
             ChannelFuture channelFuture = this.serverBootstrap.bind(localAddress).sync();
-
             if (!channelFuture.isSuccess()) {
                 throw channelFuture.cause();
             }
@@ -145,10 +141,6 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 
     @Override
     public void registerUserProcessor(UserProcessor<?> userProcessor) {
-        UserProcessor<?> oldUserProcessor = userProcessors.putIfAbsent(userProcessor.interest(), userProcessor);
-        if (oldUserProcessor != null) {
-           String msg= "interest key:" + userProcessor.interest() + " has already been registered to rpc server.";
-           throw new RuntimeException(msg);
-        }
+        protocol().messageHandler().registerUserProcessor(userProcessor);
     }
 }

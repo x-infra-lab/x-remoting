@@ -20,6 +20,7 @@ import static io.github.xinfra.lab.remoting.message.MessageType.onewayRequest;
 
 @Slf4j
 public class RpcMessageDecoder implements MessageDecoder {
+
     private int protocolCodeLength = RpcProtocol.PROTOCOL_CODE.length;
 
     private int minLength = Math.min(RpcProtocol.RESPONSE_HEADER_LEN, RpcProtocol.REQUEST_HEADER_LEN);

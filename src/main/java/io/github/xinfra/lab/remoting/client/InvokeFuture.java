@@ -3,6 +3,9 @@ package io.github.xinfra.lab.remoting.client;
 
 import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.message.Message;
+import io.github.xinfra.lab.remoting.message.MessageHandler;
+import io.github.xinfra.lab.remoting.message.MessageType;
+import io.github.xinfra.lab.remoting.processor.MessageProcessor;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.netty.util.Timeout;
 import lombok.Getter;
@@ -12,18 +15,19 @@ import org.apache.commons.lang3.Validate;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
-public class InvokeFuture<T extends Message> implements Future {
+public class InvokeFuture<T extends Message> implements Future<Message> {
 
     @Getter
     private final int requestId;
 
-    private Protocol protocol;
+    private final Protocol protocol;
 
     private final CountDownLatch countDownLatch;
 
@@ -40,6 +44,7 @@ public class InvokeFuture<T extends Message> implements Future {
 
     public InvokeFuture(int requestId, Protocol protocol) {
         this.requestId = requestId;
+        this.protocol = protocol;
         this.countDownLatch = new CountDownLatch(1);
         this.classLoader = Thread.currentThread().getContextClassLoader();
     }
@@ -56,7 +61,16 @@ public class InvokeFuture<T extends Message> implements Future {
 
     public void asyncExecuteCallBack() {
         try {
-            Executor executor = protocol.messageHandler().executor();
+            MessageHandler messageHandler = protocol.messageHandler();
+
+            ExecutorService responseMessageExecutor = null;
+            MessageProcessor<?> responseMessageProcessor = messageHandler.messageProcessor(MessageType.response);
+            if (responseMessageProcessor != null) {
+                responseMessageExecutor = responseMessageProcessor.executor();
+            }
+            ExecutorService messageExecutor = messageHandler.executor();
+            Executor executor = responseMessageExecutor != null ? responseMessageExecutor : messageExecutor;
+
             executor.execute(() -> {
                 try {
                     executeCallBack();

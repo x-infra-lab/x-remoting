@@ -9,6 +9,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.util.AttributeKey;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
 
@@ -19,42 +20,38 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @Slf4j
 public class Connection {
 
-    public static final AttributeKey<Protocol> PROTOCOL = AttributeKey.valueOf("protocol");
-
     public static final AttributeKey<Connection> CONNECTION = AttributeKey.valueOf("connection");
 
-
-    public static final AttributeKey<Integer> HEARTBEAT_FAIL_COUNT = AttributeKey.valueOf("heartbeat_fail_count");
-
     @AccessForTest
-    protected ConcurrentHashMap<Integer, InvokeFuture> invokeMap = new ConcurrentHashMap<>();
+    protected ConcurrentHashMap<Integer, InvokeFuture<?>> invokeMap = new ConcurrentHashMap<>();
 
     @Getter
-    private Channel channel;
+    private final Channel channel;
 
     @Getter
-    private Protocol protocol;
+    private final Protocol protocol;
+
+    @Getter
+    @Setter
+    private int heartbeatFailCnt = 0;
 
     private final AtomicBoolean closed = new AtomicBoolean(false);
-
 
     public Connection(Protocol protocol, Channel channel) {
         Validate.notNull(protocol, "protocol can not be null");
         Validate.notNull(channel, "channel can not be null");
         this.protocol = protocol;
         this.channel = channel;
-        this.channel.attr(PROTOCOL).set(protocol);
         this.channel.attr(CONNECTION).set(this);
-        this.channel.attr(HEARTBEAT_FAIL_COUNT).set(0);
     }
 
 
-    public void addInvokeFuture(InvokeFuture invokeFuture) {
-        InvokeFuture prevFuture = invokeMap.put(invokeFuture.getRequestId(), invokeFuture);
+    public void addInvokeFuture(InvokeFuture<?> invokeFuture) {
+        InvokeFuture<?> prevFuture = invokeMap.put(invokeFuture.getRequestId(), invokeFuture);
         Validate.isTrue(prevFuture == null, "requestId: %s already invoked", invokeFuture.getRequestId());
     }
 
-    public InvokeFuture removeInvokeFuture(Integer requestId) {
+    public InvokeFuture<?> removeInvokeFuture(Integer requestId) {
         return invokeMap.remove(requestId);
     }
 
@@ -67,8 +64,11 @@ public class Connection {
             return channel.close().addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture future) throws Exception {
-                    log.info("close connection to remote address:{} success:{} fail cause:{}",
-                            channel.remoteAddress(), future.isSuccess(), future.cause());
+                    if (future.isSuccess()) {
+                        log.info("close connection to remote address:{} success", remoteAddress());
+                    } else {
+                        log.warn("close connection to remote address:{} fail", remoteAddress(), future.cause());
+                    }
                 }
             });
         }
@@ -77,7 +77,7 @@ public class Connection {
 
     public void onClose() {
         for (int requestId : invokeMap.keySet()) {
-            InvokeFuture invokeFuture = removeInvokeFuture(requestId);
+            InvokeFuture<?> invokeFuture = removeInvokeFuture(requestId);
             if (invokeFuture != null) {
                 invokeFuture.cancelTimeout();
                 invokeFuture.complete(createConnectionClosedMessage(requestId));

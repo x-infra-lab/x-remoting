@@ -7,6 +7,7 @@ import io.github.xinfra.lab.remoting.rpc.client.RpcInvokeCallBack;
 import io.github.xinfra.lab.remoting.rpc.client.RpcInvokeFuture;
 import io.github.xinfra.lab.remoting.server.BaseRemotingServer;
 
+import java.io.IOException;
 import java.net.SocketAddress;
 
 public class RpcServer extends BaseRemotingServer {
@@ -20,17 +21,19 @@ public class RpcServer extends BaseRemotingServer {
     @Override
     public void startup() {
         super.startup();
-        this.protocol = new RpcProtocol();
+        protocol = new RpcProtocol();
         rpcServerRemoting = new RpcServerRemoting(protocol, connectionManager);
-        rpcServerRemoting.startup();
     }
 
     @Override
     public void shutdown() {
         super.shutdown();
-        rpcServerRemoting.shutdown();
+        try {
+            protocol.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
-
 
 
     public <R> R syncCall(Object request, SocketAddress socketAddress, int timeoutMills)

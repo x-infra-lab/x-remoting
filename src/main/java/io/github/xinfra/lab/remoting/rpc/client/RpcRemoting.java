@@ -3,21 +3,19 @@ package io.github.xinfra.lab.remoting.rpc.client;
 import io.github.xinfra.lab.remoting.client.BaseRemoting;
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
 import io.github.xinfra.lab.remoting.connection.Connection;
-import io.github.xinfra.lab.remoting.connection.ConnectionManager;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
-import io.github.xinfra.lab.remoting.rpc.message.RpcMessageFactory;
+import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.rpc.message.RpcRequestMessage;
 import io.github.xinfra.lab.remoting.rpc.message.RpcResponseMessage;
 import io.github.xinfra.lab.remoting.rpc.message.RpcResponses;
 
 
 public class RpcRemoting extends BaseRemoting {
-    protected RpcMessageFactory rpcMessageFactory;
 
-    public RpcRemoting(RpcMessageFactory rpcMessageFactory) {
-        super(rpcMessageFactory);
-        this.rpcMessageFactory = rpcMessageFactory;
+
+    public RpcRemoting(Protocol protocol) {
+        super(protocol);
     }
 
     public <R> R syncCall(Object request, Connection connection, int timeoutMills)
@@ -32,7 +30,7 @@ public class RpcRemoting extends BaseRemoting {
             throws RemotingException {
         RpcRequestMessage requestMessage = buildRequestMessage(request);
 
-        InvokeFuture invokeFuture = super.asyncCall(requestMessage, connection, timeoutMills);
+        InvokeFuture<?> invokeFuture = super.asyncCall(requestMessage, connection, timeoutMills);
         return new RpcInvokeFuture<R>(invokeFuture);
     }
 
@@ -51,7 +49,7 @@ public class RpcRemoting extends BaseRemoting {
     }
 
     private RpcRequestMessage buildRequestMessage(Object request) throws SerializeException {
-        RpcRequestMessage requestMessage = rpcMessageFactory.createRequestMessage();
+        RpcRequestMessage requestMessage = messageFactory.createRequestMessage();
         requestMessage.setContent(request);
         requestMessage.setContentType(request.getClass().getName());
 

@@ -3,6 +3,7 @@ package io.github.xinfra.lab.remoting.rpc;
 import io.github.xinfra.lab.remoting.codec.MessageDecoder;
 import io.github.xinfra.lab.remoting.codec.MessageEncoder;
 import io.github.xinfra.lab.remoting.heartbeat.HeartbeatTrigger;
+import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
 import io.github.xinfra.lab.remoting.rpc.heartbeat.RpcHeartbeatTrigger;
 import io.github.xinfra.lab.remoting.rpc.message.RpcMessageFactory;
@@ -11,10 +12,12 @@ import io.github.xinfra.lab.remoting.rpc.codec.RpcMessageDecoder;
 import io.github.xinfra.lab.remoting.rpc.codec.RpcMessageEncoder;
 import io.github.xinfra.lab.remoting.rpc.message.RpcMessageHandler;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
+
 /**
- * x-protocol
+ * x-rpc protocol definition:
  * <p>
  * request definition:
  * <p>
@@ -33,18 +36,18 @@ public class RpcProtocol implements Protocol {
 
     public static final byte[] PROTOCOL_CODE = "x-rpc".getBytes(StandardCharsets.UTF_8);
 
-    private MessageEncoder rpcMessageEncoder;
-    private MessageDecoder rpcMessageDecoder;
-    private MessageHandler rpcMessageHandler;
-    private RpcMessageFactory rpcMessageFactory;
-    private HeartbeatTrigger rpcHeartbeatTrigger;
+    private final RpcMessageEncoder rpcMessageEncoder;
+    private final RpcMessageDecoder rpcMessageDecoder;
+    private final RpcMessageHandler rpcMessageHandler;
+    private final RpcMessageFactory rpcMessageFactory;
+    private final RpcHeartbeatTrigger rpcHeartbeatTrigger;
 
     public RpcProtocol() {
         this.rpcMessageFactory = new RpcMessageFactory();
         this.rpcMessageEncoder = new RpcMessageEncoder();
         this.rpcMessageDecoder = new RpcMessageDecoder();
-        this.rpcMessageHandler = new RpcMessageHandler(rpcMessageFactory);
-        this.rpcHeartbeatTrigger = new RpcHeartbeatTrigger(rpcMessageFactory);
+        this.rpcMessageHandler = new RpcMessageHandler();
+        this.rpcHeartbeatTrigger = new RpcHeartbeatTrigger();
     }
 
     @Override
@@ -68,12 +71,17 @@ public class RpcProtocol implements Protocol {
     }
 
     @Override
-    public RpcMessageFactory messageFactory() {
+    public MessageFactory messageFactory() {
         return this.rpcMessageFactory;
     }
 
     @Override
     public HeartbeatTrigger heartbeatTrigger() {
         return rpcHeartbeatTrigger;
+    }
+
+    @Override
+    public void close() throws IOException {
+        rpcMessageHandler.close();
     }
 }

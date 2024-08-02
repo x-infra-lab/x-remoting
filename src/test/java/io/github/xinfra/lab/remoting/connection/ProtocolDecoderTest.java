@@ -3,7 +3,6 @@ package io.github.xinfra.lab.remoting.connection;
 import io.github.xinfra.lab.remoting.codec.MessageDecoder;
 import io.github.xinfra.lab.remoting.exception.CodecException;
 import io.github.xinfra.lab.remoting.message.Message;
-import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
@@ -24,10 +23,9 @@ public class ProtocolDecoderTest {
     @Test
     public void testDecode() {
         ProtocolDecoder protocolDecoder = new ProtocolDecoder();
-
         EmbeddedChannel channel = new EmbeddedChannel();
         channel.pipeline().addLast(protocolDecoder);
-        channel.attr(Connection.PROTOCOL).set(testProtocol);
+        new Connection(testProtocol, channel);
 
         Message decodeMockMessage = mock(Message.class);
         MessageDecoder messageDecoder = new MessageDecoder() {
@@ -47,15 +45,15 @@ public class ProtocolDecoderTest {
         Assertions.assertTrue(channel.finish());
         Message message = (Message) channel.inboundMessages().poll();
         Assertions.assertEquals(message, decodeMockMessage);
+        Assertions.assertEquals(byteBuf.refCnt(), 0);
     }
 
     @Test
     public void testDecodePartial() {
         ProtocolDecoder protocolDecoder = new ProtocolDecoder();
-
         EmbeddedChannel channel = new EmbeddedChannel();
         channel.pipeline().addLast(protocolDecoder);
-        channel.attr(Connection.PROTOCOL).set(testProtocol);
+        new Connection(testProtocol, channel);
 
         Message decodeMockMessage = mock(Message.class);
         MessageDecoder messageDecoder = new MessageDecoder() {
@@ -73,7 +71,6 @@ public class ProtocolDecoderTest {
         byte[] bytes = testProtocol.protocolCode();
         int length = bytes.length;
 
-
         int part1Length = length / 2;
         int part2Length = length - part1Length;
 
@@ -83,7 +80,6 @@ public class ProtocolDecoderTest {
         System.arraycopy(bytes, part1Length, part2, 0, part2Length);
 
         // write partial data
-
         ByteBuf part1ByteBuf = ByteBufAllocator.DEFAULT.buffer(part1Length);
         part1ByteBuf.writeBytes(part1);
         channel.writeInbound(part1ByteBuf);
@@ -94,19 +90,20 @@ public class ProtocolDecoderTest {
         part2ByteBuf.writeBytes(part2);
         channel.writeInbound(part2ByteBuf);
         Assertions.assertTrue(channel.finish());
+
         Message message = (Message) channel.inboundMessages().poll();
         Assertions.assertEquals(message, decodeMockMessage);
+        Assertions.assertEquals(part1ByteBuf.refCnt(), 0);
+        Assertions.assertEquals(part2ByteBuf.refCnt(), 0);
     }
 
 
     @Test
     public void testDecodeException() {
         ProtocolDecoder protocolDecoder = new ProtocolDecoder();
-
         EmbeddedChannel channel = new EmbeddedChannel();
         channel.pipeline().addLast(protocolDecoder);
-        channel.attr(Connection.PROTOCOL).set(testProtocol);
-
+        new Connection(testProtocol, channel);
 
         ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer(testProtocol.protocolCode().length);
         byteBuf.writeBytes(testProtocol.protocolCode());
@@ -121,5 +118,6 @@ public class ProtocolDecoderTest {
         Assertions.assertTrue(decoderException.getCause() instanceof CodecException);
 
         byteBuf.release();
+        Assertions.assertEquals(invalidByteBuf.refCnt(), 0);
     }
 }

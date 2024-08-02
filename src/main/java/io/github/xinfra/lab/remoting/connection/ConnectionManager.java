@@ -27,4 +27,5 @@ public interface ConnectionManager extends LifeCycle {
     void enableReconnect(SocketAddress socketAddress);
 
     Future<Void> asyncReconnect(SocketAddress socketAddress);
+
 }

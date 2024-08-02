@@ -17,7 +17,6 @@ import org.junit.jupiter.api.Test;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -55,7 +54,7 @@ public class ClientConnectionManagerTest {
     @BeforeEach
     public void before() {
         connectionManager =
-                new ClientConnectionManager(testProtocol, new ConcurrentHashMap<>());
+                new ClientConnectionManager(testProtocol);
         Assertions.assertNotNull(connectionManager);
         connectionManager.startup();
     }
@@ -67,22 +66,13 @@ public class ClientConnectionManagerTest {
 
     @Test
     public void testNewInstance() {
-        Assertions.assertThrows(NullPointerException.class,
-                () -> {
-                    new ClientConnectionManager(testProtocol, null);
-                }
-        );
 
         Assertions.assertThrows(NullPointerException.class,
                 () -> {
-                    new ClientConnectionManager(null, new ConcurrentHashMap<>());
+                    new ClientConnectionManager(null);
                 }
         );
-        Assertions.assertThrows(NullPointerException.class,
-                () -> {
-                    new ClientConnectionManager(null, null);
-                }
-        );
+
     }
 
 
@@ -99,7 +89,7 @@ public class ClientConnectionManagerTest {
     @Test
     public void testGetOrCreateIfAbsentFail() {
         // invalid socketAddress
-        InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort+1);
+        InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort + 1);
         Assertions.assertThrows(RemotingException.class, () -> {
             connectionManager.getOrCreateIfAbsent(address);
         });
@@ -128,7 +118,7 @@ public class ClientConnectionManagerTest {
     @Test
     public void testGetFail() throws RemotingException {
         // invalid socketAddress
-        InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort+1);
+        InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort + 1);
 
         // no connection
         Connection connection1 = connectionManager.get(address);
@@ -203,7 +193,7 @@ public class ClientConnectionManagerTest {
             spyConnectionManager.check(spyConnection);
         });
 
-        verify(spyConnectionManager, times(1)).removeAndClose(spyConnection);
+        verify(spyConnectionManager, times(1)).removeAndClose(eq(spyConnection));
     }
 
     @Test
@@ -222,7 +212,7 @@ public class ClientConnectionManagerTest {
 
         Connection mockConnection = mock(Connection.class);
         // invalid
-        InetSocketAddress invalidAddress = new InetSocketAddress(remoteAddress, serverPort+1);
+        InetSocketAddress invalidAddress = new InetSocketAddress(remoteAddress, serverPort + 1);
         Assertions.assertNull(connectionManager.get(invalidAddress));
         doReturn(invalidAddress).when(mockConnection).remoteAddress();
         connectionManager.removeAndClose(mockConnection);
@@ -256,7 +246,7 @@ public class ClientConnectionManagerTest {
         int numPreEndpoint = 3;
         ConnectionManagerConfig connectionManagerConfig = new ConnectionManagerConfig();
         connectionManagerConfig.setConnectionNumPreEndpoint(numPreEndpoint);
-        ConnectionManager connectionManager = new ClientConnectionManager(testProtocol, new ConcurrentHashMap<>(), connectionManagerConfig);
+        ConnectionManager connectionManager = new ClientConnectionManager(testProtocol, connectionManagerConfig);
         connectionManager.startup();
 
         // valid socketAddress
@@ -315,7 +305,6 @@ public class ClientConnectionManagerTest {
 
         Assertions.assertTrue(connections.containsKey(address));
         connection = connectionManager.get(address);
-        System.out.println("connections:" + connections);
         Assertions.assertNotNull(connection);
     }
 
@@ -327,7 +316,7 @@ public class ClientConnectionManagerTest {
         connectionManager.asyncReconnect(address).get(3, TimeUnit.SECONDS);
 
         connectionManager.disableReconnect(address);
-        RemotingException remotingException = Assertions.assertThrowsExactly(RemotingException.class, () -> {
+         Assertions.assertThrowsExactly(RemotingException.class, () -> {
             connectionManager.reconnect(address);
         });
 

@@ -6,8 +6,11 @@ import io.github.xinfra.lab.remoting.heartbeat.HeartbeatTrigger;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
 
+import java.io.Closeable;
 
-public interface Protocol {
+
+public interface Protocol extends Closeable {
+
     byte[] protocolCode();
 
     MessageEncoder encoder();

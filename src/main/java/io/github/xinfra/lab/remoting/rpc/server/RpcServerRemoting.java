@@ -12,10 +12,11 @@ import io.github.xinfra.lab.remoting.rpc.client.RpcRemoting;
 import java.net.SocketAddress;
 
 public class RpcServerRemoting extends RpcRemoting {
+
     private ConnectionManager connectionManager;
 
-    public RpcServerRemoting(RpcProtocol rpcProtocol, ServerConnectionManager connectionManager) {
-        super(rpcProtocol.messageFactory());
+    public RpcServerRemoting(RpcProtocol protocol, ServerConnectionManager connectionManager) {
+        super(protocol);
         this.connectionManager = connectionManager;
     }
 

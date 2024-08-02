@@ -1,35 +1,31 @@
 package io.github.xinfra.lab.remoting.rpc.processor;
 
-import io.github.xinfra.lab.remoting.RemotingContext;
+import io.github.xinfra.lab.remoting.message.MessageHandlerContext;
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
 import io.github.xinfra.lab.remoting.connection.Connection;
-import io.github.xinfra.lab.remoting.processor.RemotingProcessor;
+import io.github.xinfra.lab.remoting.processor.AbstractMessageProcessor;
 import io.github.xinfra.lab.remoting.rpc.message.RpcMessage;
 import io.github.xinfra.lab.remoting.rpc.message.RpcResponseMessage;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.concurrent.Executor;
-
-import static io.github.xinfra.lab.remoting.connection.Connection.CONNECTION;
-
 @Slf4j
-public class RpcResponseMessageProcessor implements RemotingProcessor<RpcMessage> {
+public class RpcResponseMessageProcessor extends AbstractMessageProcessor<RpcMessage> {
 
-    private Executor executor;
-
-    public RpcResponseMessageProcessor(Executor executor) {
-        this.executor = executor;
-    }
 
     @Override
-    public void handleMessage(RemotingContext remotingContext, RpcMessage message) {
-        executor.execute(new ProcessTask(remotingContext, (RpcResponseMessage) message));
+    public void handleMessage(MessageHandlerContext messageHandlerContext, RpcMessage message) {
+        ProcessTask processTask = new ProcessTask(messageHandlerContext, (RpcResponseMessage) message);
+        if (executor() != null) {
+            executor().submit(processTask);
+        } else {
+            messageHandlerContext.getMessageDefaultExecutor().execute(processTask);
+        }
     }
 
-    private void doProcess(RemotingContext remotingContext, RpcResponseMessage responseMessage) {
+    private void doProcess(MessageHandlerContext messageHandlerContext, RpcResponseMessage responseMessage) {
         int id = responseMessage.id();
-        Connection connection = remotingContext.getChannelContext().channel().attr(CONNECTION).get();
-        InvokeFuture future = connection.removeInvokeFuture(id);
+        Connection connection = messageHandlerContext.getConnection();
+        InvokeFuture<?> future = connection.removeInvokeFuture(id);
         if (future != null) {
             future.cancelTimeout();
             future.complete(responseMessage);
@@ -42,28 +38,28 @@ public class RpcResponseMessageProcessor implements RemotingProcessor<RpcMessage
         } else {
             log.warn("can not find InvokeFuture maybe timeout. id:{} status:{} from:{}",
                     responseMessage.id(), responseMessage.getStatus(),
-                    remotingContext.getChannelContext().channel().remoteAddress());
+                    connection.remoteAddress());
         }
     }
 
     class ProcessTask implements Runnable {
-        private RemotingContext remotingContext;
+        private MessageHandlerContext messageHandlerContext;
         private RpcResponseMessage responseMessage;
 
-        public ProcessTask(RemotingContext remotingContext, RpcResponseMessage responseMessage) {
-            this.remotingContext = remotingContext;
+        public ProcessTask(MessageHandlerContext messageHandlerContext, RpcResponseMessage responseMessage) {
+            this.messageHandlerContext = messageHandlerContext;
             this.responseMessage = responseMessage;
         }
 
         @Override
         public void run() {
             try {
-                doProcess(remotingContext, responseMessage);
+                doProcess(messageHandlerContext, responseMessage);
             } catch (Throwable t) {
                 log.error("process response fail. id:{}, status:{} from:{}",
                         responseMessage.id(),
                         responseMessage.getStatus(),
-                        remotingContext.getChannelContext().channel().remoteAddress()
+                        messageHandlerContext.getConnection().remoteAddress()
                         , t);
             }
         }

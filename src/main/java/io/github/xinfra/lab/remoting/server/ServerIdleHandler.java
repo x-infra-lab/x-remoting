@@ -1,10 +1,13 @@
 package io.github.xinfra.lab.remoting.server;
 
+import io.github.xinfra.lab.remoting.connection.Connection;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleStateEvent;
 import lombok.extern.slf4j.Slf4j;
+
+import static io.github.xinfra.lab.remoting.connection.Connection.CONNECTION;
 
 @ChannelHandler.Sharable
 @Slf4j
@@ -17,7 +20,8 @@ public class ServerIdleHandler extends ChannelDuplexHandler {
             try {
                 log.warn("Connection idle, close it from server side: {}",
                         ctx.channel().remoteAddress());
-                ctx.close();
+                Connection connection = ctx.channel().attr(CONNECTION).get();
+                connection.close();
             } catch (Exception e) {
                 log.warn("Exception caught when closing connection in ServerIdleHandler.", e);
             }

@@ -2,7 +2,6 @@ package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.common.TestServerUtils;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
-import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -24,7 +23,6 @@ public class ServerConnectionManagerTest {
     private ConnectionManager connectionManager;
     private boolean skipAfter;
 
-    static TestProtocol testProtocol = new TestProtocol();
     private static String remoteAddress;
     private static int serverPort;
 

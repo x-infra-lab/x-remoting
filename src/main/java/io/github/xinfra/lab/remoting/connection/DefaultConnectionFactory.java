@@ -22,7 +22,6 @@ import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
 
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -33,8 +32,6 @@ import java.util.function.Supplier;
 public class DefaultConnectionFactory implements ConnectionFactory {
 
     private Protocol protocol;
-
-    private List<Supplier<ChannelHandler>> channelHandlerSuppliers;
 
     private Bootstrap bootstrap;
 
@@ -75,7 +72,6 @@ public class DefaultConnectionFactory implements ConnectionFactory {
         Validate.notNull(connectionConfig, "connectionConfig can not be null");
         this.protocol = protocol;
         this.connectionConfig = connectionConfig;
-        this.channelHandlerSuppliers = channelHandlerSuppliers;
 
         bootstrap = new Bootstrap();
         bootstrap.group(workerGroup)

@@ -11,6 +11,7 @@ import java.net.SocketAddress;
 
 
 public class RpcMessageFactory implements MessageFactory {
+
     @Override
     public RpcResponseMessage createSendFailResponseMessage(int id, Throwable cause, SocketAddress remoteAddress) {
         RpcResponseMessage rpcResponseMessage = new RpcResponseMessage(id);
@@ -67,18 +68,6 @@ public class RpcMessageFactory implements MessageFactory {
         rpcResponseMessage.setContent(rpcServerException);
         rpcResponseMessage.setContentType(RpcServerException.class.getName());
         return rpcResponseMessage;
-    }
-
-    @Override
-    public RpcResponseMessage createExceptionResponse(int id, Throwable t) {
-        // todo
-        return null;
-    }
-
-    @Override
-    public RpcResponseMessage createExceptionResponse(int id, ResponseStatus status) {
-        // todo
-        return null;
     }
 
     @Override

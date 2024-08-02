@@ -25,10 +25,8 @@ public class ConnectionFactoryTest {
 
     private static String remoteAddress;
     private static int serverPort;
-
     private static NioServerSocketChannel serverSocketChannel;
     private static Protocol testProtocol = new TestProtocol();
-
 
     @BeforeAll
     public static void beforeAll() throws InterruptedException {
@@ -63,7 +61,6 @@ public class ConnectionFactoryTest {
         ConnectionFactory connectionFactory = new DefaultConnectionFactory(testProtocol, channelHandlerSuppliers);
 
         InetSocketAddress socketAddress = new InetSocketAddress(remoteAddress, serverPort);
-
         Connection connection = connectionFactory.create(socketAddress);
         Assertions.assertNotNull(connection);
 

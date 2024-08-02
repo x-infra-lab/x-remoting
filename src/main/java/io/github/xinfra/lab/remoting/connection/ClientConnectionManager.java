@@ -3,7 +3,6 @@ package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
-import io.github.xinfra.lab.remoting.processor.UserProcessor;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.netty.channel.ChannelHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +14,6 @@ import java.util.Set;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
@@ -26,6 +24,7 @@ import java.util.function.Supplier;
 
 @Slf4j
 public class ClientConnectionManager extends AbstractConnectionManager {
+
     private ExecutorService reconnector = new ThreadPoolExecutor(1, 1,
             0L, TimeUnit.MILLISECONDS,
             new ArrayBlockingQueue<>(1024),
@@ -33,39 +32,35 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 
     private Set<SocketAddress> disableReconnectSocketAddresses = new CopyOnWriteArraySet<>();
 
-    public ClientConnectionManager(Protocol protocol,
-                                   ConcurrentHashMap<String, UserProcessor<?>> userProcessors) {
+    public ClientConnectionManager(Protocol protocol) {
         this.connectionFactory = new DefaultConnectionFactory(protocol,
-                defaultChannelSuppliers(userProcessors));
+                defaultChannelSuppliers());
     }
 
     public ClientConnectionManager(Protocol protocol,
-                                   ConcurrentHashMap<String, UserProcessor<?>> userProcessors,
                                    ConnectionConfig connectionConfig) {
         this.connectionFactory = new DefaultConnectionFactory(protocol,
-                defaultChannelSuppliers(userProcessors), connectionConfig);
+                defaultChannelSuppliers(), connectionConfig);
     }
 
     public ClientConnectionManager(Protocol protocol,
-                                   ConcurrentHashMap<String, UserProcessor<?>> userProcessors,
                                    ConnectionManagerConfig connectionManagerConfig) {
-        super( connectionManagerConfig);
+        super(connectionManagerConfig);
         this.connectionFactory = new DefaultConnectionFactory(protocol,
-                defaultChannelSuppliers(userProcessors));
+                defaultChannelSuppliers());
     }
 
     public ClientConnectionManager(Protocol protocol,
-                                   ConcurrentHashMap<String, UserProcessor<?>> userProcessors,
                                    ConnectionConfig connectionConfig,
                                    ConnectionManagerConfig connectionManagerConfig) {
-        super( connectionManagerConfig);
+        super(connectionManagerConfig);
         this.connectionFactory = new DefaultConnectionFactory(protocol,
-                defaultChannelSuppliers(userProcessors), connectionConfig);
+                defaultChannelSuppliers(), connectionConfig);
     }
 
-    private List<Supplier<ChannelHandler>> defaultChannelSuppliers(ConcurrentHashMap<String, UserProcessor<?>> userProcessors) {
+    private List<Supplier<ChannelHandler>> defaultChannelSuppliers() {
         ProtocolHeartBeatHandler protocolHeartBeatHandler = new ProtocolHeartBeatHandler();
-        ProtocolHandler protocolHandler = new ProtocolHandler(userProcessors);
+        ProtocolHandler protocolHandler = new ProtocolHandler();
         ConnectionEventHandler connectionEventHandler = new ConnectionEventHandler(this);
 
         List<Supplier<ChannelHandler>> channelHandlerSuppliers = new ArrayList<>();

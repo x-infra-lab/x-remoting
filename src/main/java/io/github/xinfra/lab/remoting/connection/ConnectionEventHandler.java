@@ -29,20 +29,17 @@ public class ConnectionEventHandler extends ChannelDuplexHandler {
     }
 
     @Override
+    public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
+        Connection connection = ctx.channel().attr(CONNECTION).get();
+        connection.onClose();
+        super.close(ctx, promise);
+    }
+
+    @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         userEventTriggered(ctx, ConnectionEvent.CONNECT);
 
         super.channelActive(ctx);
-    }
-
-    @Override
-    public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
-        Connection connection = ctx.channel().attr(CONNECTION).get();
-        if (connection != null) {
-            connection.onClose();
-        }
-
-        super.close(ctx, promise);
     }
 
     @Override
@@ -76,7 +73,6 @@ public class ConnectionEventHandler extends ChannelDuplexHandler {
         Channel channel = ctx.channel();
         SocketAddress localAddress = channel.localAddress();
         SocketAddress remoteAddress = channel.remoteAddress();
-
         log.warn("exceptionCaught channel localAddress:{} remoteAddress:{}, close the channel! cause by",
                 localAddress, remoteAddress, cause);
 
