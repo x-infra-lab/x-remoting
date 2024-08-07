@@ -292,12 +292,6 @@ public class ClientConnectionManagerTest {
 
         Connection connection = connectionManager.getOrCreateIfAbsent(address);
         connectionManager.removeAndClose(connection);
-        System.out.println("CI detect: remoteAddress:" + remoteAddress + " serverPort: " + serverPort);
-        System.out.println("CI detect: address:" + InetAddress.getByName(remoteAddress));
-        System.out.println("CI detect: address:" + address );
-        System.out.println("CI detect: connection.remoteAddress:" + connection.remoteAddress());
-        System.out.println("CI detect: connection.channel:" + connection.getChannel());
-        System.out.println("CI detect:" + connections.keySet());
         Assertions.assertTrue(!connections.containsKey(address));
 
         Wait.untilIsTrue(
