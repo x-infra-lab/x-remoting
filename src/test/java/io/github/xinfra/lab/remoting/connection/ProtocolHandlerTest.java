@@ -69,6 +69,7 @@ public class ProtocolHandlerTest {
 
         MessageHandler spyMessageHandler = spy(messageHandler);
         testProtocol.setTestMessageHandler(spyMessageHandler);
+        new Connection( testProtocol, channel);
 
         Object object = new Object();
         channel.writeInbound(object);

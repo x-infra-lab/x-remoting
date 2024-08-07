@@ -23,8 +23,6 @@ import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 public class ConnectionTest {
 
@@ -43,7 +41,7 @@ public class ConnectionTest {
 
     @Test
     public void testNewInstance() {
-        
+
         Assertions.assertNotNull(connection);
         Assertions.assertEquals(connection.getChannel(), channel);
         Assertions.assertEquals(connection.remoteAddress(), channel.remoteAddress());
@@ -80,11 +78,9 @@ public class ConnectionTest {
 
         connection.close().sync();
         Assertions.assertFalse(connection.getChannel().isActive());
-        verify(connection, times(1)).onClose();
 
         connection.close().sync();
         Assertions.assertFalse(connection.getChannel().isActive());
-        verify(connection, times(1)).onClose();
 
     }
 

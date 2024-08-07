@@ -1,5 +1,6 @@
 package io.github.xinfra.lab.remoting.rpc.message;
 
+import io.github.xinfra.lab.remoting.message.MessageHandler;
 import io.github.xinfra.lab.remoting.message.MessageHandlerContext;
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
@@ -8,14 +9,17 @@ import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
 import io.github.xinfra.lab.remoting.processor.UserProcessor;
+import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
 import io.github.xinfra.lab.remoting.rpc.exception.RpcServerException;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
 
+import java.io.IOException;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeoutException;
 
 import static io.github.xinfra.lab.remoting.connection.Connection.CONNECTION;
@@ -46,6 +50,18 @@ public class RpcMessageHandlerTest {
         }
     }
 
+    private RpcProtocol protocol;
+
+    @BeforeEach
+    public void beforeEach() {
+        protocol = new RpcProtocol();
+    }
+
+    @AfterEach
+    public void afterEach() throws IOException {
+        protocol.close();
+    }
+
     @Test
     public void testHandleRequest() throws SerializeException, InterruptedException, TimeoutException {
         // build a requestMessage
@@ -63,18 +79,16 @@ public class RpcMessageHandlerTest {
         requestMessage.setContentType(null);
         requestMessage.setContent(null);
 
-        RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
-        RpcMessageHandler messageHandler = new RpcMessageHandler();
+        MessageHandler messageHandler = protocol.messageHandler();
+        EchoProcessor echoProcessor = new EchoProcessor();
+        echoProcessor = spy(echoProcessor);
+        messageHandler.registerUserProcessor(echoProcessor);
 
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         EmbeddedChannel channel = new EmbeddedChannel();
         doReturn(channel).when(context).channel();
         doReturn(channel.newSucceededFuture()).when(context).writeAndFlush(any());
-
-        EchoProcessor echoProcessor = new EchoProcessor();
-        echoProcessor = spy(echoProcessor);
-        ConcurrentHashMap<String, UserProcessor<?>> userProcessors = new ConcurrentHashMap<>();
-        userProcessors.put(echoProcessor.interest(), echoProcessor);
+        new Connection(protocol, channel);
 
         MessageHandlerContext messageHandlerContext = new MessageHandlerContext(context);
         messageHandler.handleMessage(messageHandlerContext, requestMessage);
@@ -127,22 +141,19 @@ public class RpcMessageHandlerTest {
         requestMessage.setContent(null);
 
         requestMessage = spy(requestMessage);
-
         doThrow(new RuntimeException("deserialize exception")).when(requestMessage).deserialize(any());
 
 
-        RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
-        RpcMessageHandler messageHandler = new RpcMessageHandler();
+        MessageHandler messageHandler = protocol.messageHandler();
+        EchoProcessor echoProcessor = new EchoProcessor();
+        echoProcessor = spy(echoProcessor);
+        messageHandler.registerUserProcessor(echoProcessor);
 
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         EmbeddedChannel channel = new EmbeddedChannel();
         doReturn(channel).when(context).channel();
         doReturn(channel.newSucceededFuture()).when(context).writeAndFlush(any());
-
-        EchoProcessor echoProcessor = new EchoProcessor();
-        echoProcessor = spy(echoProcessor);
-        ConcurrentHashMap<String, UserProcessor<?>> userProcessors = new ConcurrentHashMap<>();
-        userProcessors.put(echoProcessor.interest(), echoProcessor);
+        new Connection(protocol, channel);
 
         MessageHandlerContext messageHandlerContext = new MessageHandlerContext(context);
         messageHandler.handleMessage(messageHandlerContext, requestMessage);
@@ -198,22 +209,23 @@ public class RpcMessageHandlerTest {
         requestMessage.setContent(null);
 
 
-        RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
-        RpcMessageHandler messageHandler = new RpcMessageHandler();
+        MessageHandler messageHandler = protocol.messageHandler();
+        EchoProcessor echoProcessor = new EchoProcessor();
+        echoProcessor = spy(echoProcessor);
+        messageHandler.registerUserProcessor(echoProcessor);
 
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         EmbeddedChannel channel = new EmbeddedChannel();
         doReturn(channel).when(context).channel();
         doReturn(channel.newSucceededFuture()).when(context).writeAndFlush(any());
 
-        EchoProcessor echoProcessor = new EchoProcessor();
-        echoProcessor = spy(echoProcessor);
-        ConcurrentHashMap<String, UserProcessor<?>> userProcessors = new ConcurrentHashMap<>();
-        userProcessors = spy(userProcessors);
-        userProcessors.put(echoProcessor.interest(), echoProcessor);
-
         // mock
-        doReturn(null).when(userProcessors).get(any());
+        protocol = spy(protocol);
+        messageHandler = spy(messageHandler);
+        doReturn(messageHandler).when(protocol).messageHandler();
+        doReturn(null).when(messageHandler).userProcessor(any());
+
+        new Connection(protocol, channel);
 
         MessageHandlerContext messageHandlerContext = new MessageHandlerContext(context);
         messageHandler.handleMessage(messageHandlerContext, requestMessage);
@@ -269,22 +281,20 @@ public class RpcMessageHandlerTest {
         requestMessage.setContent(null);
 
 
-        RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
-        RpcMessageHandler messageHandler = new RpcMessageHandler();
+        MessageHandler messageHandler = protocol.messageHandler();
+        EchoProcessor echoProcessor = new EchoProcessor();
+        echoProcessor = spy(echoProcessor);
+
+        // mock
+        doThrow(new RuntimeException("user process exception")).when(echoProcessor).handRequest(any());
+
+        messageHandler.registerUserProcessor(echoProcessor);
 
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         EmbeddedChannel channel = new EmbeddedChannel();
         doReturn(channel).when(context).channel();
         doReturn(channel.newSucceededFuture()).when(context).writeAndFlush(any());
-
-        EchoProcessor echoProcessor = new EchoProcessor();
-        echoProcessor = spy(echoProcessor);
-        // mock
-        doThrow(new RuntimeException("user process exception")).when(echoProcessor).handRequest(any());
-
-        ConcurrentHashMap<String, UserProcessor<?>> userProcessors = new ConcurrentHashMap<>();
-        userProcessors = spy(userProcessors);
-        userProcessors.put(echoProcessor.interest(), echoProcessor);
+        new Connection(protocol, channel);
 
 
         MessageHandlerContext messageHandlerContext = new MessageHandlerContext(context);
@@ -330,13 +340,13 @@ public class RpcMessageHandlerTest {
         RpcHeartbeatRequestMessage requestMessage = new RpcHeartbeatRequestMessage(requestId);
         requestMessage.serialize();
 
-        RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
-        RpcMessageHandler messageHandler = new RpcMessageHandler();
+        MessageHandler messageHandler = protocol.messageHandler();
 
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         EmbeddedChannel channel = new EmbeddedChannel();
         doReturn(channel).when(context).channel();
         doReturn(channel.newSucceededFuture()).when(context).writeAndFlush(any());
+        new Connection(protocol, channel);
 
         MessageHandlerContext messageHandlerContext = new MessageHandlerContext(context);
         messageHandler.handleMessage(messageHandlerContext, requestMessage);
@@ -389,14 +399,13 @@ public class RpcMessageHandlerTest {
         responseMessage.setHeader(null);
         responseMessage.setContent(null);
 
-        RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
-        RpcMessageHandler messageHandler = new RpcMessageHandler();
+        MessageHandler messageHandler = protocol.messageHandler();
+
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         EmbeddedChannel channel = new EmbeddedChannel();
-        channel = spy(channel);
         doReturn(channel).when(context).channel();
-
-        Connection connection = mock(Connection.class);
+        Connection connection = new Connection(protocol, channel);
+        connection = spy(connection);
         channel.attr(CONNECTION).set(connection);
 
         InvokeFuture future = mock(InvokeFuture.class);
@@ -439,14 +448,13 @@ public class RpcMessageHandlerTest {
         responseMessage.setHeader(null);
         responseMessage.setContent(null);
 
-        RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
-        RpcMessageHandler messageHandler = new RpcMessageHandler();
+        MessageHandler messageHandler = protocol.messageHandler();
+
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         EmbeddedChannel channel = new EmbeddedChannel();
-        channel = spy(channel);
         doReturn(channel).when(context).channel();
-
-        Connection connection = mock(Connection.class);
+        Connection connection = new Connection(protocol, channel);
+        connection = spy(connection);
         channel.attr(CONNECTION).set(connection);
 
         InvokeFuture future = mock(InvokeFuture.class);

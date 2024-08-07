@@ -27,6 +27,7 @@ import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.concurrent.TimeUnit;
@@ -65,7 +66,7 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
         this.config = config;
         this.handler = new ProtocolHandler();
 
-        this.localAddress = new InetSocketAddress(config.getPort());
+        this.localAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), config.getPort());
         if (this.config.isManageConnection()) {
             this.connectionManager = new ServerConnectionManager();
             this.connectionEventHandler = new ConnectionEventHandler(this.connectionManager);

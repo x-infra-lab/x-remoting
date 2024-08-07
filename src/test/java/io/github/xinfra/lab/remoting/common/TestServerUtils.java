@@ -10,6 +10,9 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.logging.LoggingHandler;
 import org.junit.jupiter.api.Assertions;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+
 public class TestServerUtils {
     static final int retryNum = 3;
 
@@ -27,7 +30,7 @@ public class TestServerUtils {
                                 // do nothing
                             }
                         })
-                        .bind(serverPort);
+                        .bind(new InetSocketAddress(InetAddress.getLoopbackAddress(), serverPort));
                 Assertions.assertTrue(future.sync().isSuccess());
                 Assertions.assertTrue(future.channel().isActive());
                 return (NioServerSocketChannel) future.channel();

@@ -7,6 +7,7 @@ import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.Channel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -14,8 +15,10 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -31,8 +34,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class ClientConnectionManagerTest {
-    ConnectionManager connectionManager;
-
+    private ConnectionManager connectionManager;
     private static String remoteAddress;
     private static int serverPort;
     private static Protocol testProtocol = new TestProtocol();
@@ -283,14 +285,19 @@ public class ClientConnectionManagerTest {
     }
 
     @Test
-    public void testAsyncReconnect2() throws InterruptedException, RemotingException, TimeoutException {
+    public void testAsyncReconnect2() throws InterruptedException, RemotingException, TimeoutException, UnknownHostException {
         // valid socketAddress
         InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort);
-
         Map<SocketAddress, ConnectionHolder> connections = ((ClientConnectionManager) connectionManager).connections;
 
         Connection connection = connectionManager.getOrCreateIfAbsent(address);
         connectionManager.removeAndClose(connection);
+        System.out.println("CI detect: remoteAddress:" + remoteAddress + " serverPort: " + serverPort);
+        System.out.println("CI detect: address:" + InetAddress.getByName(remoteAddress));
+        System.out.println("CI detect: address:" + address );
+        System.out.println("CI detect: connection.remoteAddress:" + connection.remoteAddress());
+        System.out.println("CI detect: connection.channel:" + connection.getChannel());
+        System.out.println("CI detect:" + connections.keySet());
         Assertions.assertTrue(!connections.containsKey(address));
 
         Wait.untilIsTrue(
@@ -316,7 +323,7 @@ public class ClientConnectionManagerTest {
         connectionManager.asyncReconnect(address).get(3, TimeUnit.SECONDS);
 
         connectionManager.disableReconnect(address);
-         Assertions.assertThrowsExactly(RemotingException.class, () -> {
+        Assertions.assertThrowsExactly(RemotingException.class, () -> {
             connectionManager.reconnect(address);
         });
 

@@ -9,10 +9,13 @@ import io.github.xinfra.lab.remoting.rpc.message.RpcMessageFactory;
 import io.github.xinfra.lab.remoting.rpc.message.RpcRequestMessage;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
 
+import java.io.IOException;
 import java.util.Objects;
 import java.util.concurrent.TimeoutException;
 
@@ -28,23 +31,28 @@ import static org.mockito.Mockito.verify;
 
 public class RpcHeartbeatTriggerTest {
 
-    Protocol protocol = new RpcProtocol();
+    private RpcProtocol protocol;
+
+    @BeforeEach
+    public void beforeEach() {
+        protocol = new RpcProtocol();
+    }
+
+    @AfterEach
+    public void afterEach() throws IOException {
+        protocol.close();
+    }
 
     @Test
     public void testHeartbeat() throws InterruptedException, TimeoutException {
-        RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
-        RpcHeartbeatTrigger trigger = new RpcHeartbeatTrigger();
+        RpcHeartbeatTrigger trigger = protocol.heartbeatTrigger();
 
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         EmbeddedChannel channel = new EmbeddedChannel();
         channel = spy(channel);
         doReturn(channel).when(context).channel();
-
-        Connection connection = mock(Connection.class);
-        doReturn(channel).when(connection).getChannel();
-        channel.attr(CONNECTION).set(connection);
-        connection.setHeartbeatFailCnt(0);
         doReturn(channel.newSucceededFuture()).when(channel).writeAndFlush(any());
+        new Connection(protocol, channel);
 
         trigger.triggerHeartBeat(context);
 
@@ -77,19 +85,16 @@ public class RpcHeartbeatTriggerTest {
 
     @Test
     public void testHeartbeatFailed() throws InterruptedException, TimeoutException {
-        RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
-        RpcHeartbeatTrigger trigger = new RpcHeartbeatTrigger();
+        RpcHeartbeatTrigger trigger = protocol.heartbeatTrigger();
 
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         EmbeddedChannel channel = new EmbeddedChannel();
         channel = spy(channel);
         doReturn(channel).when(context).channel();
-
+        doReturn(channel.newFailedFuture(new RuntimeException("testHeartbeatFailed"))).when(channel).writeAndFlush(any());
         Connection connection = new Connection(protocol, channel);
         connection = spy(connection);
         channel.attr(CONNECTION).set(connection);
-
-        doReturn(channel.newFailedFuture(new RuntimeException("testHeartbeatFailed"))).when(channel).writeAndFlush(any());
 
         trigger.triggerHeartBeat(context);
         Connection finalConnection = connection;
@@ -101,43 +106,43 @@ public class RpcHeartbeatTriggerTest {
             }
         }, 30, 100);
 
-        Assertions.assertEquals(finalConnection.getHeartbeatFailCnt() , 1);
+        Assertions.assertEquals(connection.getHeartbeatFailCnt(), 1);
 
         // again
         trigger.triggerHeartBeat(context);
         Wait.untilIsTrue(() -> {
             try {
-                return finalConnection.getHeartbeatFailCnt()  > 1;
+                return finalConnection.getHeartbeatFailCnt() > 1;
             } catch (Throwable t) {
                 return false;
             }
         }, 30, 100);
 
-        Assertions.assertEquals(finalConnection.getHeartbeatFailCnt() , 2);
+        Assertions.assertEquals(connection.getHeartbeatFailCnt(), 2);
 
         // again
         trigger.triggerHeartBeat(context);
         Wait.untilIsTrue(() -> {
             try {
-                return finalConnection.getHeartbeatFailCnt()  > 2;
+                return finalConnection.getHeartbeatFailCnt() > 2;
             } catch (Throwable t) {
                 return false;
             }
         }, 30, 100);
 
-        Assertions.assertEquals(finalConnection.getHeartbeatFailCnt() , 3);
+        Assertions.assertEquals(connection.getHeartbeatFailCnt(), 3);
 
         // again
         trigger.triggerHeartBeat(context);
         Wait.untilIsTrue(() -> {
             try {
-                return finalConnection.getHeartbeatFailCnt()  > 3;
+                return finalConnection.getHeartbeatFailCnt() > 3;
             } catch (Throwable t) {
                 return false;
             }
         }, 30, 100);
 
-        Assertions.assertEquals(finalConnection.getHeartbeatFailCnt() , 4);
+        Assertions.assertEquals(connection.getHeartbeatFailCnt(), 4);
 
         // again
         trigger.triggerHeartBeat(context);
@@ -146,19 +151,18 @@ public class RpcHeartbeatTriggerTest {
 
     @Test
     public void testHeartbeatOverThreshold() throws InterruptedException, TimeoutException {
-        RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
-        RpcHeartbeatTrigger trigger = new RpcHeartbeatTrigger();
+        RpcHeartbeatTrigger trigger = protocol.heartbeatTrigger();
 
         ChannelHandlerContext context = mock(ChannelHandlerContext.class);
         EmbeddedChannel channel = new EmbeddedChannel();
         channel = spy(channel);
         doReturn(channel).when(context).channel();
-
-        Connection connection = mock(Connection.class);
-        doReturn(channel).when(connection).getChannel();
-        channel.attr(CONNECTION).set(connection);
-        connection.setHeartbeatFailCnt(4);
         doReturn(channel.newSucceededFuture()).when(channel).writeAndFlush(any());
+        Connection connection = new Connection(protocol, channel);
+        connection = spy(connection);
+        channel.attr(CONNECTION).set(connection);
+
+        connection.setHeartbeatFailCnt(4);
 
         trigger.triggerHeartBeat(context);
 
