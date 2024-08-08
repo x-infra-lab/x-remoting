@@ -1,4 +1,4 @@
-package io.github.xinfra.lab.remoting.rpc;
+package io.github.xinfra.lab.remoting.rpc.client;
 
 import java.io.Serializable;
 

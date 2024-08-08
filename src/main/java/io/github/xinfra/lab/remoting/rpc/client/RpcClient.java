@@ -2,6 +2,7 @@ package io.github.xinfra.lab.remoting.rpc.client;
 
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.connection.ClientConnectionManager;
+import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.processor.UserProcessor;
 import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
@@ -63,5 +64,9 @@ public class RpcClient extends AbstractLifeCycle {
 
     public void registerUserProcessor(UserProcessor<?> userProcessor) {
         protocol.messageHandler().registerUserProcessor(userProcessor);
+    }
+
+    public Connection getConnection(SocketAddress socketAddress){
+        return connectionManager.get(socketAddress);
     }
 }

@@ -14,6 +14,7 @@ import io.github.xinfra.lab.remoting.rpc.exception.RpcServerException;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
@@ -479,5 +480,22 @@ public class RpcMessageHandlerTest {
         verify(future, times(1)).complete(eq(responseMessage));
         verify(future, times(1)).executeCallBack();
 
+    }
+
+    @Test
+    public void testRegisterUserProcessor1() {
+        MessageHandler messageHandler = protocol.messageHandler();
+        EchoProcessor echoProcessor = new EchoProcessor();
+        echoProcessor = spy(echoProcessor);
+
+
+        messageHandler.registerUserProcessor(echoProcessor);
+
+        EchoProcessor finalEchoProcessor = echoProcessor;
+        Assertions.assertThrows(RuntimeException.class, () -> {
+            messageHandler.registerUserProcessor(finalEchoProcessor);
+        });
+
+        Assertions.assertEquals(echoProcessor, messageHandler.userProcessor(echoProcessor.interest()));
     }
 }

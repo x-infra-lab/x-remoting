@@ -1,7 +1,6 @@
-package io.github.xinfra.lab.remoting.rpc;
+package io.github.xinfra.lab.remoting.rpc.client;
 
 import io.github.xinfra.lab.remoting.exception.RemotingException;
-import io.github.xinfra.lab.remoting.rpc.client.RpcClient;
 import io.github.xinfra.lab.remoting.rpc.server.RpcServer;
 import io.github.xinfra.lab.remoting.rpc.server.RpcServerConfig;
 import org.junit.jupiter.api.AfterAll;

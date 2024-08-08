@@ -70,6 +70,7 @@ public class BaseRemotingTest {
     @AfterEach
     public void afterEach() {
         executor.shutdownNow();
+        timer.stop();
     }
 
     @Test

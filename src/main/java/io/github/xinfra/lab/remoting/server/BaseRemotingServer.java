@@ -114,6 +114,10 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
             if (!channelFuture.isSuccess()) {
                 throw channelFuture.cause();
             }
+            // need update
+            if (config.getPort() == 0) {
+                this.localAddress = channelFuture.channel().localAddress();
+            }
         } catch (Throwable throwable) {
             throw new RuntimeException("serverBootstrap bind fail. ", throwable);
         }
