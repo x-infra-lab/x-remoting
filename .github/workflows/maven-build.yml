@@ -15,7 +15,7 @@ jobs:
           distribution: 'temurin'
           cache: maven
       - name: Build with Maven
-        run: mvn -U clean install
+        run: mvn -U clean install && bash ./.github/bin/check_format.sh
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4
         with:
