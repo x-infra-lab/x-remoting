@@ -6,12 +6,15 @@ import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
 import io.github.xinfra.lab.remoting.rpc.client.RpcInvokeCallBack;
 import io.github.xinfra.lab.remoting.rpc.client.RpcInvokeFuture;
 import io.github.xinfra.lab.remoting.server.BaseRemotingServer;
+import lombok.Getter;
 
 import java.io.IOException;
 import java.net.SocketAddress;
 
 public class RpcServer extends BaseRemotingServer {
+    @Getter
     private RpcProtocol protocol;
+    @Getter
     private RpcServerRemoting rpcServerRemoting;
 
     public RpcServer(RpcServerConfig config) {

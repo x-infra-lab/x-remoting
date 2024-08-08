@@ -96,5 +96,6 @@ public class RpcClientTest {
         SimpleRequest request = new SimpleRequest(msg);
 
         rpcClient.oneway(request, rpcServer.localAddress());
+        TimeUnit.SECONDS.sleep(2);
     }
 }

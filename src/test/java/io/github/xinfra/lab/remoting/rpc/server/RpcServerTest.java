@@ -52,7 +52,7 @@ public class RpcServerTest {
         String result = rpcClient.syncCall(request, serverAddress, 1000);
         Assertions.assertEquals(result, "echo:" + msg);
 
-        Connection connection = rpcClient.getConnection(serverAddress);
+        Connection connection = rpcClient.getConnectionManager().get(serverAddress);
         result = rpcServer.syncCall(request, connection.getChannel().localAddress(), 1000);
         Assertions.assertEquals(result, "echo:" + msg);
     }
@@ -67,7 +67,7 @@ public class RpcServerTest {
         String result = future.get(3, TimeUnit.SECONDS);
         Assertions.assertEquals(result, "echo:" + msg);
 
-        Connection connection = rpcClient.getConnection(serverAddress);
+        Connection connection = rpcClient.getConnectionManager().get(serverAddress);
         future = rpcServer.asyncCall(request, connection.getChannel().localAddress(), 1000);
         result = future.get(3, TimeUnit.SECONDS);
         Assertions.assertEquals(result, "echo:" + msg);
@@ -98,7 +98,7 @@ public class RpcServerTest {
         countDownLatch.await(3, TimeUnit.SECONDS);
         Assertions.assertEquals(result.get(), "echo:" + msg);
 
-        Connection connection = rpcClient.getConnection(serverAddress);
+        Connection connection = rpcClient.getConnectionManager().get(serverAddress);
         CountDownLatch countDownLatch2 = new CountDownLatch(1);
         AtomicReference<String> result2 = new AtomicReference<>();
         rpcServer.asyncCall(request, connection.getChannel().localAddress(), 1000,
@@ -128,8 +128,10 @@ public class RpcServerTest {
 
         rpcClient.oneway(request, serverAddress);
 
-        Connection connection = rpcClient.getConnection(serverAddress);
+        Connection connection = rpcClient.getConnectionManager().get(serverAddress);
         rpcServer.oneway(request, connection.getChannel().localAddress());
+
+        TimeUnit.SECONDS.sleep(2);
     }
 
 }

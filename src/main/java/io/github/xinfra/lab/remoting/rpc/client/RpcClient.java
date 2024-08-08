@@ -2,10 +2,10 @@ package io.github.xinfra.lab.remoting.rpc.client;
 
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.connection.ClientConnectionManager;
-import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.processor.UserProcessor;
 import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -14,8 +14,10 @@ import java.net.SocketAddress;
 
 @Slf4j
 public class RpcClient extends AbstractLifeCycle {
+    @Getter
     private RpcProtocol protocol;
     private RpcClientRemoting rpcClientRemoting;
+    @Getter
     private ClientConnectionManager connectionManager;
 
 
@@ -66,7 +68,4 @@ public class RpcClient extends AbstractLifeCycle {
         protocol.messageHandler().registerUserProcessor(userProcessor);
     }
 
-    public Connection getConnection(SocketAddress socketAddress){
-        return connectionManager.get(socketAddress);
-    }
 }
