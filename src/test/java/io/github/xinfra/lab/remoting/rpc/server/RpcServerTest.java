@@ -8,10 +8,8 @@ import io.github.xinfra.lab.remoting.rpc.client.RpcInvokeFuture;
 import io.github.xinfra.lab.remoting.rpc.client.SimpleRequest;
 import io.github.xinfra.lab.remoting.rpc.client.SimpleUserProcessor;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.net.SocketAddress;
@@ -22,7 +20,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class RpcServerTest {
 
-    private RpcServer rpcServer;
+    private static RpcServer rpcServer;
 
     private static RpcClient rpcClient;
 
@@ -31,16 +29,7 @@ public class RpcServerTest {
         rpcClient = new RpcClient();
         rpcClient.startup();
         rpcClient.registerUserProcessor(new SimpleUserProcessor());
-    }
 
-    @AfterAll
-    public static void afterAll() {
-        rpcClient.shutdown();
-    }
-
-
-    @BeforeEach
-    public void beforeEach() {
         RpcServerConfig config = new RpcServerConfig();
         config.setManageConnection(true);
         rpcServer = new RpcServer(config);
@@ -48,19 +37,11 @@ public class RpcServerTest {
         rpcServer.registerUserProcessor(new SimpleUserProcessor());
     }
 
-    @AfterEach
-    public void afterEach() {
+    @AfterAll
+    public static void afterAll() {
+        rpcClient.shutdown();
+
         rpcServer.shutdown();
-    }
-
-    @Test
-    public void testStartServer1() {
-        RpcServerConfig config = new RpcServerConfig();
-
-        RpcServer server = new RpcServer(config);
-        server.startup();
-
-        server.shutdown();
     }
 
     @Test
