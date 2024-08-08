@@ -7,10 +7,10 @@ import io.netty.handler.codec.MessageToByteEncoder;
 
 public class ProtocolEncoder extends MessageToByteEncoder<Message> {
 
+	@Override
+	protected void encode(ChannelHandlerContext ctx, Message msg, ByteBuf out) throws Exception {
+		Connection connection = ctx.channel().attr(Connection.CONNECTION).get();
+		connection.getProtocol().encoder().encode(ctx, msg, out);
+	}
 
-    @Override
-    protected void encode(ChannelHandlerContext ctx, Message msg, ByteBuf out) throws Exception {
-        Connection connection = ctx.channel().attr(Connection.CONNECTION).get();
-        connection.getProtocol().encoder().encode(ctx, msg, out);
-    }
 }

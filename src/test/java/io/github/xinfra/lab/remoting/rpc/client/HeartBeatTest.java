@@ -26,57 +26,52 @@ import static io.github.xinfra.lab.remoting.common.TestSocketUtils.findAvailable
 
 public class HeartBeatTest {
 
-    private RpcServer rpcServer;
+	private RpcServer rpcServer;
 
-    @BeforeEach
-    public void before() {
-        RpcServerConfig rpcServerConfig = new RpcServerConfig();
-        rpcServerConfig.setPort(findAvailableTcpPort());
-        rpcServer = new RpcServer(rpcServerConfig);
-        rpcServer.startup();
-        rpcServer.registerUserProcessor(new SimpleUserProcessor());
-    }
+	@BeforeEach
+	public void before() {
+		RpcServerConfig rpcServerConfig = new RpcServerConfig();
+		rpcServerConfig.setPort(findAvailableTcpPort());
+		rpcServer = new RpcServer(rpcServerConfig);
+		rpcServer.startup();
+		rpcServer.registerUserProcessor(new SimpleUserProcessor());
+	}
 
-    @AfterEach
-    public void after() {
-        rpcServer.shutdown();
-    }
+	@AfterEach
+	public void after() {
+		rpcServer.shutdown();
+	}
 
+	@Test
+	public void heartbeatTest1() throws RemotingException, InterruptedException, IOException {
+		SocketAddress remoteAddress = rpcServer.localAddress();
 
-    @Test
-    public void heartbeatTest1() throws RemotingException, InterruptedException, IOException {
-        SocketAddress remoteAddress = rpcServer.localAddress();
+		Protocol protocol = new RpcProtocol();
+		ConnectionManager connectionManager = new ClientConnectionManager(protocol);
+		connectionManager.startup();
 
-        Protocol protocol = new RpcProtocol();
-        ConnectionManager connectionManager = new ClientConnectionManager(protocol);
-        connectionManager.startup();
+		MessageFactory messageFactory = protocol.messageFactory();
+		BaseRemoting baseRemoting = new BaseRemoting(protocol);
+		Message heartbeatRequestMessage = messageFactory.createHeartbeatRequestMessage();
 
+		Connection connection = connectionManager.getOrCreateIfAbsent(remoteAddress);
 
-        MessageFactory messageFactory = protocol.messageFactory();
-        BaseRemoting baseRemoting = new BaseRemoting(protocol);
-        Message heartbeatRequestMessage = messageFactory.createHeartbeatRequestMessage();
+		Message heartbeatResponseMessage = baseRemoting.syncCall(heartbeatRequestMessage, connection, 1000);
 
-        Connection connection = connectionManager.getOrCreateIfAbsent(remoteAddress);
+		Assertions.assertNotNull(heartbeatResponseMessage);
 
-        Message heartbeatResponseMessage = baseRemoting.syncCall(heartbeatRequestMessage, connection,
-                1000);
+		CountDownLatch countDownLatch = new CountDownLatch(1);
+		AtomicReference<Message> messageAtomicReference = new AtomicReference<>();
+		baseRemoting.asyncCall(heartbeatRequestMessage, connection, 1000, message -> {
+			messageAtomicReference.set(message);
+			countDownLatch.countDown();
+		});
 
-        Assertions.assertNotNull(heartbeatResponseMessage);
+		countDownLatch.await(3, TimeUnit.SECONDS);
+		Assertions.assertNotNull(messageAtomicReference.get());
 
+		connectionManager.shutdown();
+		protocol.close();
+	}
 
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-        AtomicReference<Message> messageAtomicReference = new AtomicReference<>();
-        baseRemoting.asyncCall(heartbeatRequestMessage, connection, 1000,
-                message -> {
-                    messageAtomicReference.set(message);
-                    countDownLatch.countDown();
-                }
-        );
-
-        countDownLatch.await(3 , TimeUnit.SECONDS);
-        Assertions.assertNotNull(messageAtomicReference.get());
-
-        connectionManager.shutdown();
-        protocol.close();
-    }
 }

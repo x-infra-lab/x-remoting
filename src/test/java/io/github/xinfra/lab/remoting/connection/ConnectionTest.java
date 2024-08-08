@@ -26,95 +26,94 @@ import static org.mockito.Mockito.spy;
 
 public class ConnectionTest {
 
-    private Connection connection;
+	private Connection connection;
 
-    private TestProtocol testProtocol;
+	private TestProtocol testProtocol;
 
-    private Channel channel;
+	private Channel channel;
 
-    @BeforeEach
-    public void before() {
-        testProtocol = new TestProtocol();
-        channel = new EmbeddedChannel();
-        connection = new Connection(testProtocol, channel);
-    }
+	@BeforeEach
+	public void before() {
+		testProtocol = new TestProtocol();
+		channel = new EmbeddedChannel();
+		connection = new Connection(testProtocol, channel);
+	}
 
-    @Test
-    public void testNewInstance() {
+	@Test
+	public void testNewInstance() {
 
-        Assertions.assertNotNull(connection);
-        Assertions.assertEquals(connection.getChannel(), channel);
-        Assertions.assertEquals(connection.remoteAddress(), channel.remoteAddress());
-        Assertions.assertEquals(connection.getProtocol(), testProtocol);
-        Assertions.assertEquals(channel.attr(CONNECTION).get(), connection);
-        Assertions.assertEquals(connection.getHeartbeatFailCnt(), 0L);
-    }
+		Assertions.assertNotNull(connection);
+		Assertions.assertEquals(connection.getChannel(), channel);
+		Assertions.assertEquals(connection.remoteAddress(), channel.remoteAddress());
+		Assertions.assertEquals(connection.getProtocol(), testProtocol);
+		Assertions.assertEquals(channel.attr(CONNECTION).get(), connection);
+		Assertions.assertEquals(connection.getHeartbeatFailCnt(), 0L);
+	}
 
-    @Test
-    public void testConnectionWithInvokeFuture() {
+	@Test
+	public void testConnectionWithInvokeFuture() {
 
-        final int requestId1 = IDGenerator.nextRequestId();
-        Assertions.assertNull(connection.removeInvokeFuture(requestId1));
+		final int requestId1 = IDGenerator.nextRequestId();
+		Assertions.assertNull(connection.removeInvokeFuture(requestId1));
 
-        connection.addInvokeFuture(new InvokeFuture<>(requestId1, testProtocol));
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            connection.addInvokeFuture(new InvokeFuture<>(requestId1, testProtocol));
-        });
+		connection.addInvokeFuture(new InvokeFuture<>(requestId1, testProtocol));
+		Assertions.assertThrows(IllegalArgumentException.class, () -> {
+			connection.addInvokeFuture(new InvokeFuture<>(requestId1, testProtocol));
+		});
 
+		final int requestId2 = IDGenerator.nextRequestId();
+		InvokeFuture<?> invokeFuture = new InvokeFuture<>(requestId2, testProtocol);
+		connection.addInvokeFuture(invokeFuture);
 
-        final int requestId2 = IDGenerator.nextRequestId();
-        InvokeFuture<?> invokeFuture = new InvokeFuture<>(requestId2, testProtocol);
-        connection.addInvokeFuture(invokeFuture);
+		Assertions.assertEquals(invokeFuture, connection.removeInvokeFuture(requestId2));
+		Assertions.assertNull(connection.removeInvokeFuture(requestId2));
+		Assertions.assertNull(connection.removeInvokeFuture(requestId2));
+	}
 
-        Assertions.assertEquals(invokeFuture, connection.removeInvokeFuture(requestId2));
-        Assertions.assertNull(connection.removeInvokeFuture(requestId2));
-        Assertions.assertNull(connection.removeInvokeFuture(requestId2));
-    }
+	@Test
+	public void testCloseConnection() throws InterruptedException {
 
-    @Test
-    public void testCloseConnection() throws InterruptedException {
+		connection = spy(connection);
 
-        connection = spy(connection);
+		connection.close().sync();
+		Assertions.assertFalse(connection.getChannel().isActive());
 
-        connection.close().sync();
-        Assertions.assertFalse(connection.getChannel().isActive());
+		connection.close().sync();
+		Assertions.assertFalse(connection.getChannel().isActive());
 
-        connection.close().sync();
-        Assertions.assertFalse(connection.getChannel().isActive());
+	}
 
-    }
+	@Test
+	public void testOnCloseConnection() {
 
-    @Test
-    public void testOnCloseConnection() {
+		MessageFactory messageFactory = mock(MessageFactory.class);
+		Message connectionClosedMessage = mock(Message.class);
+		doReturn(connectionClosedMessage).when(messageFactory).createConnectionClosedMessage(anyInt(), any());
+		testProtocol.setTestMessageFactory(messageFactory);
 
-        MessageFactory messageFactory = mock(MessageFactory.class);
-        Message connectionClosedMessage = mock(Message.class);
-        doReturn(connectionClosedMessage).when(messageFactory).createConnectionClosedMessage(anyInt(), any());
-        testProtocol.setTestMessageFactory(messageFactory);
+		ExecutorService executorService = Executors.newCachedThreadPool();
+		MessageHandler messageHandler = mock(MessageHandler.class);
+		doReturn(executorService).when(messageHandler).executor();
+		testProtocol.setTestMessageHandler(messageHandler);
 
-        ExecutorService executorService = Executors.newCachedThreadPool();
-        MessageHandler messageHandler = mock(MessageHandler.class);
-        doReturn(executorService).when(messageHandler).executor();
-        testProtocol.setTestMessageHandler(messageHandler);
+		int times = 10;
+		List<InvokeFuture<?>> invokeFutures = new ArrayList<>();
+		for (int i = 0; i < times; i++) {
+			Integer requestId = IDGenerator.nextRequestId();
+			InvokeFuture<Message> invokeFuture = new InvokeFuture<>(requestId, testProtocol);
+			invokeFutures.add(invokeFuture);
+			connection.addInvokeFuture(invokeFuture);
+		}
+		Assertions.assertEquals(invokeFutures.size(), times);
+		Assertions.assertEquals(connection.invokeMap.size(), times);
 
+		connection.onClose();
+		Assertions.assertEquals(0, connection.invokeMap.size());
+		for (InvokeFuture<?> invokeFuture : invokeFutures) {
+			Assertions.assertTrue(invokeFuture.isDone());
+		}
 
-        int times = 10;
-        List<InvokeFuture<?>> invokeFutures = new ArrayList<>();
-        for (int i = 0; i < times; i++) {
-            Integer requestId = IDGenerator.nextRequestId();
-            InvokeFuture<Message> invokeFuture = new InvokeFuture<>(requestId, testProtocol);
-            invokeFutures.add(invokeFuture);
-            connection.addInvokeFuture(invokeFuture);
-        }
-        Assertions.assertEquals(invokeFutures.size(), times);
-        Assertions.assertEquals(connection.invokeMap.size(), times);
+		executorService.shutdownNow();
+	}
 
-        connection.onClose();
-        Assertions.assertEquals(0, connection.invokeMap.size());
-        for (InvokeFuture<?> invokeFuture : invokeFutures) {
-            Assertions.assertTrue(invokeFuture.isDone());
-        }
-
-        executorService.shutdownNow();
-    }
 }

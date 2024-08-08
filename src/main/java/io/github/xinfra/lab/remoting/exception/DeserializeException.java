@@ -1,15 +1,17 @@
 package io.github.xinfra.lab.remoting.exception;
 
 public class DeserializeException extends RemotingException {
-    public DeserializeException(String message) {
-        super(message);
-    }
 
-    public DeserializeException(String message, Throwable cause) {
-        super(message, cause);
-    }
+	public DeserializeException(String message) {
+		super(message);
+	}
 
-    public DeserializeException(Throwable cause) {
-        super(cause);
-    }
+	public DeserializeException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+	public DeserializeException(Throwable cause) {
+		super(cause);
+	}
+
 }

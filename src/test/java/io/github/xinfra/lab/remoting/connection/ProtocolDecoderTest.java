@@ -16,108 +16,107 @@ import java.util.List;
 
 import static org.mockito.Mockito.mock;
 
-
 public class ProtocolDecoderTest {
-   TestProtocol testProtocol = new TestProtocol();
 
-    @Test
-    public void testDecode() {
-        ProtocolDecoder protocolDecoder = new ProtocolDecoder();
-        EmbeddedChannel channel = new EmbeddedChannel();
-        channel.pipeline().addLast(protocolDecoder);
-        new Connection(testProtocol, channel);
+	TestProtocol testProtocol = new TestProtocol();
 
-        Message decodeMockMessage = mock(Message.class);
-        MessageDecoder messageDecoder = new MessageDecoder() {
-            @Override
-            public void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
-                // simulate read all data
-                in.readerIndex(in.readableBytes());
-                // sumulate decode one message
-                out.add(decodeMockMessage);
-            }
-        };
-        testProtocol.setTestMessageDecoder(messageDecoder);
+	@Test
+	public void testDecode() {
+		ProtocolDecoder protocolDecoder = new ProtocolDecoder();
+		EmbeddedChannel channel = new EmbeddedChannel();
+		channel.pipeline().addLast(protocolDecoder);
+		new Connection(testProtocol, channel);
 
-        ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer(testProtocol.protocolCode().length);
-        byteBuf.writeBytes(testProtocol.protocolCode());
-        channel.writeInbound(byteBuf);
-        Assertions.assertTrue(channel.finish());
-        Message message = (Message) channel.inboundMessages().poll();
-        Assertions.assertEquals(message, decodeMockMessage);
-        Assertions.assertEquals(byteBuf.refCnt(), 0);
-    }
+		Message decodeMockMessage = mock(Message.class);
+		MessageDecoder messageDecoder = new MessageDecoder() {
+			@Override
+			public void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
+				// simulate read all data
+				in.readerIndex(in.readableBytes());
+				// sumulate decode one message
+				out.add(decodeMockMessage);
+			}
+		};
+		testProtocol.setTestMessageDecoder(messageDecoder);
 
-    @Test
-    public void testDecodePartial() {
-        ProtocolDecoder protocolDecoder = new ProtocolDecoder();
-        EmbeddedChannel channel = new EmbeddedChannel();
-        channel.pipeline().addLast(protocolDecoder);
-        new Connection(testProtocol, channel);
+		ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer(testProtocol.protocolCode().length);
+		byteBuf.writeBytes(testProtocol.protocolCode());
+		channel.writeInbound(byteBuf);
+		Assertions.assertTrue(channel.finish());
+		Message message = (Message) channel.inboundMessages().poll();
+		Assertions.assertEquals(message, decodeMockMessage);
+		Assertions.assertEquals(byteBuf.refCnt(), 0);
+	}
 
-        Message decodeMockMessage = mock(Message.class);
-        MessageDecoder messageDecoder = new MessageDecoder() {
-            @Override
-            public void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
-                // simulate read all data
-                in.readerIndex(in.readableBytes());
-                // sumulate decode one message
-                out.add(decodeMockMessage);
-            }
-        };
-       testProtocol.setTestMessageDecoder(messageDecoder);
+	@Test
+	public void testDecodePartial() {
+		ProtocolDecoder protocolDecoder = new ProtocolDecoder();
+		EmbeddedChannel channel = new EmbeddedChannel();
+		channel.pipeline().addLast(protocolDecoder);
+		new Connection(testProtocol, channel);
 
-        // split data
-        byte[] bytes = testProtocol.protocolCode();
-        int length = bytes.length;
+		Message decodeMockMessage = mock(Message.class);
+		MessageDecoder messageDecoder = new MessageDecoder() {
+			@Override
+			public void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
+				// simulate read all data
+				in.readerIndex(in.readableBytes());
+				// sumulate decode one message
+				out.add(decodeMockMessage);
+			}
+		};
+		testProtocol.setTestMessageDecoder(messageDecoder);
 
-        int part1Length = length / 2;
-        int part2Length = length - part1Length;
+		// split data
+		byte[] bytes = testProtocol.protocolCode();
+		int length = bytes.length;
 
-        byte[] part1 = new byte[part1Length];
-        byte[] part2 = new byte[part2Length];
-        System.arraycopy(bytes, 0, part1, 0, part1Length);
-        System.arraycopy(bytes, part1Length, part2, 0, part2Length);
+		int part1Length = length / 2;
+		int part2Length = length - part1Length;
 
-        // write partial data
-        ByteBuf part1ByteBuf = ByteBufAllocator.DEFAULT.buffer(part1Length);
-        part1ByteBuf.writeBytes(part1);
-        channel.writeInbound(part1ByteBuf);
-        Assertions.assertTrue(channel.inboundMessages().isEmpty());
+		byte[] part1 = new byte[part1Length];
+		byte[] part2 = new byte[part2Length];
+		System.arraycopy(bytes, 0, part1, 0, part1Length);
+		System.arraycopy(bytes, part1Length, part2, 0, part2Length);
 
-        // write whole data
-        ByteBuf part2ByteBuf = ByteBufAllocator.DEFAULT.buffer(part2Length);
-        part2ByteBuf.writeBytes(part2);
-        channel.writeInbound(part2ByteBuf);
-        Assertions.assertTrue(channel.finish());
+		// write partial data
+		ByteBuf part1ByteBuf = ByteBufAllocator.DEFAULT.buffer(part1Length);
+		part1ByteBuf.writeBytes(part1);
+		channel.writeInbound(part1ByteBuf);
+		Assertions.assertTrue(channel.inboundMessages().isEmpty());
 
-        Message message = (Message) channel.inboundMessages().poll();
-        Assertions.assertEquals(message, decodeMockMessage);
-        Assertions.assertEquals(part1ByteBuf.refCnt(), 0);
-        Assertions.assertEquals(part2ByteBuf.refCnt(), 0);
-    }
+		// write whole data
+		ByteBuf part2ByteBuf = ByteBufAllocator.DEFAULT.buffer(part2Length);
+		part2ByteBuf.writeBytes(part2);
+		channel.writeInbound(part2ByteBuf);
+		Assertions.assertTrue(channel.finish());
 
+		Message message = (Message) channel.inboundMessages().poll();
+		Assertions.assertEquals(message, decodeMockMessage);
+		Assertions.assertEquals(part1ByteBuf.refCnt(), 0);
+		Assertions.assertEquals(part2ByteBuf.refCnt(), 0);
+	}
 
-    @Test
-    public void testDecodeException() {
-        ProtocolDecoder protocolDecoder = new ProtocolDecoder();
-        EmbeddedChannel channel = new EmbeddedChannel();
-        channel.pipeline().addLast(protocolDecoder);
-        new Connection(testProtocol, channel);
+	@Test
+	public void testDecodeException() {
+		ProtocolDecoder protocolDecoder = new ProtocolDecoder();
+		EmbeddedChannel channel = new EmbeddedChannel();
+		channel.pipeline().addLast(protocolDecoder);
+		new Connection(testProtocol, channel);
 
-        ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer(testProtocol.protocolCode().length);
-        byteBuf.writeBytes(testProtocol.protocolCode());
-        // Bad header
-        ByteBuf invalidByteBuf = byteBuf.copy();
-        invalidByteBuf.setByte(0, byteBuf.getByte(0) + 1);
+		ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer(testProtocol.protocolCode().length);
+		byteBuf.writeBytes(testProtocol.protocolCode());
+		// Bad header
+		ByteBuf invalidByteBuf = byteBuf.copy();
+		invalidByteBuf.setByte(0, byteBuf.getByte(0) + 1);
 
-        DecoderException decoderException = Assertions.assertThrows(DecoderException.class,
-                () -> {
-                    channel.writeInbound(invalidByteBuf);
-                });
-        Assertions.assertTrue(decoderException.getCause() instanceof CodecException);
+		DecoderException decoderException = Assertions.assertThrows(DecoderException.class, () -> {
+			channel.writeInbound(invalidByteBuf);
+		});
+		Assertions.assertTrue(decoderException.getCause() instanceof CodecException);
 
-        byteBuf.release();
-        Assertions.assertEquals(invalidByteBuf.refCnt(), 0);
-    }
+		byteBuf.release();
+		Assertions.assertEquals(invalidByteBuf.refCnt(), 0);
+	}
+
 }

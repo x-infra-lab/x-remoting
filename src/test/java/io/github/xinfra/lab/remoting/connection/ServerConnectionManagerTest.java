@@ -18,114 +18,111 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-
 public class ServerConnectionManagerTest {
-    private ConnectionManager connectionManager;
-    private boolean skipAfter;
 
-    private static String remoteAddress;
-    private static int serverPort;
+	private ConnectionManager connectionManager;
 
-    private static NioServerSocketChannel serverSocketChannel;
+	private boolean skipAfter;
 
-    @BeforeAll
-    public static void beforeAll() throws InterruptedException {
-        serverSocketChannel = TestServerUtils.startEmptyServer();
-        remoteAddress = serverSocketChannel.localAddress().getHostName();
-        serverPort = serverSocketChannel.localAddress().getPort();
-    }
+	private static String remoteAddress;
 
-    @AfterAll
-    public static void afterAll() throws InterruptedException {
-        serverSocketChannel.close().sync();
-    }
+	private static int serverPort;
 
-    @BeforeEach
-    public void before() {
-        connectionManager =
-                new ServerConnectionManager();
-        Assertions.assertNotNull(connectionManager);
-        connectionManager.startup();
-        skipAfter = false;
-    }
+	private static NioServerSocketChannel serverSocketChannel;
 
-    @AfterEach
-    public void after() {
-        if (!skipAfter) {
-            connectionManager.shutdown();
-        }
-    }
+	@BeforeAll
+	public static void beforeAll() throws InterruptedException {
+		serverSocketChannel = TestServerUtils.startEmptyServer();
+		remoteAddress = serverSocketChannel.localAddress().getHostName();
+		serverPort = serverSocketChannel.localAddress().getPort();
+	}
 
+	@AfterAll
+	public static void afterAll() throws InterruptedException {
+		serverSocketChannel.close().sync();
+	}
 
-    @Test
-    public void testGetOrCreateIfAbsent() {
-        SocketAddress socketAddress = new InetSocketAddress(remoteAddress, serverPort);
-        Assertions.assertThrows(UnsupportedOperationException.class, () -> {
-            connectionManager.getOrCreateIfAbsent(socketAddress);
-        });
+	@BeforeEach
+	public void before() {
+		connectionManager = new ServerConnectionManager();
+		Assertions.assertNotNull(connectionManager);
+		connectionManager.startup();
+		skipAfter = false;
+	}
 
-    }
+	@AfterEach
+	public void after() {
+		if (!skipAfter) {
+			connectionManager.shutdown();
+		}
+	}
 
+	@Test
+	public void testGetOrCreateIfAbsent() {
+		SocketAddress socketAddress = new InetSocketAddress(remoteAddress, serverPort);
+		Assertions.assertThrows(UnsupportedOperationException.class, () -> {
+			connectionManager.getOrCreateIfAbsent(socketAddress);
+		});
 
-    @Test
-    public void testGet1() throws RemotingException {
-        // valid socketAddress
-        SocketAddress socketAddress = new InetSocketAddress(remoteAddress, serverPort);
+	}
 
-        // no connection
-        Connection connection1 = connectionManager.get(socketAddress);
-        Assertions.assertNull(connection1);
+	@Test
+	public void testGet1() throws RemotingException {
+		// valid socketAddress
+		SocketAddress socketAddress = new InetSocketAddress(remoteAddress, serverPort);
 
-        Assertions.assertThrows(UnsupportedOperationException.class, () -> {
-            connectionManager.getOrCreateIfAbsent(socketAddress);
-        });
+		// no connection
+		Connection connection1 = connectionManager.get(socketAddress);
+		Assertions.assertNull(connection1);
 
-        connection1 = connectionManager.get(socketAddress);
-        Assertions.assertNull(connection1);
-    }
+		Assertions.assertThrows(UnsupportedOperationException.class, () -> {
+			connectionManager.getOrCreateIfAbsent(socketAddress);
+		});
 
-    @Test
-    public void testAdd() {
-        Connection connection1 = mock(Connection.class);
-        SocketAddress socketAddress1 = new InetSocketAddress( "localhost", 8080);
-        doReturn(socketAddress1).when(connection1).remoteAddress();
+		connection1 = connectionManager.get(socketAddress);
+		Assertions.assertNull(connection1);
+	}
 
-        Connection connection2 = mock(Connection.class);
-        SocketAddress socketAddress2 = new InetSocketAddress( "localhost", 8081);
-        doReturn(socketAddress2).when(connection2).remoteAddress();
+	@Test
+	public void testAdd() {
+		Connection connection1 = mock(Connection.class);
+		SocketAddress socketAddress1 = new InetSocketAddress("localhost", 8080);
+		doReturn(socketAddress1).when(connection1).remoteAddress();
 
+		Connection connection2 = mock(Connection.class);
+		SocketAddress socketAddress2 = new InetSocketAddress("localhost", 8081);
+		doReturn(socketAddress2).when(connection2).remoteAddress();
 
-        connectionManager.add(connection1);
-        connectionManager.add(connection2);
-        Assertions.assertTrue(connection1 == connectionManager.get(socketAddress1));
-        Assertions.assertTrue(connection2 == connectionManager.get(socketAddress2));
+		connectionManager.add(connection1);
+		connectionManager.add(connection2);
+		Assertions.assertTrue(connection1 == connectionManager.get(socketAddress1));
+		Assertions.assertTrue(connection2 == connectionManager.get(socketAddress2));
 
-        connectionManager.removeAndClose(connection1);
-        verify(connection1, times(1)).close();
-        Assertions.assertNull(connectionManager.get(socketAddress1));
-        Assertions.assertTrue(connection2 == connectionManager.get(socketAddress2));
-    }
+		connectionManager.removeAndClose(connection1);
+		verify(connection1, times(1)).close();
+		Assertions.assertNull(connectionManager.get(socketAddress1));
+		Assertions.assertTrue(connection2 == connectionManager.get(socketAddress2));
+	}
 
+	@Test
+	public void testShutdown() {
+		Connection connection1 = mock(Connection.class);
+		SocketAddress socketAddress1 = new InetSocketAddress("localhost", 8080);
+		doReturn(socketAddress1).when(connection1).remoteAddress();
 
-    @Test
-    public void testShutdown() {
-        Connection connection1 = mock(Connection.class);
-        SocketAddress socketAddress1 = new InetSocketAddress( "localhost", 8080);
-        doReturn(socketAddress1).when(connection1).remoteAddress();
+		Connection connection2 = mock(Connection.class);
+		SocketAddress socketAddress2 = new InetSocketAddress("localhost", 8081);
+		doReturn(socketAddress2).when(connection2).remoteAddress();
 
-        Connection connection2 = mock(Connection.class);
-        SocketAddress socketAddress2 = new InetSocketAddress( "localhost", 8081);
-        doReturn(socketAddress2).when(connection2).remoteAddress();
+		connectionManager.add(connection1);
+		connectionManager.add(connection2);
 
+		connectionManager.shutdown();
+		verify(connection1, times(1)).close();
+		verify(connection2, times(1)).close();
 
-        connectionManager.add(connection1);
-        connectionManager.add(connection2);
+		Assertions.assertTrue(((ServerConnectionManager) connectionManager).connections.isEmpty());
+		skipAfter = true;
+	}
 
-        connectionManager.shutdown();
-        verify(connection1, times(1)).close();
-        verify(connection2, times(1)).close();
-
-        Assertions.assertTrue(((ServerConnectionManager) connectionManager).connections.isEmpty());
-        skipAfter = true;
-    }
 }

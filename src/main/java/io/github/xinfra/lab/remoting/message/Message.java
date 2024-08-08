@@ -5,15 +5,17 @@ import io.github.xinfra.lab.remoting.exception.SerializeException;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
 
 public interface Message {
-    byte[] protocolCode();
 
-    int id();
+	byte[] protocolCode();
 
-    MessageType messageType();
+	int id();
 
-    SerializationType serializationType();
+	MessageType messageType();
 
-    void serialize() throws SerializeException;
+	SerializationType serializationType();
 
-    void deserialize() throws DeserializeException;
+	void serialize() throws SerializeException;
+
+	void deserialize() throws DeserializeException;
+
 }

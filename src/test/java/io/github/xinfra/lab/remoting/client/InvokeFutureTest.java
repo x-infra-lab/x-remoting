@@ -29,170 +29,177 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 public class InvokeFutureTest {
-    private InvokeFuture<?> invokeFuture;
-    private TestProtocol testProtocol;
 
-    @BeforeEach
-    public void before() {
-        testProtocol = new TestProtocol();
-        final int requestId = IDGenerator.nextRequestId();
-        invokeFuture = new InvokeFuture<>(requestId, testProtocol);
-    }
+	private InvokeFuture<?> invokeFuture;
 
-    @Test
-    public void testTimeout() {
-        Assertions.assertNull(invokeFuture.timeout);
-        Assertions.assertFalse(invokeFuture.cancelTimeout());
+	private TestProtocol testProtocol;
 
-        HashedWheelTimer timer = new HashedWheelTimer();
+	@BeforeEach
+	public void before() {
+		testProtocol = new TestProtocol();
+		final int requestId = IDGenerator.nextRequestId();
+		invokeFuture = new InvokeFuture<>(requestId, testProtocol);
+	}
 
-        Timeout timeout = timer.newTimeout(t -> {
-        }, 3, TimeUnit.SECONDS);
-        invokeFuture.addTimeout(timeout);
+	@Test
+	public void testTimeout() {
+		Assertions.assertNull(invokeFuture.timeout);
+		Assertions.assertFalse(invokeFuture.cancelTimeout());
 
-        Assertions.assertEquals(invokeFuture.timeout, timeout);
-        Assertions.assertTrue(invokeFuture.cancelTimeout());
-        Assertions.assertFalse(invokeFuture.cancelTimeout());
-        Assertions.assertTrue(invokeFuture.timeout.isCancelled());
+		HashedWheelTimer timer = new HashedWheelTimer();
 
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            invokeFuture.addTimeout(timeout);
-        });
+		Timeout timeout = timer.newTimeout(t -> {
+		}, 3, TimeUnit.SECONDS);
+		invokeFuture.addTimeout(timeout);
 
-        timer.stop();
-    }
+		Assertions.assertEquals(invokeFuture.timeout, timeout);
+		Assertions.assertTrue(invokeFuture.cancelTimeout());
+		Assertions.assertFalse(invokeFuture.cancelTimeout());
+		Assertions.assertTrue(invokeFuture.timeout.isCancelled());
 
-    @Test
-    public void testGet() throws InterruptedException, TimeoutException {
-        Message message = mock(Message.class);
-        ExecutorService executorService = Executors.newFixedThreadPool(2);
-        executorService.submit(() -> {
-            try {
-                TimeUnit.SECONDS.sleep(2);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            invokeFuture.complete(message);
-        });
+		Assertions.assertThrows(IllegalArgumentException.class, () -> {
+			invokeFuture.addTimeout(timeout);
+		});
 
-        Assertions.assertThrows(TimeoutException.class, () -> {
-            invokeFuture.get(200, TimeUnit.MILLISECONDS);
-        });
-        Assertions.assertFalse(invokeFuture.isDone());
+		timer.stop();
+	}
 
-        Message result = invokeFuture.get(3, TimeUnit.SECONDS);
-        Assertions.assertSame(result, message);
-        Assertions.assertTrue(invokeFuture.isDone());
+	@Test
+	public void testGet() throws InterruptedException, TimeoutException {
+		Message message = mock(Message.class);
+		ExecutorService executorService = Executors.newFixedThreadPool(2);
+		executorService.submit(() -> {
+			try {
+				TimeUnit.SECONDS.sleep(2);
+			}
+			catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			invokeFuture.complete(message);
+		});
 
-        result = invokeFuture.get(3, TimeUnit.SECONDS);
-        Assertions.assertSame(result, message);
-        Assertions.assertTrue(invokeFuture.isDone());
+		Assertions.assertThrows(TimeoutException.class, () -> {
+			invokeFuture.get(200, TimeUnit.MILLISECONDS);
+		});
+		Assertions.assertFalse(invokeFuture.isDone());
 
-        executorService.shutdownNow();
-    }
+		Message result = invokeFuture.get(3, TimeUnit.SECONDS);
+		Assertions.assertSame(result, message);
+		Assertions.assertTrue(invokeFuture.isDone());
 
-    @Test
-    public void testAppClassLoader() {
-        ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
-        Assertions.assertSame(contextClassLoader, invokeFuture.getAppClassLoader());
+		result = invokeFuture.get(3, TimeUnit.SECONDS);
+		Assertions.assertSame(result, message);
+		Assertions.assertTrue(invokeFuture.isDone());
 
-        try {
-            URLClassLoader urlClassLoader = new URLClassLoader(new URL[]{}, contextClassLoader);
-            Thread.currentThread().setContextClassLoader(urlClassLoader);
+		executorService.shutdownNow();
+	}
 
-            InvokeFuture<?> future = new InvokeFuture<>(IDGenerator.nextRequestId(), testProtocol);
-            Assertions.assertSame(future.getAppClassLoader(), urlClassLoader);
-        } finally {
-            // recover current thread context classLoader
-            Thread.currentThread().setContextClassLoader(contextClassLoader);
-        }
+	@Test
+	public void testAppClassLoader() {
+		ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
+		Assertions.assertSame(contextClassLoader, invokeFuture.getAppClassLoader());
 
-    }
+		try {
+			URLClassLoader urlClassLoader = new URLClassLoader(new URL[] {}, contextClassLoader);
+			Thread.currentThread().setContextClassLoader(urlClassLoader);
 
-    @Test
-    public void testCallBackSync() {
-        AtomicBoolean callbackExecuted = new AtomicBoolean(false);
-        AtomicInteger callBackExecuteTimes = new AtomicInteger(0);
-        InvokeCallBack callBack = message -> {
-            callbackExecuted.set(true);
-            callBackExecuteTimes.getAndIncrement();
-        };
-        invokeFuture.addCallBack(callBack);
+			InvokeFuture<?> future = new InvokeFuture<>(IDGenerator.nextRequestId(), testProtocol);
+			Assertions.assertSame(future.getAppClassLoader(), urlClassLoader);
+		}
+		finally {
+			// recover current thread context classLoader
+			Thread.currentThread().setContextClassLoader(contextClassLoader);
+		}
 
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            invokeFuture.addCallBack(callBack);
-        });
+	}
 
-        Message message = mock(Message.class);
-        invokeFuture.complete(message);
-        invokeFuture.executeCallBack();
-        Assertions.assertTrue(callbackExecuted.get());
-        Assertions.assertEquals(1, callBackExecuteTimes.get());
+	@Test
+	public void testCallBackSync() {
+		AtomicBoolean callbackExecuted = new AtomicBoolean(false);
+		AtomicInteger callBackExecuteTimes = new AtomicInteger(0);
+		InvokeCallBack callBack = message -> {
+			callbackExecuted.set(true);
+			callBackExecuteTimes.getAndIncrement();
+		};
+		invokeFuture.addCallBack(callBack);
 
-        invokeFuture.executeCallBack();
-        Assertions.assertTrue(callbackExecuted.get());
-        Assertions.assertEquals(1, callBackExecuteTimes.get());
-    }
+		Assertions.assertThrows(IllegalArgumentException.class, () -> {
+			invokeFuture.addCallBack(callBack);
+		});
 
-    @Test
-    public void testCallBackAsync() throws InterruptedException, TimeoutException {
-        invokeFuture = spy(invokeFuture);
+		Message message = mock(Message.class);
+		invokeFuture.complete(message);
+		invokeFuture.executeCallBack();
+		Assertions.assertTrue(callbackExecuted.get());
+		Assertions.assertEquals(1, callBackExecuteTimes.get());
 
-        ExecutorService executorService = Executors.newCachedThreadPool();
-        MessageHandler messageHandler = mock(MessageHandler.class);
-        doReturn(executorService).when(messageHandler).executor();
-        testProtocol.setTestMessageHandler(messageHandler);
+		invokeFuture.executeCallBack();
+		Assertions.assertTrue(callbackExecuted.get());
+		Assertions.assertEquals(1, callBackExecuteTimes.get());
+	}
 
-        AtomicBoolean callbackExecuted = new AtomicBoolean(false);
-        AtomicInteger callBackExecuteTimes = new AtomicInteger(0);
-        InvokeCallBack callBack = new InvokeCallBack() {
-            @Override
-            public void complete(Message message) {
-                callbackExecuted.set(true);
-                callBackExecuteTimes.getAndIncrement();
-            }
-        };
+	@Test
+	public void testCallBackAsync() throws InterruptedException, TimeoutException {
+		invokeFuture = spy(invokeFuture);
 
-        callBack = spy(callBack);
-        invokeFuture.addCallBack(callBack);
+		ExecutorService executorService = Executors.newCachedThreadPool();
+		MessageHandler messageHandler = mock(MessageHandler.class);
+		doReturn(executorService).when(messageHandler).executor();
+		testProtocol.setTestMessageHandler(messageHandler);
 
-        InvokeCallBack tempCallBack = callBack;
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            invokeFuture.addCallBack(tempCallBack);
-        });
+		AtomicBoolean callbackExecuted = new AtomicBoolean(false);
+		AtomicInteger callBackExecuteTimes = new AtomicInteger(0);
+		InvokeCallBack callBack = new InvokeCallBack() {
+			@Override
+			public void complete(Message message) {
+				callbackExecuted.set(true);
+				callBackExecuteTimes.getAndIncrement();
+			}
+		};
 
-        Message message = mock(Message.class);
-        invokeFuture.complete(message);
-        invokeFuture.asyncExecuteCallBack();
+		callBack = spy(callBack);
+		invokeFuture.addCallBack(callBack);
 
-        InvokeCallBack finalCallBack = callBack;
-        Wait.untilIsTrue(() -> {
-            try {
-                verify(invokeFuture, atLeastOnce()).executeCallBack();
-                verify(finalCallBack, atLeastOnce()).complete(eq(message));
-                return true;
-            } catch (Throwable t) {
-                return false;
-            }
-        }, 30, 100);
+		InvokeCallBack tempCallBack = callBack;
+		Assertions.assertThrows(IllegalArgumentException.class, () -> {
+			invokeFuture.addCallBack(tempCallBack);
+		});
 
-        Assertions.assertTrue(callbackExecuted.get());
-        Assertions.assertEquals(1, callBackExecuteTimes.get());
-        verify(finalCallBack, times(1)).complete(eq(message));
+		Message message = mock(Message.class);
+		invokeFuture.complete(message);
+		invokeFuture.asyncExecuteCallBack();
 
-        invokeFuture.asyncExecuteCallBack();
-        Wait.untilIsTrue(() -> {
-            try {
-                verify(invokeFuture, times(2)).executeCallBack();
-                return true;
-            } catch (Throwable t) {
-                return false;
-            }
-        }, 30, 100);
+		InvokeCallBack finalCallBack = callBack;
+		Wait.untilIsTrue(() -> {
+			try {
+				verify(invokeFuture, atLeastOnce()).executeCallBack();
+				verify(finalCallBack, atLeastOnce()).complete(eq(message));
+				return true;
+			}
+			catch (Throwable t) {
+				return false;
+			}
+		}, 30, 100);
 
-        verify(invokeFuture, times(2)).executeCallBack();
-        Assertions.assertEquals(1, callBackExecuteTimes.get());
+		Assertions.assertTrue(callbackExecuted.get());
+		Assertions.assertEquals(1, callBackExecuteTimes.get());
+		verify(finalCallBack, times(1)).complete(eq(message));
 
-        executorService.shutdownNow();
-    }
+		invokeFuture.asyncExecuteCallBack();
+		Wait.untilIsTrue(() -> {
+			try {
+				verify(invokeFuture, times(2)).executeCallBack();
+				return true;
+			}
+			catch (Throwable t) {
+				return false;
+			}
+		}, 30, 100);
+
+		verify(invokeFuture, times(2)).executeCallBack();
+		Assertions.assertEquals(1, callBackExecuteTimes.get());
+
+		executorService.shutdownNow();
+	}
+
 }

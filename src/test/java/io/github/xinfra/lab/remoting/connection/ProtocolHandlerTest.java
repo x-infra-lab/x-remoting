@@ -21,65 +21,67 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 public class ProtocolHandlerTest {
-    TestProtocol testProtocol = new TestProtocol();
-    @Test
-    public void testProtocolHandler() {
-        ProtocolHandler protocolHandler = new ProtocolHandler();
 
-        EmbeddedChannel channel = new EmbeddedChannel();
-        channel.pipeline().addLast(protocolHandler);
+	TestProtocol testProtocol = new TestProtocol();
 
-        MessageHandler messageHandler = new MessageHandler() {
+	@Test
+	public void testProtocolHandler() {
+		ProtocolHandler protocolHandler = new ProtocolHandler();
 
-            @Override
-            public ExecutorService executor() {
-                return null;
-            }
+		EmbeddedChannel channel = new EmbeddedChannel();
+		channel.pipeline().addLast(protocolHandler);
 
-            @Override
-            public void handleMessage(MessageHandlerContext remotingContext, Object msg) {
+		MessageHandler messageHandler = new MessageHandler() {
 
-            }
+			@Override
+			public ExecutorService executor() {
+				return null;
+			}
 
-            @Override
-            public void registerMessageProcessor(MessageType messageType, MessageProcessor<?> messageProcessor) {
+			@Override
+			public void handleMessage(MessageHandlerContext remotingContext, Object msg) {
 
-            }
+			}
 
-            @Override
-            public MessageProcessor<?> messageProcessor(MessageType messageType) {
-                return null;
-            }
+			@Override
+			public void registerMessageProcessor(MessageType messageType, MessageProcessor<?> messageProcessor) {
 
-            @Override
-            public void registerUserProcessor(UserProcessor<?> userProcessor) {
+			}
 
-            }
+			@Override
+			public MessageProcessor<?> messageProcessor(MessageType messageType) {
+				return null;
+			}
 
-            @Override
-            public UserProcessor<?> userProcessor(String contentType) {
-                return null;
-            }
+			@Override
+			public void registerUserProcessor(UserProcessor<?> userProcessor) {
 
-            @Override
-            public Timer timer() {
-                return null;
-            }
-        };
+			}
 
-        MessageHandler spyMessageHandler = spy(messageHandler);
-        testProtocol.setTestMessageHandler(spyMessageHandler);
-        new Connection( testProtocol, channel);
+			@Override
+			public UserProcessor<?> userProcessor(String contentType) {
+				return null;
+			}
 
-        Object object = new Object();
-        channel.writeInbound(object);
-        verify(spyMessageHandler, times(0)).handleMessage(any(), any());
-        Object inboundMessage = channel.inboundMessages().poll();
-        Assertions.assertTrue(object == inboundMessage);
+			@Override
+			public Timer timer() {
+				return null;
+			}
+		};
 
+		MessageHandler spyMessageHandler = spy(messageHandler);
+		testProtocol.setTestMessageHandler(spyMessageHandler);
+		new Connection(testProtocol, channel);
 
-        Message message = mock(Message.class);
-        channel.writeInbound(message);
-        verify(spyMessageHandler, times(1)).handleMessage(any(), any());
-    }
+		Object object = new Object();
+		channel.writeInbound(object);
+		verify(spyMessageHandler, times(0)).handleMessage(any(), any());
+		Object inboundMessage = channel.inboundMessages().poll();
+		Assertions.assertTrue(object == inboundMessage);
+
+		Message message = mock(Message.class);
+		channel.writeInbound(message);
+		verify(spyMessageHandler, times(1)).handleMessage(any(), any());
+	}
+
 }

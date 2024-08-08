@@ -12,63 +12,65 @@ import java.io.IOException;
 import java.net.SocketAddress;
 
 public class RpcServer extends BaseRemotingServer {
-    @Getter
-    private RpcProtocol protocol;
-    @Getter
-    private RpcServerRemoting rpcServerRemoting;
 
-    public RpcServer(RpcServerConfig config) {
-        super(config);
-    }
+	@Getter
+	private RpcProtocol protocol;
 
-    @Override
-    public void startup() {
-        super.startup();
-        protocol = new RpcProtocol();
-        rpcServerRemoting = new RpcServerRemoting(protocol, connectionManager);
-    }
+	@Getter
+	private RpcServerRemoting rpcServerRemoting;
 
-    @Override
-    public void shutdown() {
-        super.shutdown();
-        try {
-            protocol.close();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+	public RpcServer(RpcServerConfig config) {
+		super(config);
+	}
 
+	@Override
+	public void startup() {
+		super.startup();
+		protocol = new RpcProtocol();
+		rpcServerRemoting = new RpcServerRemoting(protocol, connectionManager);
+	}
 
-    public <R> R syncCall(Object request, SocketAddress socketAddress, int timeoutMills)
-            throws InterruptedException, RemotingException {
-        ensureStarted();
+	@Override
+	public void shutdown() {
+		super.shutdown();
+		try {
+			protocol.close();
+		}
+		catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
-        return rpcServerRemoting.syncCall(request, socketAddress, timeoutMills);
-    }
+	public <R> R syncCall(Object request, SocketAddress socketAddress, int timeoutMills)
+			throws InterruptedException, RemotingException {
+		ensureStarted();
 
-    public <R> RpcInvokeFuture<R> asyncCall(Object request, SocketAddress socketAddress, int timeoutMills)
-            throws RemotingException {
-        ensureStarted();
+		return rpcServerRemoting.syncCall(request, socketAddress, timeoutMills);
+	}
 
-        return rpcServerRemoting.asyncCall(request, socketAddress, timeoutMills);
-    }
+	public <R> RpcInvokeFuture<R> asyncCall(Object request, SocketAddress socketAddress, int timeoutMills)
+			throws RemotingException {
+		ensureStarted();
 
-    public <R> void asyncCall(Object request, SocketAddress socketAddress,
-                              int timeoutMills,
-                              RpcInvokeCallBack<R> rpcInvokeCallBack) throws RemotingException {
-        ensureStarted();
+		return rpcServerRemoting.asyncCall(request, socketAddress, timeoutMills);
+	}
 
-        rpcServerRemoting.asyncCall(request, socketAddress, timeoutMills, rpcInvokeCallBack);
-    }
+	public <R> void asyncCall(Object request, SocketAddress socketAddress, int timeoutMills,
+			RpcInvokeCallBack<R> rpcInvokeCallBack) throws RemotingException {
+		ensureStarted();
 
-    public void oneway(Object request, SocketAddress socketAddress) throws RemotingException {
-        ensureStarted();
+		rpcServerRemoting.asyncCall(request, socketAddress, timeoutMills, rpcInvokeCallBack);
+	}
 
-        rpcServerRemoting.oneway(request, socketAddress);
-    }
+	public void oneway(Object request, SocketAddress socketAddress) throws RemotingException {
+		ensureStarted();
 
-    @Override
-    public Protocol protocol() {
-        return protocol;
-    }
+		rpcServerRemoting.oneway(request, socketAddress);
+	}
+
+	@Override
+	public Protocol protocol() {
+		return protocol;
+	}
+
 }

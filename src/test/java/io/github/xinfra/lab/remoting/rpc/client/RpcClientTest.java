@@ -16,86 +16,86 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class RpcClientTest {
-    private static RpcServer rpcServer;
 
-    private RpcClient rpcClient;
+	private static RpcServer rpcServer;
 
-    @BeforeAll
-    public static void beforeAll() {
-        RpcServerConfig config = new RpcServerConfig();
-        rpcServer = new RpcServer(config);
-        rpcServer.startup();
+	private RpcClient rpcClient;
 
-        rpcServer.registerUserProcessor(new SimpleUserProcessor());
-    }
+	@BeforeAll
+	public static void beforeAll() {
+		RpcServerConfig config = new RpcServerConfig();
+		rpcServer = new RpcServer(config);
+		rpcServer.startup();
 
-    @AfterAll
-    public static void afterAll() {
-        rpcServer.shutdown();
-    }
+		rpcServer.registerUserProcessor(new SimpleUserProcessor());
+	}
 
+	@AfterAll
+	public static void afterAll() {
+		rpcServer.shutdown();
+	}
 
-    @BeforeEach
-    public void beforeEach() {
-        rpcClient = new RpcClient();
-        rpcClient.startup();
-    }
+	@BeforeEach
+	public void beforeEach() {
+		rpcClient = new RpcClient();
+		rpcClient.startup();
+	}
 
-    @AfterEach
-    public void afterEach() {
-        rpcClient.shutdown();
-    }
+	@AfterEach
+	public void afterEach() {
+		rpcClient.shutdown();
+	}
 
-    @Test
-    public void testSyncCall() throws RemotingException, InterruptedException {
-        String msg = "hello x-remoting";
-        SimpleRequest request = new SimpleRequest(msg);
-        String result = rpcClient.syncCall(request, rpcServer.localAddress(), 1000);
+	@Test
+	public void testSyncCall() throws RemotingException, InterruptedException {
+		String msg = "hello x-remoting";
+		SimpleRequest request = new SimpleRequest(msg);
+		String result = rpcClient.syncCall(request, rpcServer.localAddress(), 1000);
 
-        Assertions.assertEquals(result, "echo:" + msg);
-    }
+		Assertions.assertEquals(result, "echo:" + msg);
+	}
 
-    @Test
-    public void testAsyncCall1() throws RemotingException, InterruptedException, TimeoutException {
-        String msg = "hello x-remoting";
-        SimpleRequest request = new SimpleRequest(msg);
-        RpcInvokeFuture<String> future = rpcClient.asyncCall(request, rpcServer.localAddress(), 1000);
+	@Test
+	public void testAsyncCall1() throws RemotingException, InterruptedException, TimeoutException {
+		String msg = "hello x-remoting";
+		SimpleRequest request = new SimpleRequest(msg);
+		RpcInvokeFuture<String> future = rpcClient.asyncCall(request, rpcServer.localAddress(), 1000);
 
-        String result = future.get(3, TimeUnit.SECONDS);
-        Assertions.assertEquals(result, "echo:" + msg);
-    }
+		String result = future.get(3, TimeUnit.SECONDS);
+		Assertions.assertEquals(result, "echo:" + msg);
+	}
 
-    @Test
-    public void testAsyncCall2() throws RemotingException, InterruptedException, TimeoutException {
-        String msg = "hello x-remoting";
-        SimpleRequest request = new SimpleRequest(msg);
+	@Test
+	public void testAsyncCall2() throws RemotingException, InterruptedException, TimeoutException {
+		String msg = "hello x-remoting";
+		SimpleRequest request = new SimpleRequest(msg);
 
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-        AtomicReference<String> result = new AtomicReference<>();
-        rpcClient.asyncCall(request, rpcServer.localAddress(), 1000,
-                new RpcInvokeCallBack<String>() {
-                    @Override
-                    public void onException(Throwable t) {
-                        countDownLatch.countDown();
-                    }
+		CountDownLatch countDownLatch = new CountDownLatch(1);
+		AtomicReference<String> result = new AtomicReference<>();
+		rpcClient.asyncCall(request, rpcServer.localAddress(), 1000, new RpcInvokeCallBack<String>() {
+			@Override
+			public void onException(Throwable t) {
+				countDownLatch.countDown();
+			}
 
-                    @Override
-                    public void onResponse(String response) {
-                        result.set(response);
-                        countDownLatch.countDown();
-                    }
-                });
+			@Override
+			public void onResponse(String response) {
+				result.set(response);
+				countDownLatch.countDown();
+			}
+		});
 
-        countDownLatch.await(3, TimeUnit.SECONDS);
-        Assertions.assertEquals(result.get(), "echo:" + msg);
-    }
+		countDownLatch.await(3, TimeUnit.SECONDS);
+		Assertions.assertEquals(result.get(), "echo:" + msg);
+	}
 
-    @Test
-    public void testOnewayCall() throws RemotingException, InterruptedException {
-        String msg = "hello x-remoting";
-        SimpleRequest request = new SimpleRequest(msg);
+	@Test
+	public void testOnewayCall() throws RemotingException, InterruptedException {
+		String msg = "hello x-remoting";
+		SimpleRequest request = new SimpleRequest(msg);
 
-        rpcClient.oneway(request, rpcServer.localAddress());
-        TimeUnit.SECONDS.sleep(2);
-    }
+		rpcClient.oneway(request, rpcServer.localAddress());
+		TimeUnit.SECONDS.sleep(2);
+	}
+
 }

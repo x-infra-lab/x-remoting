@@ -6,6 +6,6 @@ import io.netty.channel.ChannelHandlerContext;
 
 public interface MessageEncoder {
 
-    void encode(ChannelHandlerContext ctx, Message msg, ByteBuf out) throws Exception;
+	void encode(ChannelHandlerContext ctx, Message msg, ByteBuf out) throws Exception;
 
 }

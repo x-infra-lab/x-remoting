@@ -17,17 +17,18 @@ import lombok.ToString;
 @ToString
 public class RpcResponseMessage extends RpcMessage {
 
-    @Setter
-    @Getter
-    private short status;
+	@Setter
+	@Getter
+	private short status;
 
-    private Throwable cause;
+	private Throwable cause;
 
-    public RpcResponseMessage(int id) {
-        this(id, SerializationType.HESSION);
-    }
+	public RpcResponseMessage(int id) {
+		this(id, SerializationType.HESSION);
+	}
 
-    public RpcResponseMessage(int id, SerializationType serializationType) {
-        super(id, MessageType.response, serializationType);
-    }
+	public RpcResponseMessage(int id, SerializationType serializationType) {
+		super(id, MessageType.response, serializationType);
+	}
+
 }

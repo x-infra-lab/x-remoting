@@ -8,18 +8,18 @@ import java.util.concurrent.ExecutorService;
 
 public interface MessageHandler {
 
-    ExecutorService executor();
+	ExecutorService executor();
 
-    void handleMessage(MessageHandlerContext messageHandlerContext, Object msg);
+	void handleMessage(MessageHandlerContext messageHandlerContext, Object msg);
 
-    void registerMessageProcessor(MessageType messageType, MessageProcessor<?> messageProcessor);
+	void registerMessageProcessor(MessageType messageType, MessageProcessor<?> messageProcessor);
 
-    MessageProcessor<?> messageProcessor(MessageType messageType);
+	MessageProcessor<?> messageProcessor(MessageType messageType);
 
-    void registerUserProcessor(UserProcessor<?> userProcessor);
+	void registerUserProcessor(UserProcessor<?> userProcessor);
 
-    UserProcessor<?> userProcessor(String contentType);
+	UserProcessor<?> userProcessor(String contentType);
 
-    Timer timer();
+	Timer timer();
 
 }

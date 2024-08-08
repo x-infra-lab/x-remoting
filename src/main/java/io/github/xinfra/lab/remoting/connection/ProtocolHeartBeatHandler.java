@@ -8,15 +8,15 @@ import io.netty.handler.timeout.IdleStateEvent;
 @ChannelHandler.Sharable
 public class ProtocolHeartBeatHandler extends ChannelInboundHandlerAdapter {
 
-    @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (evt instanceof IdleStateEvent) {
-            Connection connection = ctx.channel().attr(Connection.CONNECTION).get();
-               connection.getProtocol()
-                        .heartbeatTrigger()
-                        .triggerHeartBeat(ctx);
-        } else {
-            super.userEventTriggered(ctx, evt);
-        }
-    }
+	@Override
+	public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+		if (evt instanceof IdleStateEvent) {
+			Connection connection = ctx.channel().attr(Connection.CONNECTION).get();
+			connection.getProtocol().heartbeatTrigger().triggerHeartBeat(ctx);
+		}
+		else {
+			super.userEventTriggered(ctx, evt);
+		}
+	}
+
 }

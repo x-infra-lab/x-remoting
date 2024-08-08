@@ -4,9 +4,10 @@ import io.netty.channel.ChannelHandlerContext;
 
 public interface HeartbeatTrigger {
 
-    void triggerHeartBeat(ChannelHandlerContext ctx);
+	void triggerHeartBeat(ChannelHandlerContext ctx);
 
-    void setHeartbeatMaxFailCount(int failCount);
+	void setHeartbeatMaxFailCount(int failCount);
 
-    void setHeartbeatTimeoutMills(int timeoutMills);
+	void setHeartbeatTimeoutMills(int timeoutMills);
+
 }

@@ -1,9 +1,11 @@
 package io.github.xinfra.lab.remoting.common;
 
 public interface LifeCycle {
-    void startup();
 
-    void shutdown();
+	void startup();
 
-    boolean isStarted();
+	void shutdown();
+
+	boolean isStarted();
+
 }

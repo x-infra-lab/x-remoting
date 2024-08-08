@@ -5,8 +5,8 @@ import io.github.xinfra.lab.remoting.exception.SerializeException;
 
 public interface Serializer {
 
-    byte[] serialize(Object obj) throws SerializeException;
+	byte[] serialize(Object obj) throws SerializeException;
 
+	<T> T deserialize(byte[] data, Class<T> clazz) throws DeserializeException;
 
-    <T> T deserialize(byte[] data,  Class<T> clazz) throws DeserializeException;
 }

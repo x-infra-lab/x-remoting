@@ -5,10 +5,10 @@ import lombok.Data;
 @Data
 public class RemotingServerConfig {
 
-    private int port;
+	private int port;
 
-    private boolean manageConnection = false;
+	private boolean manageConnection = false;
 
-    private boolean idleSwitch = false;
+	private boolean idleSwitch = false;
 
 }

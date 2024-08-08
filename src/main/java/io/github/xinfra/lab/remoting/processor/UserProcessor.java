@@ -7,23 +7,26 @@ import java.util.concurrent.ExecutorService;
 
 public interface UserProcessor<T> {
 
-    String interest();
+	String interest();
 
-    Object handRequest(T request);
+	Object handRequest(T request);
 
-    default ExecutorService executor() {
-        return null;
-    }
+	default ExecutorService executor() {
+		return null;
+	}
 
-    default ExecutorSelector executorSelector() {
-        return null;
-    }
+	default ExecutorSelector executorSelector() {
+		return null;
+	}
 
-    default ClassLoader getBizClassLoader() {
-        return null;
-    }
+	default ClassLoader getBizClassLoader() {
+		return null;
+	}
 
-    interface ExecutorSelector {
-        Executor select(String contentType, RpcMessageHeader rpcMessageHeader);
-    }
+	interface ExecutorSelector {
+
+		Executor select(String contentType, RpcMessageHeader rpcMessageHeader);
+
+	}
+
 }

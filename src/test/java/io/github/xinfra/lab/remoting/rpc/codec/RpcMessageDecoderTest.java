@@ -19,181 +19,175 @@ import static org.mockito.Mockito.mock;
 
 public class RpcMessageDecoderTest {
 
+	@Test
+	public void testDecodeRequest1() throws Exception {
+		// build a requestMessage data
+		String content = "this is rpc content";
+		String contentType = content.getClass().getName();
+		RpcMessageHeader header = new RpcMessageHeader();
+		header.addItem(new RpcMessageHeader.Item("this is header key", "this is header value"));
+		Integer requestId = IDGenerator.nextRequestId();
+		RpcRequestMessage requestMessage = new RpcRequestMessage(requestId);
+		requestMessage.setHeader(header);
+		requestMessage.setContent(content);
+		requestMessage.setContentType(contentType);
+		requestMessage.serialize();
 
-    @Test
-    public void testDecodeRequest1() throws Exception {
-        // build a requestMessage data
-        String content = "this is rpc content";
-        String contentType = content.getClass().getName();
-        RpcMessageHeader header = new RpcMessageHeader();
-        header.addItem(new RpcMessageHeader.Item("this is header key", "this is header value"));
-        Integer requestId = IDGenerator.nextRequestId();
-        RpcRequestMessage requestMessage = new RpcRequestMessage(requestId);
-        requestMessage.setHeader(header);
-        requestMessage.setContent(content);
-        requestMessage.setContentType(contentType);
-        requestMessage.serialize();
+		RpcMessageEncoder encoder = new RpcMessageEncoder();
+		ByteBuf byteBuf = AbstractByteBufAllocator.DEFAULT.buffer();
+		encoder.encode(mock(ChannelHandlerContext.class), requestMessage, byteBuf);
 
-        RpcMessageEncoder encoder = new RpcMessageEncoder();
-        ByteBuf byteBuf = AbstractByteBufAllocator.DEFAULT.buffer();
-        encoder.encode(mock(ChannelHandlerContext.class), requestMessage, byteBuf);
+		RpcMessageDecoder decoder = new RpcMessageDecoder();
+		List<Object> out = new ArrayList<>();
+		decoder.decode(mock(ChannelHandlerContext.class), byteBuf, out);
+		Assertions.assertTrue(!out.isEmpty());
+		RpcRequestMessage requestMessage2 = (RpcRequestMessage) out.get(0);
+		requestMessage2.deserialize();
 
+		Assertions.assertEquals(requestMessage2.serializationType(), requestMessage.serializationType());
 
-        RpcMessageDecoder decoder = new RpcMessageDecoder();
-        List<Object> out = new ArrayList<>();
-        decoder.decode(mock(ChannelHandlerContext.class), byteBuf, out);
-        Assertions.assertTrue(!out.isEmpty());
-        RpcRequestMessage requestMessage2 = (RpcRequestMessage) out.get(0);
-        requestMessage2.deserialize();
+		Assertions.assertEquals(requestMessage2.getContentType(), requestMessage.getContentType());
+		Assertions.assertEquals(requestMessage2.getHeader(), requestMessage.getHeader());
+		Assertions.assertEquals(requestMessage2.getContent(), requestMessage.getContent());
 
-        Assertions.assertEquals(requestMessage2.serializationType(), requestMessage.serializationType());
+		byteBuf.release();
 
-        Assertions.assertEquals(requestMessage2.getContentType(), requestMessage.getContentType());
-        Assertions.assertEquals(requestMessage2.getHeader(), requestMessage.getHeader());
-        Assertions.assertEquals(requestMessage2.getContent(), requestMessage.getContent());
+	}
 
-        byteBuf.release();
+	@Test
+	public void testDecodeResponse1() throws Exception {
+		// build a responseMessage data
+		String content = "this is rpc content";
+		String contentType = content.getClass().getName();
+		RpcMessageHeader header = new RpcMessageHeader();
+		header.addItem(new RpcMessageHeader.Item("this is header key", "this is header value"));
+		Integer requestId = IDGenerator.nextRequestId();
+		RpcResponseMessage responseMessage = new RpcResponseMessage(requestId);
+		responseMessage.setHeader(header);
+		responseMessage.setContent(content);
+		responseMessage.setContentType(contentType);
+		responseMessage.setStatus(ResponseStatus.SUCCESS.getCode());
+		responseMessage.serialize();
 
-    }
+		RpcMessageEncoder encoder = new RpcMessageEncoder();
+		ByteBuf byteBuf = AbstractByteBufAllocator.DEFAULT.buffer();
+		encoder.encode(mock(ChannelHandlerContext.class), responseMessage, byteBuf);
 
+		RpcMessageDecoder decoder = new RpcMessageDecoder();
+		List<Object> out = new ArrayList<>();
+		decoder.decode(mock(ChannelHandlerContext.class), byteBuf, out);
+		Assertions.assertTrue(!out.isEmpty());
 
-    @Test
-    public void testDecodeResponse1() throws Exception {
-        // build a responseMessage data
-        String content = "this is rpc content";
-        String contentType = content.getClass().getName();
-        RpcMessageHeader header = new RpcMessageHeader();
-        header.addItem(new RpcMessageHeader.Item("this is header key", "this is header value"));
-        Integer requestId = IDGenerator.nextRequestId();
-        RpcResponseMessage responseMessage = new RpcResponseMessage(requestId);
-        responseMessage.setHeader(header);
-        responseMessage.setContent(content);
-        responseMessage.setContentType(contentType);
-        responseMessage.setStatus(ResponseStatus.SUCCESS.getCode());
-        responseMessage.serialize();
+		RpcResponseMessage responseMessage2 = (RpcResponseMessage) out.get(0);
+		responseMessage2.deserialize();
 
-        RpcMessageEncoder encoder = new RpcMessageEncoder();
-        ByteBuf byteBuf = AbstractByteBufAllocator.DEFAULT.buffer();
-        encoder.encode(mock(ChannelHandlerContext.class), responseMessage, byteBuf);
+		Assertions.assertEquals(responseMessage2.serializationType(), responseMessage2.serializationType());
+		Assertions.assertEquals(responseMessage2.getStatus(), responseMessage.getStatus());
+		Assertions.assertEquals(responseMessage2.getContentType(), responseMessage.getContentType());
+		Assertions.assertEquals(responseMessage2.getHeader(), responseMessage.getHeader());
+		Assertions.assertEquals(responseMessage2.getContent(), responseMessage.getContent());
 
+		byteBuf.release();
+	}
 
-        RpcMessageDecoder decoder = new RpcMessageDecoder();
-        List<Object> out = new ArrayList<>();
-        decoder.decode(mock(ChannelHandlerContext.class), byteBuf, out);
-        Assertions.assertTrue(!out.isEmpty());
+	@Test
+	public void testDecodeRequestFailed1() throws Exception {
+		// build a requestMessage data
+		String content = "this is rpc content";
+		String contentType = content.getClass().getName();
+		RpcMessageHeader header = new RpcMessageHeader();
+		header.addItem(new RpcMessageHeader.Item("this is header key", "this is header value"));
+		Integer requestId = IDGenerator.nextRequestId();
+		RpcRequestMessage requestMessage = new RpcRequestMessage(requestId);
+		requestMessage.setHeader(header);
+		requestMessage.setContent(content);
+		requestMessage.setContentType(contentType);
+		requestMessage.serialize();
 
-        RpcResponseMessage responseMessage2 = (RpcResponseMessage) out.get(0);
-        responseMessage2.deserialize();
+		RpcMessageEncoder encoder = new RpcMessageEncoder();
+		ByteBuf byteBuf = AbstractByteBufAllocator.DEFAULT.buffer();
+		encoder.encode(mock(ChannelHandlerContext.class), requestMessage, byteBuf);
 
-        Assertions.assertEquals(responseMessage2.serializationType(), responseMessage2.serializationType());
-        Assertions.assertEquals(responseMessage2.getStatus(), responseMessage.getStatus());
-        Assertions.assertEquals(responseMessage2.getContentType(), responseMessage.getContentType());
-        Assertions.assertEquals(responseMessage2.getHeader(), responseMessage.getHeader());
-        Assertions.assertEquals(responseMessage2.getContent(), responseMessage.getContent());
+		// half of data
+		int mid = byteBuf.readableBytes() / 2;
+		int readerIndex = byteBuf.readerIndex();
+		byteBuf.setIndex(readerIndex, readerIndex + mid);
 
-        byteBuf.release();
-    }
+		RpcMessageDecoder decoder = new RpcMessageDecoder();
+		List<Object> out = new ArrayList<>();
+		decoder.decode(mock(ChannelHandlerContext.class), byteBuf, out);
 
-    @Test
-    public void testDecodeRequestFailed1() throws Exception {
-        // build a requestMessage data
-        String content = "this is rpc content";
-        String contentType = content.getClass().getName();
-        RpcMessageHeader header = new RpcMessageHeader();
-        header.addItem(new RpcMessageHeader.Item("this is header key", "this is header value"));
-        Integer requestId = IDGenerator.nextRequestId();
-        RpcRequestMessage requestMessage = new RpcRequestMessage(requestId);
-        requestMessage.setHeader(header);
-        requestMessage.setContent(content);
-        requestMessage.setContentType(contentType);
-        requestMessage.serialize();
+		Assertions.assertTrue(out.isEmpty());
+		Assertions.assertEquals(readerIndex, byteBuf.readerIndex());
 
-        RpcMessageEncoder encoder = new RpcMessageEncoder();
-        ByteBuf byteBuf = AbstractByteBufAllocator.DEFAULT.buffer();
-        encoder.encode(mock(ChannelHandlerContext.class), requestMessage, byteBuf);
+		byteBuf.release();
+	}
 
+	@Test
+	public void testDecodeResponseFailed1() throws Exception {
+		// build a responseMessage data
+		String content = "this is rpc content";
+		String contentType = content.getClass().getName();
+		RpcMessageHeader header = new RpcMessageHeader();
+		header.addItem(new RpcMessageHeader.Item("this is header key", "this is header value"));
+		Integer requestId = IDGenerator.nextRequestId();
+		RpcResponseMessage responseMessage = new RpcResponseMessage(requestId);
+		responseMessage.setHeader(header);
+		responseMessage.setContent(content);
+		responseMessage.setContentType(contentType);
+		responseMessage.setStatus(ResponseStatus.SUCCESS.getCode());
+		responseMessage.serialize();
 
-        // half of data
-        int mid = byteBuf.readableBytes() / 2;
-        int readerIndex = byteBuf.readerIndex();
-        byteBuf.setIndex(readerIndex, readerIndex + mid);
+		RpcMessageEncoder encoder = new RpcMessageEncoder();
+		ByteBuf byteBuf = AbstractByteBufAllocator.DEFAULT.buffer();
+		encoder.encode(mock(ChannelHandlerContext.class), responseMessage, byteBuf);
 
-        RpcMessageDecoder decoder = new RpcMessageDecoder();
-        List<Object> out = new ArrayList<>();
-        decoder.decode(mock(ChannelHandlerContext.class), byteBuf, out);
+		// half of data
+		int mid = byteBuf.readableBytes() / 2;
+		int readerIndex = byteBuf.readerIndex();
+		byteBuf.setIndex(readerIndex, readerIndex + mid);
 
-        Assertions.assertTrue(out.isEmpty());
-        Assertions.assertEquals(readerIndex, byteBuf.readerIndex());
+		RpcMessageDecoder decoder = new RpcMessageDecoder();
+		List<Object> out = new ArrayList<>();
+		decoder.decode(mock(ChannelHandlerContext.class), byteBuf, out);
 
-        byteBuf.release();
-    }
+		Assertions.assertTrue(out.isEmpty());
+		Assertions.assertEquals(readerIndex, byteBuf.readerIndex());
 
-    @Test
-    public void testDecodeResponseFailed1() throws Exception {
-        // build a responseMessage data
-        String content = "this is rpc content";
-        String contentType = content.getClass().getName();
-        RpcMessageHeader header = new RpcMessageHeader();
-        header.addItem(new RpcMessageHeader.Item("this is header key", "this is header value"));
-        Integer requestId = IDGenerator.nextRequestId();
-        RpcResponseMessage responseMessage = new RpcResponseMessage(requestId);
-        responseMessage.setHeader(header);
-        responseMessage.setContent(content);
-        responseMessage.setContentType(contentType);
-        responseMessage.setStatus(ResponseStatus.SUCCESS.getCode());
-        responseMessage.serialize();
+		byteBuf.release();
+	}
 
-        RpcMessageEncoder encoder = new RpcMessageEncoder();
-        ByteBuf byteBuf = AbstractByteBufAllocator.DEFAULT.buffer();
-        encoder.encode(mock(ChannelHandlerContext.class), responseMessage, byteBuf);
+	@Test
+	public void testDecodeResponseFailed2() throws Exception {
+		// build a responseMessage data
+		String content = "this is rpc content";
+		String contentType = content.getClass().getName();
+		RpcMessageHeader header = new RpcMessageHeader();
+		header.addItem(new RpcMessageHeader.Item("this is header key", "this is header value"));
+		Integer requestId = IDGenerator.nextRequestId();
+		RpcResponseMessage responseMessage = new RpcResponseMessage(requestId);
+		responseMessage.setHeader(header);
+		responseMessage.setContent(content);
+		responseMessage.setContentType(contentType);
+		responseMessage.setStatus(ResponseStatus.SUCCESS.getCode());
+		responseMessage.serialize();
 
+		RpcMessageEncoder encoder = new RpcMessageEncoder();
+		ByteBuf byteBuf = AbstractByteBufAllocator.DEFAULT.buffer();
+		encoder.encode(mock(ChannelHandlerContext.class), responseMessage, byteBuf);
 
-        // half of data
-        int mid = byteBuf.readableBytes() / 2;
-        int readerIndex = byteBuf.readerIndex();
-        byteBuf.setIndex(readerIndex, readerIndex + mid);
+		// less than response data header length
+		int readerIndex = byteBuf.readerIndex();
+		byteBuf.setIndex(readerIndex, RESPONSE_HEADER_LEN - 1);
 
-        RpcMessageDecoder decoder = new RpcMessageDecoder();
-        List<Object> out = new ArrayList<>();
-        decoder.decode(mock(ChannelHandlerContext.class), byteBuf, out);
+		RpcMessageDecoder decoder = new RpcMessageDecoder();
+		List<Object> out = new ArrayList<>();
+		decoder.decode(mock(ChannelHandlerContext.class), byteBuf, out);
 
-        Assertions.assertTrue(out.isEmpty());
-        Assertions.assertEquals(readerIndex, byteBuf.readerIndex());
+		Assertions.assertTrue(out.isEmpty());
+		Assertions.assertEquals(readerIndex, byteBuf.readerIndex());
 
-        byteBuf.release();
-    }
+		byteBuf.release();
+	}
 
-    @Test
-    public void testDecodeResponseFailed2() throws Exception {
-        // build a responseMessage data
-        String content = "this is rpc content";
-        String contentType = content.getClass().getName();
-        RpcMessageHeader header = new RpcMessageHeader();
-        header.addItem(new RpcMessageHeader.Item("this is header key", "this is header value"));
-        Integer requestId = IDGenerator.nextRequestId();
-        RpcResponseMessage responseMessage = new RpcResponseMessage(requestId);
-        responseMessage.setHeader(header);
-        responseMessage.setContent(content);
-        responseMessage.setContentType(contentType);
-        responseMessage.setStatus(ResponseStatus.SUCCESS.getCode());
-        responseMessage.serialize();
-
-        RpcMessageEncoder encoder = new RpcMessageEncoder();
-        ByteBuf byteBuf = AbstractByteBufAllocator.DEFAULT.buffer();
-        encoder.encode(mock(ChannelHandlerContext.class), responseMessage, byteBuf);
-
-
-        // less than response data header length
-        int readerIndex = byteBuf.readerIndex();
-        byteBuf.setIndex(readerIndex, RESPONSE_HEADER_LEN - 1);
-
-        RpcMessageDecoder decoder = new RpcMessageDecoder();
-        List<Object> out = new ArrayList<>();
-        decoder.decode(mock(ChannelHandlerContext.class), byteBuf, out);
-
-        Assertions.assertTrue(out.isEmpty());
-        Assertions.assertEquals(readerIndex, byteBuf.readerIndex());
-
-        byteBuf.release();
-    }
 }

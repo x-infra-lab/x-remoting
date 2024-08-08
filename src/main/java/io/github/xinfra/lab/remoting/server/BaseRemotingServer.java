@@ -35,117 +35,118 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public abstract class BaseRemotingServer extends AbstractLifeCycle implements RemotingServer {
 
-    protected SocketAddress localAddress;
-    private ServerBootstrap serverBootstrap;
+	protected SocketAddress localAddress;
 
-    private final EventLoopGroup bossGroup = Epoll.isAvailable() ?
-            new EpollEventLoopGroup(1, new NamedThreadFactory("Remoting-Server-Boss")) :
-            new NioEventLoopGroup(1, new NamedThreadFactory("Remoting-Server-Boss"));
+	private ServerBootstrap serverBootstrap;
 
-    private static final EventLoopGroup workerGroup = Epoll.isAvailable() ?
-            new EpollEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2,
-                    new NamedThreadFactory("Remoting-Server-Worker")) :
-            new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2,
-                    new NamedThreadFactory("Remoting-Server-Worker"));
+	private final EventLoopGroup bossGroup = Epoll.isAvailable()
+			? new EpollEventLoopGroup(1, new NamedThreadFactory("Remoting-Server-Boss"))
+			: new NioEventLoopGroup(1, new NamedThreadFactory("Remoting-Server-Boss"));
 
-    private static final Class<? extends ServerChannel> serverChannelClass = Epoll.isAvailable() ?
-            EpollServerSocketChannel.class : NioServerSocketChannel.class;
+	private static final EventLoopGroup workerGroup = Epoll.isAvailable()
+			? new EpollEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2,
+					new NamedThreadFactory("Remoting-Server-Worker"))
+			: new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2,
+					new NamedThreadFactory("Remoting-Server-Worker"));
 
-    private ChannelHandler connectionEventHandler;
-    private ChannelHandler handler;
-    private ChannelHandler serverIdleHandler = new ServerIdleHandler();
+	private static final Class<? extends ServerChannel> serverChannelClass = Epoll.isAvailable()
+			? EpollServerSocketChannel.class : NioServerSocketChannel.class;
 
-    protected ServerConnectionManager connectionManager;
+	private ChannelHandler connectionEventHandler;
 
-    private RemotingServerConfig config;
+	private ChannelHandler handler;
 
-    public BaseRemotingServer(RemotingServerConfig config) {
-        Validate.notNull(config, "RemotingServerConfig can not be null");
-        Validate.inclusiveBetween(0, 0xFFFF, config.getPort(), "port out of range: " + config.getPort());
+	private ChannelHandler serverIdleHandler = new ServerIdleHandler();
 
-        this.config = config;
-        this.handler = new ProtocolHandler();
+	protected ServerConnectionManager connectionManager;
 
-        if (this.config.isManageConnection()) {
-            this.connectionManager = new ServerConnectionManager();
-            this.connectionEventHandler = new ConnectionEventHandler(this.connectionManager);
-        } else {
-            this.connectionEventHandler = new ConnectionEventHandler();
-        }
-    }
+	private RemotingServerConfig config;
 
+	public BaseRemotingServer(RemotingServerConfig config) {
+		Validate.notNull(config, "RemotingServerConfig can not be null");
+		Validate.inclusiveBetween(0, 0xFFFF, config.getPort(), "port out of range: " + config.getPort());
 
-    @Override
-    public void startup() {
-        super.startup();
-        if (this.connectionManager != null) {
-            this.connectionManager.startup();
-        }
-        this.serverBootstrap = new ServerBootstrap();
-        this.serverBootstrap
-                .group(bossGroup, workerGroup)
-                .channel(serverChannelClass)
-                .childHandler(
-                        new ChannelInitializer<SocketChannel>() {
-                            @Override
-                            protected void initChannel(SocketChannel channel) throws Exception {
-                                ChannelPipeline pipeline = channel.pipeline();
+		this.config = config;
+		this.handler = new ProtocolHandler();
 
-                                pipeline.addLast("encoder", new ProtocolEncoder());
-                                pipeline.addLast("decoder", new ProtocolDecoder());
+		if (this.config.isManageConnection()) {
+			this.connectionManager = new ServerConnectionManager();
+			this.connectionEventHandler = new ConnectionEventHandler(this.connectionManager);
+		}
+		else {
+			this.connectionEventHandler = new ConnectionEventHandler();
+		}
+	}
 
-                                if (config.isIdleSwitch()) {
-                                    pipeline.addLast("idleStateHandler", new IdleStateHandler(60000, 60000, 0, TimeUnit.MILLISECONDS));
-                                    pipeline.addLast("serverIdleHandler", serverIdleHandler);
-                                }
-                                pipeline.addLast("handler", handler);
-                                pipeline.addLast("connectionEventHandler", connectionEventHandler);
+	@Override
+	public void startup() {
+		super.startup();
+		if (this.connectionManager != null) {
+			this.connectionManager.startup();
+		}
+		this.serverBootstrap = new ServerBootstrap();
+		this.serverBootstrap.group(bossGroup, workerGroup)
+			.channel(serverChannelClass)
+			.childHandler(new ChannelInitializer<SocketChannel>() {
+				@Override
+				protected void initChannel(SocketChannel channel) throws Exception {
+					ChannelPipeline pipeline = channel.pipeline();
 
+					pipeline.addLast("encoder", new ProtocolEncoder());
+					pipeline.addLast("decoder", new ProtocolDecoder());
 
-                                createConnection(channel);
-                            }
-                        }
-                );
+					if (config.isIdleSwitch()) {
+						pipeline.addLast("idleStateHandler",
+								new IdleStateHandler(60000, 60000, 0, TimeUnit.MILLISECONDS));
+						pipeline.addLast("serverIdleHandler", serverIdleHandler);
+					}
+					pipeline.addLast("handler", handler);
+					pipeline.addLast("connectionEventHandler", connectionEventHandler);
 
+					createConnection(channel);
+				}
+			});
 
-        try {
-            this.localAddress = new InetSocketAddress(InetAddress.getLocalHost(), config.getPort());
-            ChannelFuture channelFuture = this.serverBootstrap.bind(localAddress).sync();
-            if (!channelFuture.isSuccess()) {
-                throw channelFuture.cause();
-            }
-            // need update
-            if (config.getPort() == 0) {
-                this.localAddress = channelFuture.channel().localAddress();
-            }
-        } catch (Throwable throwable) {
-            throw new RuntimeException("serverBootstrap bind fail. ", throwable);
-        }
-    }
+		try {
+			this.localAddress = new InetSocketAddress(InetAddress.getLocalHost(), config.getPort());
+			ChannelFuture channelFuture = this.serverBootstrap.bind(localAddress).sync();
+			if (!channelFuture.isSuccess()) {
+				throw channelFuture.cause();
+			}
+			// need update
+			if (config.getPort() == 0) {
+				this.localAddress = channelFuture.channel().localAddress();
+			}
+		}
+		catch (Throwable throwable) {
+			throw new RuntimeException("serverBootstrap bind fail. ", throwable);
+		}
+	}
 
-    @AccessForTest
-    protected void createConnection(SocketChannel channel) {
-        Connection connection = new Connection(protocol(), channel);
-        if (config.isManageConnection()) {
-            connectionManager.add(connection);
-        }
-    }
+	@AccessForTest
+	protected void createConnection(SocketChannel channel) {
+		Connection connection = new Connection(protocol(), channel);
+		if (config.isManageConnection()) {
+			connectionManager.add(connection);
+		}
+	}
 
-    @Override
-    public void shutdown() {
-        super.shutdown();
-        if (connectionManager != null) {
-            connectionManager.shutdown();
-        }
-    }
+	@Override
+	public void shutdown() {
+		super.shutdown();
+		if (connectionManager != null) {
+			connectionManager.shutdown();
+		}
+	}
 
-    @Override
-    public SocketAddress localAddress() {
-        return this.localAddress;
-    }
+	@Override
+	public SocketAddress localAddress() {
+		return this.localAddress;
+	}
 
-    @Override
-    public void registerUserProcessor(UserProcessor<?> userProcessor) {
-        protocol().messageHandler().registerUserProcessor(userProcessor);
-    }
+	@Override
+	public void registerUserProcessor(UserProcessor<?> userProcessor) {
+		protocol().messageHandler().registerUserProcessor(userProcessor);
+	}
+
 }

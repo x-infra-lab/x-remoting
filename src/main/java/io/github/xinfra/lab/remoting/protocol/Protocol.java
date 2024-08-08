@@ -8,19 +8,18 @@ import io.github.xinfra.lab.remoting.message.MessageHandler;
 
 import java.io.Closeable;
 
-
 public interface Protocol extends Closeable {
 
-    byte[] protocolCode();
+	byte[] protocolCode();
 
-    MessageEncoder encoder();
+	MessageEncoder encoder();
 
-    MessageDecoder decoder();
+	MessageDecoder decoder();
 
-    MessageHandler messageHandler();
+	MessageHandler messageHandler();
 
-    MessageFactory messageFactory();
+	MessageFactory messageFactory();
 
-    HeartbeatTrigger heartbeatTrigger();
+	HeartbeatTrigger heartbeatTrigger();
 
 }

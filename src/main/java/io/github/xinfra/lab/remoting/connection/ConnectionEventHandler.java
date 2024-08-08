@@ -12,71 +12,72 @@ import java.net.SocketAddress;
 
 import static io.github.xinfra.lab.remoting.connection.Connection.CONNECTION;
 
-
 @ChannelHandler.Sharable
 @Slf4j
 public class ConnectionEventHandler extends ChannelDuplexHandler {
 
-    private ConnectionManager connectionManager;
+	private ConnectionManager connectionManager;
 
-    public ConnectionEventHandler(ConnectionManager connectionManager) {
-        Validate.notNull(connectionManager, "connectionManager can not be null.");
-        this.connectionManager = connectionManager;
-    }
+	public ConnectionEventHandler(ConnectionManager connectionManager) {
+		Validate.notNull(connectionManager, "connectionManager can not be null.");
+		this.connectionManager = connectionManager;
+	}
 
-    public ConnectionEventHandler() {
-        // server side do not manage connections
-    }
+	public ConnectionEventHandler() {
+		// server side do not manage connections
+	}
 
-    @Override
-    public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
-        Connection connection = ctx.channel().attr(CONNECTION).get();
-        connection.onClose();
-        super.close(ctx, promise);
-    }
+	@Override
+	public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
+		Connection connection = ctx.channel().attr(CONNECTION).get();
+		connection.onClose();
+		super.close(ctx, promise);
+	}
 
-    @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        userEventTriggered(ctx, ConnectionEvent.CONNECT);
+	@Override
+	public void channelActive(ChannelHandlerContext ctx) throws Exception {
+		userEventTriggered(ctx, ConnectionEvent.CONNECT);
 
-        super.channelActive(ctx);
-    }
+		super.channelActive(ctx);
+	}
 
-    @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        Connection connection = ctx.channel().attr(CONNECTION).get();
-        if (connectionManager != null && connectionManager.isStarted()) {
-            connectionManager.removeAndClose(connection);
-        }
-        userEventTriggered(ctx, ConnectionEvent.CLOSE);
+	@Override
+	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+		Connection connection = ctx.channel().attr(CONNECTION).get();
+		if (connectionManager != null && connectionManager.isStarted()) {
+			connectionManager.removeAndClose(connection);
+		}
+		userEventTriggered(ctx, ConnectionEvent.CLOSE);
 
-        super.channelInactive(ctx);
-    }
+		super.channelInactive(ctx);
+	}
 
-    @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (evt instanceof ConnectionEvent) {
-            Connection connection = ctx.channel().attr(CONNECTION).get();
-            ConnectionEvent connectionEvent = (ConnectionEvent) evt;
-            if (connectionEvent == ConnectionEvent.CLOSE) {
-                if (connectionManager != null && connectionManager.isStarted()) {
-                    connectionManager.asyncReconnect(connection.remoteAddress());
-                }
-            }
-        } else {
-            super.userEventTriggered(ctx, evt);
-        }
-    }
+	@Override
+	public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+		if (evt instanceof ConnectionEvent) {
+			Connection connection = ctx.channel().attr(CONNECTION).get();
+			ConnectionEvent connectionEvent = (ConnectionEvent) evt;
+			if (connectionEvent == ConnectionEvent.CLOSE) {
+				if (connectionManager != null && connectionManager.isStarted()) {
+					connectionManager.asyncReconnect(connection.remoteAddress());
+				}
+			}
+		}
+		else {
+			super.userEventTriggered(ctx, evt);
+		}
+	}
 
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        Channel channel = ctx.channel();
-        SocketAddress localAddress = channel.localAddress();
-        SocketAddress remoteAddress = channel.remoteAddress();
-        log.warn("exceptionCaught channel localAddress:{} remoteAddress:{}, close the channel! cause by",
-                localAddress, remoteAddress, cause);
+	@Override
+	public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+		Channel channel = ctx.channel();
+		SocketAddress localAddress = channel.localAddress();
+		SocketAddress remoteAddress = channel.remoteAddress();
+		log.warn("exceptionCaught channel localAddress:{} remoteAddress:{}, close the channel! cause by", localAddress,
+				remoteAddress, cause);
 
-        Connection connection = ctx.channel().attr(CONNECTION).get();
-        connection.close();
-    }
+		Connection connection = ctx.channel().attr(CONNECTION).get();
+		connection.close();
+	}
+
 }

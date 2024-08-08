@@ -13,51 +13,57 @@ import java.nio.charset.StandardCharsets;
 
 public class TestProtocol implements Protocol {
 
-    @Setter
-    private byte[] protocolCode = "test".getBytes(StandardCharsets.UTF_8);
-    @Setter
-    private MessageEncoder testMessageEncoder;
-    @Setter
-    private MessageDecoder testMessageDecoder;
-    @Setter
-    private MessageHandler testMessageHandler;
-    @Setter
-    private MessageFactory testMessageFactory;
-    @Setter
-    private HeartbeatTrigger testHeartbeatTrigger;
+	@Setter
+	private byte[] protocolCode = "test".getBytes(StandardCharsets.UTF_8);
 
-    @Override
-    public byte[] protocolCode() {
-        return protocolCode;
-    }
+	@Setter
+	private MessageEncoder testMessageEncoder;
 
-    @Override
-    public MessageEncoder encoder() {
-        return testMessageEncoder;
-    }
+	@Setter
+	private MessageDecoder testMessageDecoder;
 
-    @Override
-    public MessageDecoder decoder() {
-        return testMessageDecoder;
-    }
+	@Setter
+	private MessageHandler testMessageHandler;
 
-    @Override
-    public MessageHandler messageHandler() {
-        return testMessageHandler;
-    }
+	@Setter
+	private MessageFactory testMessageFactory;
 
-    @Override
-    public MessageFactory messageFactory() {
-        return testMessageFactory;
-    }
+	@Setter
+	private HeartbeatTrigger testHeartbeatTrigger;
 
-    @Override
-    public HeartbeatTrigger heartbeatTrigger() {
-        return testHeartbeatTrigger;
-    }
+	@Override
+	public byte[] protocolCode() {
+		return protocolCode;
+	}
 
-    @Override
-    public void close() throws IOException {
-        // do nothing
-    }
+	@Override
+	public MessageEncoder encoder() {
+		return testMessageEncoder;
+	}
+
+	@Override
+	public MessageDecoder decoder() {
+		return testMessageDecoder;
+	}
+
+	@Override
+	public MessageHandler messageHandler() {
+		return testMessageHandler;
+	}
+
+	@Override
+	public MessageFactory messageFactory() {
+		return testMessageFactory;
+	}
+
+	@Override
+	public HeartbeatTrigger heartbeatTrigger() {
+		return testHeartbeatTrigger;
+	}
+
+	@Override
+	public void close() throws IOException {
+		// do nothing
+	}
+
 }

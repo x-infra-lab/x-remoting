@@ -31,141 +31,144 @@ import static org.mockito.Mockito.verify;
 
 public class RpcHeartbeatTriggerTest {
 
-    private RpcProtocol protocol;
+	private RpcProtocol protocol;
 
-    @BeforeEach
-    public void beforeEach() {
-        protocol = new RpcProtocol();
-    }
+	@BeforeEach
+	public void beforeEach() {
+		protocol = new RpcProtocol();
+	}
 
-    @AfterEach
-    public void afterEach() throws IOException {
-        protocol.close();
-    }
+	@AfterEach
+	public void afterEach() throws IOException {
+		protocol.close();
+	}
 
-    @Test
-    public void testHeartbeat() throws InterruptedException, TimeoutException {
-        RpcHeartbeatTrigger trigger = protocol.heartbeatTrigger();
+	@Test
+	public void testHeartbeat() throws InterruptedException, TimeoutException {
+		RpcHeartbeatTrigger trigger = protocol.heartbeatTrigger();
 
-        ChannelHandlerContext context = mock(ChannelHandlerContext.class);
-        EmbeddedChannel channel = new EmbeddedChannel();
-        channel = spy(channel);
-        doReturn(channel).when(context).channel();
-        doReturn(channel.newSucceededFuture()).when(channel).writeAndFlush(any());
-        new Connection(protocol, channel);
+		ChannelHandlerContext context = mock(ChannelHandlerContext.class);
+		EmbeddedChannel channel = new EmbeddedChannel();
+		channel = spy(channel);
+		doReturn(channel).when(context).channel();
+		doReturn(channel.newSucceededFuture()).when(channel).writeAndFlush(any());
+		new Connection(protocol, channel);
 
-        trigger.triggerHeartBeat(context);
+		trigger.triggerHeartBeat(context);
 
-        EmbeddedChannel finalChannel = channel;
-        Wait.untilIsTrue(() -> {
-            try {
-                verify(finalChannel, atLeastOnce()).writeAndFlush(any());
-                return true;
-            } catch (Throwable t) {
-                return false;
-            }
-        }, 30, 100);
+		EmbeddedChannel finalChannel = channel;
+		Wait.untilIsTrue(() -> {
+			try {
+				verify(finalChannel, atLeastOnce()).writeAndFlush(any());
+				return true;
+			}
+			catch (Throwable t) {
+				return false;
+			}
+		}, 30, 100);
 
-        // verify request
-        verify(channel, times(1)).writeAndFlush(argThat(
-                new ArgumentMatcher<RpcRequestMessage>() {
-                    @Override
-                    public boolean matches(RpcRequestMessage argument) {
+		// verify request
+		verify(channel, times(1)).writeAndFlush(argThat(new ArgumentMatcher<RpcRequestMessage>() {
+			@Override
+			public boolean matches(RpcRequestMessage argument) {
 
+				if (!Objects.equals(argument.messageType(), MessageType.heartbeatRequest)) {
+					return false;
+				}
+				return true;
+			}
+		}));
+	}
 
-                        if (!Objects.equals(argument.messageType(), MessageType.heartbeatRequest)) {
-                            return false;
-                        }
-                        return true;
-                    }
-                }
-        ));
-    }
+	@Test
+	public void testHeartbeatFailed() throws InterruptedException, TimeoutException {
+		RpcHeartbeatTrigger trigger = protocol.heartbeatTrigger();
 
+		ChannelHandlerContext context = mock(ChannelHandlerContext.class);
+		EmbeddedChannel channel = new EmbeddedChannel();
+		channel = spy(channel);
+		doReturn(channel).when(context).channel();
+		doReturn(channel.newFailedFuture(new RuntimeException("testHeartbeatFailed"))).when(channel)
+			.writeAndFlush(any());
+		Connection connection = new Connection(protocol, channel);
+		connection = spy(connection);
+		channel.attr(CONNECTION).set(connection);
 
-    @Test
-    public void testHeartbeatFailed() throws InterruptedException, TimeoutException {
-        RpcHeartbeatTrigger trigger = protocol.heartbeatTrigger();
+		trigger.triggerHeartBeat(context);
+		Connection finalConnection = connection;
+		Wait.untilIsTrue(() -> {
+			try {
+				return finalConnection.getHeartbeatFailCnt() > 0;
+			}
+			catch (Throwable t) {
+				return false;
+			}
+		}, 30, 100);
 
-        ChannelHandlerContext context = mock(ChannelHandlerContext.class);
-        EmbeddedChannel channel = new EmbeddedChannel();
-        channel = spy(channel);
-        doReturn(channel).when(context).channel();
-        doReturn(channel.newFailedFuture(new RuntimeException("testHeartbeatFailed"))).when(channel).writeAndFlush(any());
-        Connection connection = new Connection(protocol, channel);
-        connection = spy(connection);
-        channel.attr(CONNECTION).set(connection);
+		Assertions.assertEquals(connection.getHeartbeatFailCnt(), 1);
 
-        trigger.triggerHeartBeat(context);
-        Connection finalConnection = connection;
-        Wait.untilIsTrue(() -> {
-            try {
-                return finalConnection.getHeartbeatFailCnt() > 0;
-            } catch (Throwable t) {
-                return false;
-            }
-        }, 30, 100);
+		// again
+		trigger.triggerHeartBeat(context);
+		Wait.untilIsTrue(() -> {
+			try {
+				return finalConnection.getHeartbeatFailCnt() > 1;
+			}
+			catch (Throwable t) {
+				return false;
+			}
+		}, 30, 100);
 
-        Assertions.assertEquals(connection.getHeartbeatFailCnt(), 1);
+		Assertions.assertEquals(connection.getHeartbeatFailCnt(), 2);
 
-        // again
-        trigger.triggerHeartBeat(context);
-        Wait.untilIsTrue(() -> {
-            try {
-                return finalConnection.getHeartbeatFailCnt() > 1;
-            } catch (Throwable t) {
-                return false;
-            }
-        }, 30, 100);
+		// again
+		trigger.triggerHeartBeat(context);
+		Wait.untilIsTrue(() -> {
+			try {
+				return finalConnection.getHeartbeatFailCnt() > 2;
+			}
+			catch (Throwable t) {
+				return false;
+			}
+		}, 30, 100);
 
-        Assertions.assertEquals(connection.getHeartbeatFailCnt(), 2);
+		Assertions.assertEquals(connection.getHeartbeatFailCnt(), 3);
 
-        // again
-        trigger.triggerHeartBeat(context);
-        Wait.untilIsTrue(() -> {
-            try {
-                return finalConnection.getHeartbeatFailCnt() > 2;
-            } catch (Throwable t) {
-                return false;
-            }
-        }, 30, 100);
+		// again
+		trigger.triggerHeartBeat(context);
+		Wait.untilIsTrue(() -> {
+			try {
+				return finalConnection.getHeartbeatFailCnt() > 3;
+			}
+			catch (Throwable t) {
+				return false;
+			}
+		}, 30, 100);
 
-        Assertions.assertEquals(connection.getHeartbeatFailCnt(), 3);
+		Assertions.assertEquals(connection.getHeartbeatFailCnt(), 4);
 
-        // again
-        trigger.triggerHeartBeat(context);
-        Wait.untilIsTrue(() -> {
-            try {
-                return finalConnection.getHeartbeatFailCnt() > 3;
-            } catch (Throwable t) {
-                return false;
-            }
-        }, 30, 100);
+		// again
+		trigger.triggerHeartBeat(context);
+		verify(connection, times(1)).close();
+	}
 
-        Assertions.assertEquals(connection.getHeartbeatFailCnt(), 4);
+	@Test
+	public void testHeartbeatOverThreshold() throws InterruptedException, TimeoutException {
+		RpcHeartbeatTrigger trigger = protocol.heartbeatTrigger();
 
-        // again
-        trigger.triggerHeartBeat(context);
-        verify(connection, times(1)).close();
-    }
+		ChannelHandlerContext context = mock(ChannelHandlerContext.class);
+		EmbeddedChannel channel = new EmbeddedChannel();
+		channel = spy(channel);
+		doReturn(channel).when(context).channel();
+		doReturn(channel.newSucceededFuture()).when(channel).writeAndFlush(any());
+		Connection connection = new Connection(protocol, channel);
+		connection = spy(connection);
+		channel.attr(CONNECTION).set(connection);
 
-    @Test
-    public void testHeartbeatOverThreshold() throws InterruptedException, TimeoutException {
-        RpcHeartbeatTrigger trigger = protocol.heartbeatTrigger();
+		connection.setHeartbeatFailCnt(4);
 
-        ChannelHandlerContext context = mock(ChannelHandlerContext.class);
-        EmbeddedChannel channel = new EmbeddedChannel();
-        channel = spy(channel);
-        doReturn(channel).when(context).channel();
-        doReturn(channel.newSucceededFuture()).when(channel).writeAndFlush(any());
-        Connection connection = new Connection(protocol, channel);
-        connection = spy(connection);
-        channel.attr(CONNECTION).set(connection);
+		trigger.triggerHeartBeat(context);
 
-        connection.setHeartbeatFailCnt(4);
+		verify(connection, times(1)).close();
+	}
 
-        trigger.triggerHeartBeat(context);
-
-        verify(connection, times(1)).close();
-    }
 }

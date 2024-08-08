@@ -16,40 +16,42 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 public class ProtocolHeartBeatHandlerTest {
-    TestProtocol testProtocol = new TestProtocol();
 
-    @Test
-    public void testHeartBeat() throws InterruptedException {
+	TestProtocol testProtocol = new TestProtocol();
 
-        ProtocolHeartBeatHandler protocolHeartBeatHandler = new ProtocolHeartBeatHandler();
-        EmbeddedChannel channel = new EmbeddedChannel();
-        channel.pipeline().addLast(new IdleStateHandler(5, 5, 5, TimeUnit.MILLISECONDS));
-        channel.pipeline().addLast(protocolHeartBeatHandler);
-        new Connection(testProtocol, channel);
+	@Test
+	public void testHeartBeat() throws InterruptedException {
 
-        HeartbeatTrigger heartbeatTrigger = new HeartbeatTrigger() {
-            @Override
-            public void triggerHeartBeat(ChannelHandlerContext ctx) {
-            }
+		ProtocolHeartBeatHandler protocolHeartBeatHandler = new ProtocolHeartBeatHandler();
+		EmbeddedChannel channel = new EmbeddedChannel();
+		channel.pipeline().addLast(new IdleStateHandler(5, 5, 5, TimeUnit.MILLISECONDS));
+		channel.pipeline().addLast(protocolHeartBeatHandler);
+		new Connection(testProtocol, channel);
 
-            @Override
-            public void setHeartbeatMaxFailCount(int failCount) {
+		HeartbeatTrigger heartbeatTrigger = new HeartbeatTrigger() {
+			@Override
+			public void triggerHeartBeat(ChannelHandlerContext ctx) {
+			}
 
-            }
+			@Override
+			public void setHeartbeatMaxFailCount(int failCount) {
 
-            @Override
-            public void setHeartbeatTimeoutMills(int timeoutMills) {
+			}
 
-            }
-        };
+			@Override
+			public void setHeartbeatTimeoutMills(int timeoutMills) {
 
-        HeartbeatTrigger spyHeartbeatTrigger = spy(heartbeatTrigger);
+			}
+		};
 
-        testProtocol.setTestHeartbeatTrigger(spyHeartbeatTrigger);
+		HeartbeatTrigger spyHeartbeatTrigger = spy(heartbeatTrigger);
 
-        // simulate IdleStateHandler#fireUserEventTriggered
-        channel.pipeline().firstContext().fireUserEventTriggered(ALL_IDLE_STATE_EVENT);
+		testProtocol.setTestHeartbeatTrigger(spyHeartbeatTrigger);
 
-        verify(spyHeartbeatTrigger, atLeastOnce()).triggerHeartBeat(any());
-    }
+		// simulate IdleStateHandler#fireUserEventTriggered
+		channel.pipeline().firstContext().fireUserEventTriggered(ALL_IDLE_STATE_EVENT);
+
+		verify(spyHeartbeatTrigger, atLeastOnce()).triggerHeartBeat(any());
+	}
+
 }

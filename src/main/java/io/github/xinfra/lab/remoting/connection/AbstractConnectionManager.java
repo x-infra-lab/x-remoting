@@ -13,123 +13,122 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public abstract class AbstractConnectionManager extends AbstractLifeCycle implements ConnectionManager {
 
-    @AccessForTest
-    protected Map<SocketAddress, ConnectionHolder> connections = new ConcurrentHashMap<>();
+	@AccessForTest
+	protected Map<SocketAddress, ConnectionHolder> connections = new ConcurrentHashMap<>();
 
-    protected ConnectionFactory connectionFactory;
+	protected ConnectionFactory connectionFactory;
 
-    private ConnectionSelectStrategy connectionSelectStrategy = new RoundRobinConnectionSelectStrategy();
+	private ConnectionSelectStrategy connectionSelectStrategy = new RoundRobinConnectionSelectStrategy();
 
-    protected ConnectionManagerConfig config = new ConnectionManagerConfig();
+	protected ConnectionManagerConfig config = new ConnectionManagerConfig();
 
+	public AbstractConnectionManager() {
+	}
 
-    public AbstractConnectionManager() {
-    }
+	public AbstractConnectionManager(ConnectionManagerConfig config) {
+		this.config = config;
+	}
 
-    public AbstractConnectionManager(ConnectionManagerConfig config) {
-        this.config = config;
-    }
+	@Override
+	public synchronized Connection getOrCreateIfAbsent(SocketAddress socketAddress) throws RemotingException {
+		ensureStarted();
+		Validate.notNull(socketAddress, "socketAddress can not be null");
 
+		ConnectionHolder connectionHolder = connections.get(socketAddress);
+		if (connectionHolder == null) {
+			connectionHolder = createConnectionHolder(socketAddress);
+			createConnectionForHolder(socketAddress, connectionHolder, config.getConnectionNumPreEndpoint());
+		}
 
-    @Override
-    public synchronized Connection getOrCreateIfAbsent(SocketAddress socketAddress) throws RemotingException {
-        ensureStarted();
-        Validate.notNull(socketAddress, "socketAddress can not be null");
+		return connectionHolder.get();
+	}
 
-        ConnectionHolder connectionHolder = connections.get(socketAddress);
-        if (connectionHolder == null) {
-            connectionHolder = createConnectionHolder(socketAddress);
-            createConnectionForHolder(socketAddress, connectionHolder, config.getConnectionNumPreEndpoint());
-        }
+	@Override
+	public void check(Connection connection) throws RemotingException {
+		ensureStarted();
+		Validate.notNull(connection, "connection can not be null");
 
-        return connectionHolder.get();
-    }
+		if (connection.getChannel() == null || !connection.getChannel().isActive()) {
+			this.removeAndClose(connection);
+			throw new RemotingException("Check connection failed for address: " + connection.remoteAddress());
+		}
+		if (!connection.getChannel().isWritable()) {
+			// No remove. Most of the time it is unwritable temporarily.
+			throw new RemotingException(
+					"Check connection failed for address: " + connection.remoteAddress() + ", maybe write overflow!");
+		}
+	}
 
-    @Override
-    public void check(Connection connection) throws RemotingException {
-        ensureStarted();
-        Validate.notNull(connection, "connection can not be null");
+	@Override
+	public synchronized void removeAndClose(Connection connection) {
+		ensureStarted();
+		Validate.notNull(connection, "connection can not be null");
 
-        if (connection.getChannel() == null || !connection.getChannel().isActive()) {
-            this.removeAndClose(connection);
-            throw new RemotingException("Check connection failed for address: "
-                    + connection.remoteAddress());
-        }
-        if (!connection.getChannel().isWritable()) {
-            // No remove. Most of the time it is unwritable temporarily.
-            throw new RemotingException("Check connection failed for address: "
-                    + connection.remoteAddress() + ", maybe write overflow!");
-        }
-    }
+		SocketAddress socketAddress = connection.remoteAddress();
+		ConnectionHolder connectionHolder = connections.get(socketAddress);
+		if (connectionHolder == null) {
+			connection.close();
+		}
+		else {
+			connectionHolder.removeAndClose(connection);
+			if (connectionHolder.isEmpty()) {
+				connections.remove(socketAddress);
+			}
+		}
+	}
 
-    @Override
-    public synchronized void removeAndClose(Connection connection) {
-        ensureStarted();
-        Validate.notNull(connection, "connection can not be null");
+	@Override
+	public Connection get(SocketAddress socketAddress) {
+		ensureStarted();
+		Validate.notNull(socketAddress, "socketAddress can not be null");
 
-        SocketAddress socketAddress = connection.remoteAddress();
-        ConnectionHolder connectionHolder = connections.get(socketAddress);
-        if (connectionHolder == null) {
-            connection.close();
-        } else {
-            connectionHolder.removeAndClose(connection);
-            if (connectionHolder.isEmpty()) {
-                connections.remove(socketAddress);
-            }
-        }
-    }
+		ConnectionHolder connectionHolder = connections.get(socketAddress);
+		if (connectionHolder == null) {
+			return null;
+		}
+		return connectionHolder.get();
+	}
 
-    @Override
-    public Connection get(SocketAddress socketAddress) {
-        ensureStarted();
-        Validate.notNull(socketAddress, "socketAddress can not be null");
+	@Override
+	public synchronized void add(Connection connection) {
+		ensureStarted();
+		Validate.notNull(connection, "connection can not be null");
 
-        ConnectionHolder connectionHolder = connections.get(socketAddress);
-        if (connectionHolder == null) {
-            return null;
-        }
-        return connectionHolder.get();
-    }
+		SocketAddress socketAddress = connection.remoteAddress();
+		ConnectionHolder connectionHolder = connections.get(socketAddress);
+		if (connectionHolder == null) {
+			connectionHolder = createConnectionHolder(socketAddress);
+			connectionHolder.add(connection);
+		}
+		else {
+			connectionHolder.add(connection);
+		}
+	}
 
-    @Override
-    public synchronized void add(Connection connection) {
-        ensureStarted();
-        Validate.notNull(connection, "connection can not be null");
+	@Override
+	public synchronized void shutdown() {
+		super.shutdown();
+		for (Map.Entry<SocketAddress, ConnectionHolder> entry : connections.entrySet()) {
+			SocketAddress socketAddress = entry.getKey();
+			ConnectionHolder connectionHolder = entry.getValue();
+			connectionHolder.removeAndCloseAll();
+			connections.remove(socketAddress);
+		}
 
-        SocketAddress socketAddress = connection.remoteAddress();
-        ConnectionHolder connectionHolder = connections.get(socketAddress);
-        if (connectionHolder == null) {
-            connectionHolder = createConnectionHolder(socketAddress);
-            connectionHolder.add(connection);
-        } else {
-            connectionHolder.add(connection);
-        }
-    }
+	}
 
-    @Override
-    public synchronized void shutdown() {
-        super.shutdown();
-        for (Map.Entry<SocketAddress, ConnectionHolder> entry : connections.entrySet()) {
-            SocketAddress socketAddress = entry.getKey();
-            ConnectionHolder connectionHolder = entry.getValue();
-            connectionHolder.removeAndCloseAll();
-            connections.remove(socketAddress);
-        }
+	protected ConnectionHolder createConnectionHolder(SocketAddress socketAddress) {
+		ConnectionHolder connectionHolder = new ConnectionHolder(connectionSelectStrategy);
+		connections.put(socketAddress, connectionHolder);
+		return connectionHolder;
+	}
 
-    }
-
-    protected ConnectionHolder createConnectionHolder(SocketAddress socketAddress) {
-        ConnectionHolder connectionHolder = new ConnectionHolder(connectionSelectStrategy);
-        connections.put(socketAddress, connectionHolder);
-        return connectionHolder;
-    }
-
-    protected void createConnectionForHolder(SocketAddress socketAddress, ConnectionHolder connectionHolder, int size) throws RemotingException {
-        for (int i = 0; i < size; i++) {
-            Connection connection = connectionFactory.create(socketAddress);
-            connectionHolder.add(connection);
-        }
-    }
-
+	protected void createConnectionForHolder(SocketAddress socketAddress, ConnectionHolder connectionHolder, int size)
+			throws RemotingException {
+		for (int i = 0; i < size; i++) {
+			Connection connection = connectionFactory.create(socketAddress);
+			connectionHolder.add(connection);
+		}
+	}
 
 }

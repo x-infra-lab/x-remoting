@@ -9,9 +9,10 @@ import java.net.SocketAddress;
 
 public interface RemotingServer extends LifeCycle {
 
-    SocketAddress localAddress();
+	SocketAddress localAddress();
 
-    void registerUserProcessor(UserProcessor<?> userProcessor);
+	void registerUserProcessor(UserProcessor<?> userProcessor);
 
-    Protocol protocol();
+	Protocol protocol();
+
 }

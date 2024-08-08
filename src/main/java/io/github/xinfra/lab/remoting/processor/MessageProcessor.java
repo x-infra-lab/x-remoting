@@ -7,11 +7,10 @@ import java.util.concurrent.ExecutorService;
 
 public interface MessageProcessor<T extends Message> {
 
-    void handleMessage(MessageHandlerContext messageHandlerContext, T message) throws Exception;
+	void handleMessage(MessageHandlerContext messageHandlerContext, T message) throws Exception;
 
+	void executor(ExecutorService executor);
 
-    void executor(ExecutorService executor);
+	ExecutorService executor();
 
-
-    ExecutorService executor();
 }

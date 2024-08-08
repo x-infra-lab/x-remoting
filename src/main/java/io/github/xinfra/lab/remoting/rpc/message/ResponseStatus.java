@@ -3,40 +3,41 @@ package io.github.xinfra.lab.remoting.rpc.message;
 import lombok.Getter;
 
 public enum ResponseStatus {
-    SUCCESS((short) 0),
 
-    UNKNOWN((short) 1),
+	SUCCESS((short) 0),
 
-    ERROR((short) 2),
+	UNKNOWN((short) 1),
 
-    CLIENT_SEND_ERROR((short) 3),
+	ERROR((short) 2),
 
-    TIMEOUT((short) 4),
+	CLIENT_SEND_ERROR((short) 3),
 
-    CONNECTION_CLOSED((short) 5),
+	TIMEOUT((short) 4),
 
-    SERVER_EXCEPTION((short) 6),
+	CONNECTION_CLOSED((short) 5),
 
-    SERVER_SERIAL_EXCEPTION((short) 7),
+	SERVER_EXCEPTION((short) 6),
 
-    SERVER_DESERIAL_EXCEPTION((short) 8),
+	SERVER_SERIAL_EXCEPTION((short) 7),
 
-    ;
+	SERVER_DESERIAL_EXCEPTION((short) 8),
 
-    @Getter
-    private short code;
+	;
 
-    ResponseStatus(short code) {
-        this.code = code;
-    }
+	@Getter
+	private short code;
 
+	ResponseStatus(short code) {
+		this.code = code;
+	}
 
-    public static ResponseStatus valueOf(short status) {
-        for (ResponseStatus s : values()) {
-            if (s.getCode() == status) {
-                return s;
-            }
-        }
-        throw new IllegalArgumentException("Unknown status value ," + status);
-    }
+	public static ResponseStatus valueOf(short status) {
+		for (ResponseStatus s : values()) {
+			if (s.getCode() == status) {
+				return s;
+			}
+		}
+		throw new IllegalArgumentException("Unknown status value ," + status);
+	}
+
 }

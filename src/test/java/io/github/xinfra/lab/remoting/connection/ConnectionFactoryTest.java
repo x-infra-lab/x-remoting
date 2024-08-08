@@ -19,79 +19,84 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-
 public class ConnectionFactoryTest {
 
+	private static String remoteAddress;
 
-    private static String remoteAddress;
-    private static int serverPort;
-    private static NioServerSocketChannel serverSocketChannel;
-    private static Protocol testProtocol = new TestProtocol();
+	private static int serverPort;
 
-    @BeforeAll
-    public static void beforeAll() throws InterruptedException {
-        serverSocketChannel = TestServerUtils.startEmptyServer();
-        remoteAddress = serverSocketChannel.localAddress().getHostName();
-        serverPort = serverSocketChannel.localAddress().getPort();
-    }
+	private static NioServerSocketChannel serverSocketChannel;
 
-    @AfterAll
-    public static void afterAll() throws InterruptedException {
-        serverSocketChannel.close().sync();
-    }
+	private static Protocol testProtocol = new TestProtocol();
 
-    @Test
-    public void testNewInstance() {
-        Assertions.assertThrows(NullPointerException.class, () -> {
-            new DefaultConnectionFactory(null, null);
-        });
+	@BeforeAll
+	public static void beforeAll() throws InterruptedException {
+		serverSocketChannel = TestServerUtils.startEmptyServer();
+		remoteAddress = serverSocketChannel.localAddress().getHostName();
+		serverPort = serverSocketChannel.localAddress().getPort();
+	}
 
-        Assertions.assertThrows(NullPointerException.class, () -> {
-            new DefaultConnectionFactory(testProtocol, null);
-        });
+	@AfterAll
+	public static void afterAll() throws InterruptedException {
+		serverSocketChannel.close().sync();
+	}
 
-        // empty channelHandlers is fine
-        Assertions.assertNotNull(new DefaultConnectionFactory(testProtocol, new ArrayList<>()));
-    }
+	@Test
+	public void testNewInstance() {
+		Assertions.assertThrows(NullPointerException.class, () -> {
+			new DefaultConnectionFactory(null, null);
+		});
 
-    @Test
-    public void testCreateSuccess() throws RemotingException {
-        List<Supplier<ChannelHandler>> channelHandlerSuppliers = new ArrayList<>();
-        channelHandlerSuppliers.add(() -> new HttpClientCodec());
-        ConnectionFactory connectionFactory = new DefaultConnectionFactory(testProtocol, channelHandlerSuppliers);
+		Assertions.assertThrows(NullPointerException.class, () -> {
+			new DefaultConnectionFactory(testProtocol, null);
+		});
 
-        InetSocketAddress socketAddress = new InetSocketAddress(remoteAddress, serverPort);
-        Connection connection = connectionFactory.create(socketAddress);
-        Assertions.assertNotNull(connection);
+		// empty channelHandlers is fine
+		Assertions.assertNotNull(new DefaultConnectionFactory(testProtocol, new ArrayList<>()));
+	}
 
-        Channel channel = connection.getChannel();
-        Assertions.assertNotNull(channel);
-        Assertions.assertTrue(channel.isActive());
+	@Test
+	public void testCreateSuccess() throws RemotingException {
+		List<Supplier<ChannelHandler>> channelHandlerSuppliers = new ArrayList<>();
+		channelHandlerSuppliers.add(() -> new HttpClientCodec());
+		ConnectionFactory connectionFactory = new DefaultConnectionFactory(testProtocol, channelHandlerSuppliers);
 
-        List<Class<?>> handlerClassListForPipeline = channel.pipeline().
-                toMap().values().
-                stream().map(v -> v.getClass()).
-                collect(Collectors.toList());
+		InetSocketAddress socketAddress = new InetSocketAddress(remoteAddress, serverPort);
+		Connection connection = connectionFactory.create(socketAddress);
+		Assertions.assertNotNull(connection);
 
-        List<Class<?>> handerClassList = channelHandlerSuppliers.stream().map(v -> v.get()).map(v -> v.getClass())
-                .collect(Collectors.toList());
+		Channel channel = connection.getChannel();
+		Assertions.assertNotNull(channel);
+		Assertions.assertTrue(channel.isActive());
 
-        Assertions.assertTrue(handlerClassListForPipeline.containsAll(handerClassList));
-        Assertions.assertEquals(((InetSocketAddress) channel.remoteAddress()).getHostName(), remoteAddress);
-        connection.close();
-    }
+		List<Class<?>> handlerClassListForPipeline = channel.pipeline()
+			.toMap()
+			.values()
+			.stream()
+			.map(v -> v.getClass())
+			.collect(Collectors.toList());
 
-    @Test
-    public void testCreateFail() {
-        List<Supplier<ChannelHandler>> channelHandlerSuppliers = new ArrayList<>();
-        channelHandlerSuppliers.add(() -> new HttpClientCodec());
-        ConnectionFactory connectionFactory = new DefaultConnectionFactory(testProtocol, channelHandlerSuppliers);
+		List<Class<?>> handerClassList = channelHandlerSuppliers.stream()
+			.map(v -> v.get())
+			.map(v -> v.getClass())
+			.collect(Collectors.toList());
 
-        InetSocketAddress invalidSocketAddress = new InetSocketAddress(remoteAddress, serverPort+ 1);
-        Assertions.assertThrows(RemotingException.class, () -> {
-            connectionFactory.create(invalidSocketAddress);
-        });
+		Assertions.assertTrue(handlerClassListForPipeline.containsAll(handerClassList));
+		Assertions.assertEquals(((InetSocketAddress) channel.remoteAddress()).getHostName(), remoteAddress);
+		connection.close();
+	}
 
-    }
+	@Test
+	public void testCreateFail() {
+		List<Supplier<ChannelHandler>> channelHandlerSuppliers = new ArrayList<>();
+		channelHandlerSuppliers.add(() -> new HttpClientCodec());
+		ConnectionFactory connectionFactory = new DefaultConnectionFactory(testProtocol, channelHandlerSuppliers);
+
+		InetSocketAddress invalidSocketAddress = new InetSocketAddress(remoteAddress, serverPort + 1);
+		Assertions.assertThrows(RemotingException.class, () -> {
+			connectionFactory.create(invalidSocketAddress);
+		});
+
+	}
 
 }

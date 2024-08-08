@@ -6,39 +6,41 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ConnectionHolder {
 
-    @AccessForTest
-    protected CopyOnWriteArrayList<Connection> connections = new CopyOnWriteArrayList<>();
-    private ConnectionSelectStrategy connectionSelectStrategy;
+	@AccessForTest
+	protected CopyOnWriteArrayList<Connection> connections = new CopyOnWriteArrayList<>();
 
-    public ConnectionHolder(ConnectionSelectStrategy connectionSelectStrategy) {
-        this.connectionSelectStrategy = connectionSelectStrategy;
-    }
+	private ConnectionSelectStrategy connectionSelectStrategy;
 
-    public Connection get() {
-        return connectionSelectStrategy.select(connections);
-    }
+	public ConnectionHolder(ConnectionSelectStrategy connectionSelectStrategy) {
+		this.connectionSelectStrategy = connectionSelectStrategy;
+	}
 
-    public void add(Connection connection) {
-        connections.add(connection);
-    }
+	public Connection get() {
+		return connectionSelectStrategy.select(connections);
+	}
 
-    public void removeAndClose(Connection connection) {
-        connections.remove(connection);
-        connection.close();
-    }
+	public void add(Connection connection) {
+		connections.add(connection);
+	}
 
-    public boolean isEmpty() {
-        return connections.isEmpty();
-    }
+	public void removeAndClose(Connection connection) {
+		connections.remove(connection);
+		connection.close();
+	}
 
-    public void removeAndCloseAll() {
-        for (Connection connection : connections) {
-            connections.remove(connection);
-            connection.close();
-        }
-    }
+	public boolean isEmpty() {
+		return connections.isEmpty();
+	}
 
-    public int size() {
-        return connections.size();
-    }
+	public void removeAndCloseAll() {
+		for (Connection connection : connections) {
+			connections.remove(connection);
+			connection.close();
+		}
+	}
+
+	public int size() {
+		return connections.size();
+	}
+
 }

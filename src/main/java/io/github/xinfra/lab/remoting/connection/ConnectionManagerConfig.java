@@ -4,6 +4,9 @@ import lombok.Data;
 
 @Data
 public class ConnectionManagerConfig {
-    private int connectionNumPreEndpoint = 1;
-//    private boolean connectionWarmup = true;
+
+	private int connectionNumPreEndpoint = 1;
+
+	// private boolean connectionWarmup = true;
+
 }

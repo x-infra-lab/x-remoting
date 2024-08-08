@@ -1,6 +1,5 @@
 package io.github.xinfra.lab.remoting.connection;
 
-
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
@@ -27,99 +26,92 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
-
 @Slf4j
 public class DefaultConnectionFactory implements ConnectionFactory {
 
-    private Protocol protocol;
+	private Protocol protocol;
 
-    private Bootstrap bootstrap;
+	private Bootstrap bootstrap;
 
-    private ConnectionConfig connectionConfig;
+	private ConnectionConfig connectionConfig;
 
-    // todo EpollUtils
-    private static final EventLoopGroup workerGroup = Epoll.isAvailable() ?
-            new EpollEventLoopGroup(Runtime.getRuntime().availableProcessors(),
-                    new NamedThreadFactory("Remoting-Client-Worker")) :
-            new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(),
-                    new NamedThreadFactory("Remoting-Client-Worker"));
+	// todo EpollUtils
+	private static final EventLoopGroup workerGroup = Epoll.isAvailable()
+			? new EpollEventLoopGroup(Runtime.getRuntime().availableProcessors(),
+					new NamedThreadFactory("Remoting-Client-Worker"))
+			: new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(),
+					new NamedThreadFactory("Remoting-Client-Worker"));
 
-    private static final Class<? extends SocketChannel> channelClass = Epoll.isAvailable() ?
-            EpollSocketChannel.class : NioSocketChannel.class;
+	private static final Class<? extends SocketChannel> channelClass = Epoll.isAvailable() ? EpollSocketChannel.class
+			: NioSocketChannel.class;
 
-    /**
-     * Q: why use Supplier to get ChannelHandler?
-     * A: some ChannelHandler is not @ChannelHandler.Sharable. need create instance every time
-     *
-     * @param channelHandlerSuppliers
-     */
-    public DefaultConnectionFactory(Protocol protocol, List<Supplier<ChannelHandler>> channelHandlerSuppliers) {
-        this(protocol, channelHandlerSuppliers, new ConnectionConfig());
-    }
+	/**
+	 * Q: why use Supplier to get ChannelHandler? A: some ChannelHandler is
+	 * not @ChannelHandler.Sharable. need create instance every time
+	 * @param channelHandlerSuppliers
+	 */
+	public DefaultConnectionFactory(Protocol protocol, List<Supplier<ChannelHandler>> channelHandlerSuppliers) {
+		this(protocol, channelHandlerSuppliers, new ConnectionConfig());
+	}
 
-    /**
-     * Q: why use Supplier to get ChannelHandler?
-     * A: some ChannelHandler is not @ChannelHandler.Sharable. need create instance every time
-     *
-     * @param channelHandlerSuppliers
-     * @param connectionConfig
-     */
-    public DefaultConnectionFactory(Protocol protocol,
-                                    List<Supplier<ChannelHandler>> channelHandlerSuppliers,
-                                    ConnectionConfig connectionConfig) {
-        Validate.notNull(protocol, "protocol can not be null");
-        Validate.notNull(channelHandlerSuppliers, "channelHandlers can not be null");
-        Validate.notNull(connectionConfig, "connectionConfig can not be null");
-        this.protocol = protocol;
-        this.connectionConfig = connectionConfig;
+	/**
+	 * Q: why use Supplier to get ChannelHandler? A: some ChannelHandler is
+	 * not @ChannelHandler.Sharable. need create instance every time
+	 * @param channelHandlerSuppliers
+	 * @param connectionConfig
+	 */
+	public DefaultConnectionFactory(Protocol protocol, List<Supplier<ChannelHandler>> channelHandlerSuppliers,
+			ConnectionConfig connectionConfig) {
+		Validate.notNull(protocol, "protocol can not be null");
+		Validate.notNull(channelHandlerSuppliers, "channelHandlers can not be null");
+		Validate.notNull(connectionConfig, "connectionConfig can not be null");
+		this.protocol = protocol;
+		this.connectionConfig = connectionConfig;
 
-        bootstrap = new Bootstrap();
-        bootstrap.group(workerGroup)
-                .channel(channelClass)
-                .handler(new ChannelInitializer<SocketChannel>() {
+		bootstrap = new Bootstrap();
+		bootstrap.group(workerGroup).channel(channelClass).handler(new ChannelInitializer<SocketChannel>() {
 
-                    @Override
-                    protected void initChannel(SocketChannel ch) throws Exception {
-                        ChannelPipeline pipeline = ch.pipeline();
-                        if (connectionConfig.isIdleSwitch()) {
-                            pipeline.addLast("idleStateHandler", new IdleStateHandler(connectionConfig.getIdleReaderTimeout(),
-                                    connectionConfig.getIdleWriterTimeout(), connectionConfig.getIdleAllTimeout(),
-                                    TimeUnit.MILLISECONDS));
-                        }
+			@Override
+			protected void initChannel(SocketChannel ch) throws Exception {
+				ChannelPipeline pipeline = ch.pipeline();
+				if (connectionConfig.isIdleSwitch()) {
+					pipeline.addLast("idleStateHandler",
+							new IdleStateHandler(connectionConfig.getIdleReaderTimeout(),
+									connectionConfig.getIdleWriterTimeout(), connectionConfig.getIdleAllTimeout(),
+									TimeUnit.MILLISECONDS));
+				}
 
-                        for (Supplier<ChannelHandler> supplier : channelHandlerSuppliers) {
-                            pipeline.addLast(supplier.get());
-                        }
+				for (Supplier<ChannelHandler> supplier : channelHandlerSuppliers) {
+					pipeline.addLast(supplier.get());
+				}
 
+				// todo FlushConsolidationHandler
+			}
+		});
+	}
 
-                        // todo FlushConsolidationHandler
-                    }
-                });
-    }
-
-
-    @Override
-    public Connection create(SocketAddress socketAddress) throws RemotingException {
-        bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionConfig.getConnectTimeout());
-        ChannelFuture future = bootstrap.connect(socketAddress);
-        future.awaitUninterruptibly();
-        if (!future.isDone()) {
-            String errMsg = "Create connection to " + socketAddress + " timeout!";
-            log.warn(errMsg);
-            throw new RemotingException(errMsg);
-        }
-        if (future.isCancelled()) {
-            String errMsg = "Create connection to " + socketAddress + " cancelled by user!";
-            log.warn(errMsg);
-            throw new RemotingException(errMsg);
-        }
-        if (!future.isSuccess()) {
-            String errMsg = "Create connection to " + socketAddress + " error!";
-            log.warn(errMsg);
-            throw new RemotingException(errMsg, future.cause());
-        }
-        Channel channel = future.channel();
-        return new Connection(protocol, channel);
-    }
+	@Override
+	public Connection create(SocketAddress socketAddress) throws RemotingException {
+		bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionConfig.getConnectTimeout());
+		ChannelFuture future = bootstrap.connect(socketAddress);
+		future.awaitUninterruptibly();
+		if (!future.isDone()) {
+			String errMsg = "Create connection to " + socketAddress + " timeout!";
+			log.warn(errMsg);
+			throw new RemotingException(errMsg);
+		}
+		if (future.isCancelled()) {
+			String errMsg = "Create connection to " + socketAddress + " cancelled by user!";
+			log.warn(errMsg);
+			throw new RemotingException(errMsg);
+		}
+		if (!future.isSuccess()) {
+			String errMsg = "Create connection to " + socketAddress + " error!";
+			log.warn(errMsg);
+			throw new RemotingException(errMsg, future.cause());
+		}
+		Channel channel = future.channel();
+		return new Connection(protocol, channel);
+	}
 
 }

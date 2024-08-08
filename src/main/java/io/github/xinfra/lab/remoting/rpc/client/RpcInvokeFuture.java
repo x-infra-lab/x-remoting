@@ -9,24 +9,25 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class RpcInvokeFuture<T> {
-    private InvokeFuture invokeFuture;
 
-    public RpcInvokeFuture(InvokeFuture invokeFuture) {
-        this.invokeFuture = invokeFuture;
-    }
+	private InvokeFuture invokeFuture;
 
-    public T get() throws InterruptedException, RemotingException {
-        RpcResponseMessage responseMessage = (RpcResponseMessage) invokeFuture.get();
-        return RpcResponses.getResponseObject(responseMessage);
-    }
+	public RpcInvokeFuture(InvokeFuture invokeFuture) {
+		this.invokeFuture = invokeFuture;
+	}
 
-    public T get(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException, RemotingException {
-        RpcResponseMessage responseMessage = (RpcResponseMessage) invokeFuture.get(timeout, unit);
-        return RpcResponses.getResponseObject(responseMessage);
-    }
+	public T get() throws InterruptedException, RemotingException {
+		RpcResponseMessage responseMessage = (RpcResponseMessage) invokeFuture.get();
+		return RpcResponses.getResponseObject(responseMessage);
+	}
 
-    public boolean isDone() {
-        return invokeFuture.isDone();
-    }
+	public T get(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException, RemotingException {
+		RpcResponseMessage responseMessage = (RpcResponseMessage) invokeFuture.get(timeout, unit);
+		return RpcResponses.getResponseObject(responseMessage);
+	}
+
+	public boolean isDone() {
+		return invokeFuture.isDone();
+	}
 
 }
