@@ -30,7 +30,7 @@ public class TestServerUtils {
                                 // do nothing
                             }
                         })
-                        .bind(new InetSocketAddress(InetAddress.getLoopbackAddress(), serverPort));
+                        .bind(new InetSocketAddress(InetAddress.getLocalHost(), serverPort));
                 Assertions.assertTrue(future.sync().isSuccess());
                 Assertions.assertTrue(future.channel().isActive());
                 return (NioServerSocketChannel) future.channel();

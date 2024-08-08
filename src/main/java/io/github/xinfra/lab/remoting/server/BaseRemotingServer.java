@@ -66,7 +66,6 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
         this.config = config;
         this.handler = new ProtocolHandler();
 
-        this.localAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), config.getPort());
         if (this.config.isManageConnection()) {
             this.connectionManager = new ServerConnectionManager();
             this.connectionEventHandler = new ConnectionEventHandler(this.connectionManager);
@@ -110,6 +109,7 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 
 
         try {
+            this.localAddress = new InetSocketAddress(InetAddress.getLocalHost(), config.getPort());
             ChannelFuture channelFuture = this.serverBootstrap.bind(localAddress).sync();
             if (!channelFuture.isSuccess()) {
                 throw channelFuture.cause();
