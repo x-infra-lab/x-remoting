@@ -2,6 +2,8 @@ package io.github.xinfra.lab.remoting.rpc.client;
 
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.connection.ClientConnectionManager;
+import io.github.xinfra.lab.remoting.connection.ConnectionConfig;
+import io.github.xinfra.lab.remoting.connection.ConnectionManagerConfig;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.processor.UserProcessor;
 import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
@@ -15,6 +17,9 @@ import java.net.SocketAddress;
 public class RpcClient extends AbstractLifeCycle {
 
 	@Getter
+	private RpcClientConfig config;
+
+	@Getter
 	private RpcProtocol protocol;
 
 	private RpcClientRemoting rpcClientRemoting;
@@ -22,10 +27,30 @@ public class RpcClient extends AbstractLifeCycle {
 	@Getter
 	private ClientConnectionManager connectionManager;
 
-	public RpcClient() {
+	public RpcClient(RpcClientConfig config) {
+		this.config = config;
 		this.protocol = new RpcProtocol();
-		this.connectionManager = new ClientConnectionManager(protocol);
+
+		ConnectionConfig connectionConfig = config.getConnectionConfig();
+		ConnectionManagerConfig connectionManagerConfig = config.getConnectionManagerConfig();
+		if (connectionConfig != null && connectionManagerConfig != null) {
+			this.connectionManager = new ClientConnectionManager(protocol, connectionConfig, connectionManagerConfig);
+		}
+		else if (connectionConfig != null) {
+			this.connectionManager = new ClientConnectionManager(protocol, connectionConfig);
+		}
+		else if (connectionManagerConfig != null) {
+			this.connectionManager = new ClientConnectionManager(protocol, connectionManagerConfig);
+		}
+		else {
+			this.connectionManager = new ClientConnectionManager(protocol);
+		}
+
 		this.rpcClientRemoting = new RpcClientRemoting(protocol, connectionManager);
+	}
+
+	public RpcClient() {
+		this(new RpcClientConfig());
 	}
 
 	@Override
