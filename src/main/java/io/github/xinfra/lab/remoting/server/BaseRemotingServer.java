@@ -1,11 +1,10 @@
 package io.github.xinfra.lab.remoting.server;
 
-import io.github.xinfra.lab.remoting.Endpoint;
+import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.connection.ConnectionEventHandler;
-import io.github.xinfra.lab.remoting.connection.ConnectionManager;
 import io.github.xinfra.lab.remoting.connection.ProtocolDecoder;
 import io.github.xinfra.lab.remoting.connection.ProtocolEncoder;
 import io.github.xinfra.lab.remoting.connection.ProtocolHandler;
@@ -26,133 +25,128 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Validate;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.concurrent.ConcurrentHashMap;
+import java.net.SocketAddress;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public abstract class BaseRemotingServer extends AbstractLifeCycle implements RemotingServer {
 
-    private InetSocketAddress localAddress;
-    private ServerBootstrap serverBootstrap;
+	protected SocketAddress localAddress;
 
-    private ConcurrentHashMap<String, UserProcessor<?>> userProcessors = new ConcurrentHashMap<>();
+	private ServerBootstrap serverBootstrap;
 
-    private final EventLoopGroup bossGroup = Epoll.isAvailable() ?
-            new EpollEventLoopGroup(1, new NamedThreadFactory("Remoting-Server-Boss")) :
-            new NioEventLoopGroup(1, new NamedThreadFactory("Remoting-Server-Boss"));
+	private final EventLoopGroup bossGroup = Epoll.isAvailable()
+			? new EpollEventLoopGroup(1, new NamedThreadFactory("Remoting-Server-Boss"))
+			: new NioEventLoopGroup(1, new NamedThreadFactory("Remoting-Server-Boss"));
 
-    private static final EventLoopGroup workerGroup = Epoll.isAvailable() ?
-            new EpollEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2,
-                    new NamedThreadFactory("Remoting-Server-Worker")) :
-            new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2,
-                    new NamedThreadFactory("Remoting-Server-Worker"));
+	private static final EventLoopGroup workerGroup = Epoll.isAvailable()
+			? new EpollEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2,
+					new NamedThreadFactory("Remoting-Server-Worker"))
+			: new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2,
+					new NamedThreadFactory("Remoting-Server-Worker"));
 
-    private static final Class<? extends ServerChannel> serverChannelClass = Epoll.isAvailable() ?
-            EpollServerSocketChannel.class : NioServerSocketChannel.class;
+	private static final Class<? extends ServerChannel> serverChannelClass = Epoll.isAvailable()
+			? EpollServerSocketChannel.class : NioServerSocketChannel.class;
 
-    private ChannelHandler connectionEventHandler;
-    private ChannelHandler encoder;
-    private ChannelHandler decoder;
-    private ChannelHandler handler;
-    private ChannelHandler serverIdleHandler = new ServerIdleHandler();
+	private ChannelHandler connectionEventHandler;
 
-    protected boolean manageConnection;
-    protected ServerConnectionManager connectionManager;
+	private ChannelHandler handler;
 
-    public BaseRemotingServer(InetSocketAddress localAddress,
-                              boolean manageConnection) {
-        this.connectionEventHandler = new ConnectionEventHandler();
-        this.encoder = new ProtocolEncoder();
-        this.decoder = new ProtocolDecoder();
-        this.handler = new ProtocolHandler(userProcessors);
+	private ChannelHandler serverIdleHandler = new ServerIdleHandler();
 
-        this.localAddress = localAddress;
+	protected ServerConnectionManager connectionManager;
 
-        this.manageConnection = manageConnection;
-        if (this.manageConnection) {
-            this.connectionManager = new ServerConnectionManager();
-        }
-    }
+	private RemotingServerConfig config;
 
-    public BaseRemotingServer(int port) {
-        this(new InetSocketAddress(port), false);
-    }
+	public BaseRemotingServer(RemotingServerConfig config) {
+		Validate.notNull(config, "RemotingServerConfig can not be null");
+		Validate.inclusiveBetween(0, 0xFFFF, config.getPort(), "port out of range: " + config.getPort());
 
-    /**
-     * @param port
-     * @param manageConnection
-     */
-    public BaseRemotingServer(int port, boolean manageConnection) {
-        this(new InetSocketAddress(port), manageConnection);
-    }
+		this.config = config;
+		this.handler = new ProtocolHandler();
 
+		if (this.config.isManageConnection()) {
+			this.connectionManager = new ServerConnectionManager();
+			this.connectionEventHandler = new ConnectionEventHandler(this.connectionManager);
+		}
+		else {
+			this.connectionEventHandler = new ConnectionEventHandler();
+		}
+	}
 
-    @Override
-    public void startup() {
-        super.startup();
-        this.serverBootstrap = new ServerBootstrap();
+	@Override
+	public void startup() {
+		super.startup();
+		if (this.connectionManager != null) {
+			this.connectionManager.startup();
+		}
+		this.serverBootstrap = new ServerBootstrap();
+		this.serverBootstrap.group(bossGroup, workerGroup)
+			.channel(serverChannelClass)
+			.childHandler(new ChannelInitializer<SocketChannel>() {
+				@Override
+				protected void initChannel(SocketChannel channel) throws Exception {
+					ChannelPipeline pipeline = channel.pipeline();
 
-        this.serverBootstrap
-                .group(bossGroup, workerGroup)
-                .channel(serverChannelClass)
-                .childHandler(
-                        new ChannelInitializer<SocketChannel>() {
-                            @Override
-                            protected void initChannel(SocketChannel channel) throws Exception {
-                                ChannelPipeline pipeline = channel.pipeline();
+					pipeline.addLast("encoder", new ProtocolEncoder());
+					pipeline.addLast("decoder", new ProtocolDecoder());
 
-                                pipeline.addLast("connectionEventHandler", connectionEventHandler);
-                                pipeline.addLast("encoder", encoder);
-                                pipeline.addLast("decoder", decoder);
+					if (config.isIdleSwitch()) {
+						pipeline.addLast("idleStateHandler",
+								new IdleStateHandler(60000, 60000, 0, TimeUnit.MILLISECONDS));
+						pipeline.addLast("serverIdleHandler", serverIdleHandler);
+					}
+					pipeline.addLast("handler", handler);
+					pipeline.addLast("connectionEventHandler", connectionEventHandler);
 
-                                // todo: use config
-                                pipeline.addLast("idleStateHandler", new IdleStateHandler(6000, 6000, 0, TimeUnit.MILLISECONDS));
-                                pipeline.addLast("serverIdleHandler", serverIdleHandler);
-                                pipeline.addLast("handler", handler);
+					createConnection(channel);
+				}
+			});
 
-                                createConnection(channel);
-                            }
-                        }
-                );
+		try {
+			this.localAddress = new InetSocketAddress(InetAddress.getLocalHost(), config.getPort());
+			ChannelFuture channelFuture = this.serverBootstrap.bind(localAddress).sync();
+			if (!channelFuture.isSuccess()) {
+				throw channelFuture.cause();
+			}
+			// need update
+			if (config.getPort() == 0) {
+				this.localAddress = channelFuture.channel().localAddress();
+			}
+		}
+		catch (Throwable throwable) {
+			throw new RuntimeException("serverBootstrap bind fail. ", throwable);
+		}
+	}
 
+	@AccessForTest
+	protected void createConnection(SocketChannel channel) {
+		Connection connection = new Connection(protocol(), channel);
+		if (config.isManageConnection()) {
+			connectionManager.add(connection);
+		}
+	}
 
-        try {
-            ChannelFuture channelFuture = this.serverBootstrap.bind(localAddress).sync();
+	@Override
+	public void shutdown() {
+		super.shutdown();
+		if (connectionManager != null) {
+			connectionManager.shutdown();
+		}
+	}
 
-            if (!channelFuture.isSuccess()) {
-                throw channelFuture.cause();
-            }
-        } catch (Throwable throwable) {
-            throw new RuntimeException("serverBootstrap bind fail. ", throwable);
-        }
-    }
+	@Override
+	public SocketAddress localAddress() {
+		return this.localAddress;
+	}
 
-    private void createConnection(SocketChannel channel) {
-        InetSocketAddress inetSocketAddress = channel.remoteAddress();
-        Endpoint endpoint = new Endpoint(protocolType(), inetSocketAddress.getHostName(), inetSocketAddress.getPort());
-        Connection connection = new Connection(endpoint, channel, protocolType());
-        if (manageConnection) {
-            connectionManager.add(connection);
-        }
-    }
+	@Override
+	public void registerUserProcessor(UserProcessor<?> userProcessor) {
+		protocol().messageHandler().registerUserProcessor(userProcessor);
+	}
 
-    @Override
-    public void shutdown() {
-        super.shutdown();
-    }
-
-    @Override
-    public InetSocketAddress localAddress() {
-        return this.localAddress;
-    }
-
-    @Override
-    public void registerUserProcessor(UserProcessor<?> userProcessor) {
-        UserProcessor<?> oldUserProcessor = userProcessors.put(userProcessor.interest(), userProcessor);
-        if (oldUserProcessor != null) {
-            log.warn("registered userProcessor change from:{} to:{}", oldUserProcessor, userProcessor);
-        }
-    }
 }

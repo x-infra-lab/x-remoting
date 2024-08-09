@@ -1,26 +1,32 @@
 package io.github.xinfra.lab.remoting.processor;
 
+import io.github.xinfra.lab.remoting.rpc.message.RpcMessageHeader;
+
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 
 public interface UserProcessor<T> {
-    String interest();
 
-    Object handRequest(T request);
+	String interest();
 
-    default ExecutorSelector executorSelector() {
-        return null;
-    }
+	Object handRequest(T request);
 
-    default Executor executor() {
-        return null;
-    }
+	default ExecutorService executor() {
+		return null;
+	}
 
-    default ClassLoader getBizClassLoader() {
-        return null;
-    }
+	default ExecutorSelector executorSelector() {
+		return null;
+	}
 
+	default ClassLoader getBizClassLoader() {
+		return null;
+	}
 
-    interface ExecutorSelector {
-        Executor select(String requestClass, Object requestHeader);
-    }
+	interface ExecutorSelector {
+
+		Executor select(String contentType, RpcMessageHeader rpcMessageHeader);
+
+	}
+
 }

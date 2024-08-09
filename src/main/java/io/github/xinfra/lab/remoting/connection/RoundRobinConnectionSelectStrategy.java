@@ -5,19 +5,20 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class RoundRobinConnectionSelectStrategy implements ConnectionSelectStrategy {
 
-    private AtomicInteger counter = new AtomicInteger(0);
+	private AtomicInteger counter = new AtomicInteger(0);
 
-    @Override
-    public Connection select(List<Connection> connections) {
-        if (connections.isEmpty()) {
-            return null;
-        }
+	@Override
+	public Connection select(List<Connection> connections) {
+		if (connections == null || connections.isEmpty()) {
+			return null;
+		}
 
-        if (connections.size() == 1) {
-            return connections.get(0);
-        }
+		if (connections.size() == 1) {
+			return connections.get(0);
+		}
 
-        int i = Math.abs(counter.getAndIncrement());
-        return connections.get(i % connections.size());
-    }
+		int i = Math.abs(counter.getAndIncrement());
+		return connections.get(i % connections.size());
+	}
+
 }

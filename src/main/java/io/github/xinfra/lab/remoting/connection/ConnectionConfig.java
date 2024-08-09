@@ -1,14 +1,18 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import lombok.Data;
+import lombok.Getter;
 
-@Data
+@Getter
 public class ConnectionConfig {
 
-    private int connectTimeoutMills;
+	private boolean idleSwitch = true;
 
-    private int connNum = 1;
+	private long idleReaderTimeout = 15000L;
 
-    private boolean connWarmup;
+	private long idleWriterTimeout = 15000L;
+
+	private long idleAllTimeout = 15000L;
+
+	private int connectTimeout = 1000;
 
 }

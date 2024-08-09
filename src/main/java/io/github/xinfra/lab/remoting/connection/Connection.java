@@ -1,56 +1,93 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import io.github.xinfra.lab.remoting.Endpoint;
+import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
-import io.github.xinfra.lab.remoting.protocol.ProtocolType;
+import io.github.xinfra.lab.remoting.message.Message;
+import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelFutureListener;
 import io.netty.util.AttributeKey;
 import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Validate;
 
 import java.net.SocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
+@Slf4j
 public class Connection {
-    
-    public static final AttributeKey<ProtocolType> PROTOCOL = AttributeKey.valueOf("protocol");
 
-    public static final AttributeKey<Connection> CONNECTION = AttributeKey.valueOf("connection");
+	public static final AttributeKey<Connection> CONNECTION = AttributeKey.valueOf("connection");
 
+	@AccessForTest
+	protected ConcurrentHashMap<Integer, InvokeFuture<?>> invokeMap = new ConcurrentHashMap<>();
 
-    public static final AttributeKey<Integer> HEARTBEAT_FAIL_COUNT = AttributeKey.valueOf("heartbeat_fail_count");
+	@Getter
+	private final Channel channel;
 
-    private ConcurrentHashMap<Integer, InvokeFuture> invokeMap = new ConcurrentHashMap<>();
+	@Getter
+	private final Protocol protocol;
 
-    @Getter
-    private Channel channel;
+	@Getter
+	@Setter
+	private int heartbeatFailCnt = 0;
 
-    @Getter
-    private Endpoint endpoint;
+	private final AtomicBoolean closed = new AtomicBoolean(false);
 
+	public Connection(Protocol protocol, Channel channel) {
+		Validate.notNull(protocol, "protocol can not be null");
+		Validate.notNull(channel, "channel can not be null");
+		this.protocol = protocol;
+		this.channel = channel;
+		this.channel.attr(CONNECTION).set(this);
+	}
 
-    public Connection(Endpoint endpoint, Channel channel, ProtocolType protocolType) {
-        this.endpoint = endpoint;
-        this.channel = channel;
-        this.channel.attr(PROTOCOL).set(protocolType);
-        this.channel.attr(CONNECTION).set(this);
-        this.channel.attr(HEARTBEAT_FAIL_COUNT).set(0);
-    }
+	public void addInvokeFuture(InvokeFuture<?> invokeFuture) {
+		InvokeFuture<?> prevFuture = invokeMap.put(invokeFuture.getRequestId(), invokeFuture);
+		Validate.isTrue(prevFuture == null, "requestId: %s already invoked", invokeFuture.getRequestId());
+	}
 
+	public InvokeFuture<?> removeInvokeFuture(Integer requestId) {
+		return invokeMap.remove(requestId);
+	}
 
-    public void addInvokeFuture(InvokeFuture invokeFuture) {
-        invokeFuture.setConnection(this);
-        invokeMap.put(invokeFuture.getRequestId(), invokeFuture);
-    }
+	public SocketAddress remoteAddress() {
+		return channel.remoteAddress();
+	}
 
-    public InvokeFuture removeInvokeFuture(Integer requestId) {
-        return invokeMap.remove(requestId);
-    }
+	public ChannelFuture close() {
+		if (closed.compareAndSet(false, true)) {
+			return channel.close().addListener(new ChannelFutureListener() {
+				@Override
+				public void operationComplete(ChannelFuture future) throws Exception {
+					if (future.isSuccess()) {
+						log.info("close connection to remote address:{} success", remoteAddress());
+					}
+					else {
+						log.warn("close connection to remote address:{} fail", remoteAddress(), future.cause());
+					}
+				}
+			});
+		}
+		return channel.newSucceededFuture();
+	}
 
-    public SocketAddress remoteAddress() {
-        return channel.remoteAddress();
-    }
+	public void onClose() {
+		for (int requestId : invokeMap.keySet()) {
+			InvokeFuture<?> invokeFuture = removeInvokeFuture(requestId);
+			if (invokeFuture != null) {
+				invokeFuture.cancelTimeout();
+				invokeFuture.complete(createConnectionClosedMessage(requestId));
+				invokeFuture.asyncExecuteCallBack();
+			}
+		}
+	}
 
-    public void close() {
-        // TODO
-    }
+	private Message createConnectionClosedMessage(int requestId) {
+		return protocol.messageFactory().createConnectionClosedMessage(requestId, remoteAddress());
+	}
+
 }

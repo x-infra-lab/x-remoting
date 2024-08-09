@@ -1,10 +1,11 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import io.github.xinfra.lab.remoting.Endpoint;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 
+import java.net.SocketAddress;
 
-public interface ConnectionFactory  {
-    Connection create(Endpoint endpoint, ConnectionConfig config) throws RemotingException;
+public interface ConnectionFactory {
+
+	Connection create(SocketAddress socketAddress) throws RemotingException;
 
 }

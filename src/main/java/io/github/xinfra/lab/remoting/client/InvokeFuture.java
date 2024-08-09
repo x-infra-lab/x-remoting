@@ -1,134 +1,157 @@
 package io.github.xinfra.lab.remoting.client;
 
-
-import io.github.xinfra.lab.remoting.connection.Connection;
+import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.message.Message;
+import io.github.xinfra.lab.remoting.message.MessageHandler;
+import io.github.xinfra.lab.remoting.message.MessageType;
+import io.github.xinfra.lab.remoting.processor.MessageProcessor;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
-import io.github.xinfra.lab.remoting.protocol.ProtocolManager;
-import io.github.xinfra.lab.remoting.protocol.ProtocolType;
 import io.netty.util.Timeout;
 import lombok.Getter;
-import lombok.Setter;
+
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Validate;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
-public class InvokeFuture {
+public class InvokeFuture<T extends Message> implements Future<Message> {
 
-    @Getter
-    private int requestId;
+	@Getter
+	private final int requestId;
 
-    @Getter
-    @Setter
-    private Connection connection;
+	private final Protocol protocol;
 
-    private final CountDownLatch countDownLatch;
+	private final CountDownLatch countDownLatch;
 
-    private Message message;
+	private volatile Message message;
 
-    private Timeout timeout;
+	@AccessForTest
+	protected volatile Timeout timeout;
 
-    private InvokeCallBack invokeCallBack;
+	private volatile InvokeCallBack invokeCallBack;
 
-    private final AtomicBoolean callBackExecuted = new AtomicBoolean(false);
+	private final AtomicBoolean callBackExecuted = new AtomicBoolean(false);
 
-    private ClassLoader classLoader;
+	private final ClassLoader classLoader;
 
-    public InvokeFuture(int requestId) {
-        this.requestId = requestId;
-        this.countDownLatch = new CountDownLatch(1);
-        this.classLoader = Thread.currentThread().getContextClassLoader();
-    }
+	public InvokeFuture(int requestId, Protocol protocol) {
+		this.requestId = requestId;
+		this.protocol = protocol;
+		this.countDownLatch = new CountDownLatch(1);
+		this.classLoader = Thread.currentThread().getContextClassLoader();
+	}
 
-    public void addTimeout(Timeout timeout) {
-        this.timeout = timeout;
-    }
+	public void addTimeout(Timeout timeout) {
+		Validate.isTrue(this.timeout == null, "repeat add timeout for InvokeFuture");
+		this.timeout = timeout;
+	}
 
-    public void addCallBack(InvokeCallBack invokeCallBack) {
-        this.invokeCallBack = invokeCallBack;
-    }
+	public void addCallBack(InvokeCallBack invokeCallBack) {
+		Validate.isTrue(this.invokeCallBack == null, "repeat add invokeCallBack for InvokeFuture");
+		this.invokeCallBack = invokeCallBack;
+	}
 
-    public void asyncExecuteCallBack() {
-        try {
-            ProtocolType protocolType = message.protocolType();
-            Protocol protocol = ProtocolManager.getProtocol(protocolType);
-            Executor executor = protocol.messageHandler().executor();
+	public void asyncExecuteCallBack() {
+		try {
+			MessageHandler messageHandler = protocol.messageHandler();
 
-            executor.execute(() -> {
-                try {
-                    executeCallBack();
-                } catch (Throwable t) {
-                    log.error("executeCallBack fail. id:{}", message.id(), t);
-                }
-            });
+			ExecutorService responseMessageExecutor = null;
+			MessageProcessor<?> responseMessageProcessor = messageHandler.messageProcessor(MessageType.response);
+			if (responseMessageProcessor != null) {
+				responseMessageExecutor = responseMessageProcessor.executor();
+			}
+			ExecutorService messageExecutor = messageHandler.executor();
+			Executor executor = responseMessageExecutor != null ? responseMessageExecutor : messageExecutor;
 
-        } catch (Exception e) {
-            log.error("asyncExecuteCallBack fail. id:{}", message.id(), e);
-        }
-    }
+			executor.execute(() -> {
+				try {
+					executeCallBack();
+				}
+				catch (Throwable t) {
+					log.error("executeCallBack fail. id:{}", message.id(), t);
+				}
+			});
 
-    public void executeCallBack() {
-        if (invokeCallBack != null) {
-            if (isDone()) {
-                if (callBackExecuted.compareAndSet(false, true)) {
-                    ClassLoader contextClassLoader = null;
-                    try {
-                        ClassLoader appClassLoader = getAppClassLoader();
-                        if (appClassLoader != null) {
-                            contextClassLoader = Thread.currentThread().getContextClassLoader();
-                            Thread.currentThread().setContextClassLoader(appClassLoader);
-                        }
-                        invokeCallBack.complete(this);
-                    } finally {
-                        if (contextClassLoader != null) {
-                            Thread.currentThread().setContextClassLoader(contextClassLoader);
-                        }
-                    }
-                }
-            }
-        }
-    }
+		}
+		catch (Exception e) {
+			log.error("asyncExecuteCallBack fail. id:{}", message.id(), e);
+		}
+	}
 
-    public ClassLoader getAppClassLoader() {
-        return classLoader;
-    }
+	public void executeCallBack() {
+		if (invokeCallBack != null) {
+			if (isDone()) {
+				if (callBackExecuted.compareAndSet(false, true)) {
+					ClassLoader contextClassLoader = null;
+					try {
+						ClassLoader appClassLoader = getAppClassLoader();
+						if (appClassLoader != null) {
+							contextClassLoader = Thread.currentThread().getContextClassLoader();
+							Thread.currentThread().setContextClassLoader(appClassLoader);
+						}
+						invokeCallBack.complete(message);
+					}
+					finally {
+						if (contextClassLoader != null) {
+							Thread.currentThread().setContextClassLoader(contextClassLoader);
+						}
+					}
+				}
+			}
+		}
+	}
 
-    public void finish(Message result) {
-        this.message = result;
-        countDownLatch.countDown();
-    }
+	public ClassLoader getAppClassLoader() {
+		return classLoader;
+	}
 
-    public boolean isDone() {
-        return countDownLatch.getCount() <= 0;
-    }
+	public void complete(Message result) {
+		Validate.isTrue(this.message == null, "requestId: %s InvokeFuture already finished.", requestId);
+		this.message = result;
+		countDownLatch.countDown();
+	}
 
-    public Message await() throws InterruptedException {
-        countDownLatch.await();
-        return message;
-    }
+	public boolean cancelTimeout() {
+		if (timeout != null) {
+			return timeout.cancel();
+		}
+		return false;
+	}
 
-    /**
-     * @param timeout
-     * @param unit
-     * @return null if timeout
-     * @throws InterruptedException
-     */
-    public Message await(long timeout, TimeUnit unit) throws InterruptedException {
-        boolean finished = countDownLatch.await(timeout, unit);
-        if (!finished) {
-            return null;
-        }
-        return message;
-    }
+	@Override
+	public boolean cancel(boolean mayInterruptIfRunning) {
+		throw new UnsupportedOperationException("InvokeFuture not support method cannel");
+	}
 
-    public boolean cancelTimeout() {
-        if (timeout != null) {
-            return timeout.cancel();
-        }
-        return false;
-    }
+	@Override
+	public boolean isCancelled() {
+		throw new UnsupportedOperationException("InvokeFuture not support method isCancelled");
+	}
+
+	public boolean isDone() {
+		return countDownLatch.getCount() <= 0;
+	}
+
+	@Override
+	public Message get() throws InterruptedException {
+		countDownLatch.await();
+		return message;
+	}
+
+	@Override
+	public Message get(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
+		boolean finished = countDownLatch.await(timeout, unit);
+		if (!finished) {
+			throw new TimeoutException("InvokeFuture timeout");
+		}
+		return message;
+	}
+
 }

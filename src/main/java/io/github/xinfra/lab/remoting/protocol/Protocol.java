@@ -2,21 +2,24 @@ package io.github.xinfra.lab.remoting.protocol;
 
 import io.github.xinfra.lab.remoting.codec.MessageDecoder;
 import io.github.xinfra.lab.remoting.codec.MessageEncoder;
-import io.github.xinfra.lab.remoting.message.HeartbeatTrigger;
+import io.github.xinfra.lab.remoting.heartbeat.HeartbeatTrigger;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
 
+import java.io.Closeable;
 
-public interface Protocol {
+public interface Protocol extends Closeable {
 
-    MessageEncoder encoder();
+	byte[] protocolCode();
 
-    MessageDecoder decoder();
+	MessageEncoder encoder();
 
-    MessageHandler messageHandler();
+	MessageDecoder decoder();
 
-    MessageFactory messageFactory();
+	MessageHandler messageHandler();
 
-    HeartbeatTrigger heartbeatTrigger();
+	MessageFactory messageFactory();
+
+	HeartbeatTrigger heartbeatTrigger();
 
 }
