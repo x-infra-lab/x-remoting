@@ -19,6 +19,10 @@ public class RpcServer extends BaseRemotingServer {
 	@Getter
 	private RpcServerRemoting rpcServerRemoting;
 
+	public RpcServer() {
+		super(new RpcServerConfig());
+	}
+
 	public RpcServer(RpcServerConfig config) {
 		super(config);
 	}
