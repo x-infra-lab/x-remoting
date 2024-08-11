@@ -53,11 +53,15 @@ public class SimpleUserProcessor implements UserProcessor<SimpleRequest> {
 ```
 * start a RpcServer
 ```java
-RpcServerConfig config = new RpcServerConfig();
-RpcServer rpcServer = new RpcServer(config);
+RpcServer rpcServer = new RpcServer();
 rpcServer.startup();
 
 rpcServer.registerUserProcessor(new SimpleUserProcessor());
+```
+* start a RpcClient
+```java
+RpcClient rpcClient = new RpcClient();
+rpcClient.startup();
 ```
 ### SyncCall
 [link](https://github.com/x-infra-lab/x-remoting/blob/main/src/test/java/io/github/xinfra/lab/remoting/rpc/client/RpcClientTest.java#L50)
