@@ -2,7 +2,6 @@ package io.github.xinfra.lab.remoting.rpc.client;
 
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.rpc.server.RpcServer;
-import io.github.xinfra.lab.remoting.rpc.server.RpcServerConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -23,8 +22,7 @@ public class RpcClientTest {
 
 	@BeforeAll
 	public static void beforeAll() {
-		RpcServerConfig config = new RpcServerConfig();
-		rpcServer = new RpcServer(config);
+		rpcServer = new RpcServer();
 		rpcServer.startup();
 
 		rpcServer.registerUserProcessor(new SimpleUserProcessor());
