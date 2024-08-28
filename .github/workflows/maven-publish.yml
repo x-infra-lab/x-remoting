@@ -1,0 +1,23 @@
+name: maven-publish-jdk8
+on: workflow_dispatch
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+          cache: maven
+          server-id: central
+          server-username: ${{ secrets.CENTRAL_USER }}
+          server-password: ${{ secrets.CENTRAL_PASSWD }}
+      - name: Set up GPG
+        run: |
+          echo "${{ secrets.GPG_PRIVATE_KEY }}" > private-key.txt && gpg --import --batch private-key.txt
+      - name: Maven deploy
+        run: mvn -U deploy -Prelease
+        env:
+          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
