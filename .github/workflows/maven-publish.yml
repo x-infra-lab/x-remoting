@@ -14,10 +14,7 @@ jobs:
           server-id: central
           server-username: ${{ secrets.CENTRAL_USER }}
           server-password: ${{ secrets.CENTRAL_PASSWD }}
-      - name: Set up GPG
-        run: |
-          echo "${{ secrets.GPG_PRIVATE_KEY }}" > private-key.txt && gpg --import --batch private-key.txt
+          gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
+          gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
       - name: Maven deploy
         run: mvn -U deploy -Prelease
-        env:
-          MAVEN_GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
