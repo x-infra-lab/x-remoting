@@ -12,9 +12,13 @@ jobs:
           distribution: 'temurin'
           cache: maven
           server-id: central
-          server-username: ${{ secrets.CENTRAL_USER }}
-          server-password: ${{ secrets.CENTRAL_PASSWD }}
+          server-username: CENTRAL_USER
+          server-password: CENTRAL_PASSWD
           gpg-private-key: ${{ secrets.GPG_PRIVATE_KEY }}
-          gpg-passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          gpg-passphrase: GPG_PASSPHRASE
       - name: Maven deploy
-        run: mvn -U deploy -Prelease -Dgpg.passphrase=${{ secrets.GPG_PASSPHRASE }}
+        run: mvn -U deploy -Prelease
+        env:
+          CENTRAL_USER: ${{ secrets.CENTRAL_USER }}
+          CENTRAL_PASSWD: ${{ secrets.CENTRAL_PASSWD }}
+          GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
