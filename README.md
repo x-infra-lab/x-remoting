@@ -1,6 +1,8 @@
 # x-remoting
 ![Action Status](https://github.com/x-infra-lab/x-remoting/actions/workflows/maven-build.yml/badge.svg)
 [![codecov](https://codecov.io/gh/x-infra-lab/x-remoting/graph/badge.svg?token=QQUS0GPV4O)](https://codecov.io/gh/x-infra-lab/x-remoting)
+[![Maven Central](https://img.shields.io/maven-central/v/io.github.x-infra-lab/x-remoting)](https://central.sonatype.com/artifact/io.github.x-infra-lab/x-remoting/)
+
 
 x-remoting is a network communication framework based on Netty.
 
