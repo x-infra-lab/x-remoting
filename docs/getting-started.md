@@ -10,6 +10,7 @@ x-remoting JARs are available via Maven Central. If you are using Maven, just ad
 </dependency>
 ```
 
+Maven Central lastest version :  [![Maven Central](https://img.shields.io/maven-central/v/io.github.x-infra-lab/x-remoting)](https://central.sonatype.com/artifact/io.github.x-infra-lab/x-remoting/)
 ## Remoting Call
 * define request message class
 ```java
