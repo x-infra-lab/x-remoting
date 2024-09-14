@@ -9,6 +9,12 @@ public class RemotingServerConfig {
 
 	private boolean manageConnection = false;
 
-	private boolean idleSwitch = false;
+	private boolean idleSwitch = true;
+
+	private long idleReaderTimeout = 0L;
+
+	private long idleWriterTimeout = 0L;
+
+	private long idleAllTimeout = 90000L;
 
 }

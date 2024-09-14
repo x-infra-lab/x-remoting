@@ -69,7 +69,8 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 		this.connectionConfig = connectionConfig;
 
 		bootstrap = new Bootstrap();
-		bootstrap.group(workerGroup).channel(channelClass).handler(new ChannelInitializer<SocketChannel>() {
+		bootstrap.option(ChannelOption.SO_KEEPALIVE, true)
+				.group(workerGroup).channel(channelClass).handler(new ChannelInitializer<SocketChannel>() {
 
 			@Override
 			protected void initChannel(SocketChannel ch) throws Exception {
@@ -94,6 +95,7 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 	public Connection create(SocketAddress socketAddress) throws RemotingException {
 		bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionConfig.getConnectTimeout());
 		ChannelFuture future = bootstrap.connect(socketAddress);
+
 		future.awaitUninterruptibly();
 		if (!future.isDone()) {
 			String errMsg = "Create connection to " + socketAddress + " timeout!";

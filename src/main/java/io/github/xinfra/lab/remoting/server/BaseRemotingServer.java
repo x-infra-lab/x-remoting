@@ -14,6 +14,7 @@ import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
+import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.ServerChannel;
@@ -87,6 +88,7 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 		this.serverBootstrap = new ServerBootstrap();
 		this.serverBootstrap.group(bossGroup, workerGroup)
 			.channel(serverChannelClass)
+				.childOption(ChannelOption.SO_KEEPALIVE, true)
 			.childHandler(new ChannelInitializer<SocketChannel>() {
 				@Override
 				protected void initChannel(SocketChannel channel) throws Exception {
@@ -97,7 +99,9 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 
 					if (config.isIdleSwitch()) {
 						pipeline.addLast("idleStateHandler",
-								new IdleStateHandler(60000, 60000, 0, TimeUnit.MILLISECONDS));
+								new IdleStateHandler(config.getIdleReaderTimeout(),
+										config.getIdleWriterTimeout(),
+										config.getIdleAllTimeout(), TimeUnit.MILLISECONDS));
 						pipeline.addLast("serverIdleHandler", serverIdleHandler);
 					}
 					pipeline.addLast("handler", handler);
