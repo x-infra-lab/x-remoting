@@ -88,7 +88,7 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 		this.serverBootstrap = new ServerBootstrap();
 		this.serverBootstrap.group(bossGroup, workerGroup)
 			.channel(serverChannelClass)
-				.childOption(ChannelOption.SO_KEEPALIVE, true)
+			.childOption(ChannelOption.SO_KEEPALIVE, true)
 			.childHandler(new ChannelInitializer<SocketChannel>() {
 				@Override
 				protected void initChannel(SocketChannel channel) throws Exception {
@@ -98,10 +98,8 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 					pipeline.addLast("decoder", new ProtocolDecoder());
 
 					if (config.isIdleSwitch()) {
-						pipeline.addLast("idleStateHandler",
-								new IdleStateHandler(config.getIdleReaderTimeout(),
-										config.getIdleWriterTimeout(),
-										config.getIdleAllTimeout(), TimeUnit.MILLISECONDS));
+						pipeline.addLast("idleStateHandler", new IdleStateHandler(config.getIdleReaderTimeout(),
+								config.getIdleWriterTimeout(), config.getIdleAllTimeout(), TimeUnit.MILLISECONDS));
 						pipeline.addLast("serverIdleHandler", serverIdleHandler);
 					}
 					pipeline.addLast("handler", handler);

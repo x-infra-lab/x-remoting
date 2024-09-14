@@ -70,25 +70,27 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 
 		bootstrap = new Bootstrap();
 		bootstrap.option(ChannelOption.SO_KEEPALIVE, true)
-				.group(workerGroup).channel(channelClass).handler(new ChannelInitializer<SocketChannel>() {
+			.group(workerGroup)
+			.channel(channelClass)
+			.handler(new ChannelInitializer<SocketChannel>() {
 
-			@Override
-			protected void initChannel(SocketChannel ch) throws Exception {
-				ChannelPipeline pipeline = ch.pipeline();
-				if (connectionConfig.isIdleSwitch()) {
-					pipeline.addLast("idleStateHandler",
-							new IdleStateHandler(connectionConfig.getIdleReaderTimeout(),
-									connectionConfig.getIdleWriterTimeout(), connectionConfig.getIdleAllTimeout(),
-									TimeUnit.MILLISECONDS));
+				@Override
+				protected void initChannel(SocketChannel ch) throws Exception {
+					ChannelPipeline pipeline = ch.pipeline();
+					if (connectionConfig.isIdleSwitch()) {
+						pipeline.addLast("idleStateHandler",
+								new IdleStateHandler(connectionConfig.getIdleReaderTimeout(),
+										connectionConfig.getIdleWriterTimeout(), connectionConfig.getIdleAllTimeout(),
+										TimeUnit.MILLISECONDS));
+					}
+
+					for (Supplier<ChannelHandler> supplier : channelHandlerSuppliers) {
+						pipeline.addLast(supplier.get());
+					}
+
+					// todo FlushConsolidationHandler
 				}
-
-				for (Supplier<ChannelHandler> supplier : channelHandlerSuppliers) {
-					pipeline.addLast(supplier.get());
-				}
-
-				// todo FlushConsolidationHandler
-			}
-		});
+			});
 	}
 
 	@Override
