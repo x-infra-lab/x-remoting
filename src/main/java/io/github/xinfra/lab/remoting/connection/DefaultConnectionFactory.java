@@ -69,31 +69,35 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 		this.connectionConfig = connectionConfig;
 
 		bootstrap = new Bootstrap();
-		bootstrap.group(workerGroup).channel(channelClass).handler(new ChannelInitializer<SocketChannel>() {
+		bootstrap.option(ChannelOption.SO_KEEPALIVE, true)
+			.group(workerGroup)
+			.channel(channelClass)
+			.handler(new ChannelInitializer<SocketChannel>() {
 
-			@Override
-			protected void initChannel(SocketChannel ch) throws Exception {
-				ChannelPipeline pipeline = ch.pipeline();
-				if (connectionConfig.isIdleSwitch()) {
-					pipeline.addLast("idleStateHandler",
-							new IdleStateHandler(connectionConfig.getIdleReaderTimeout(),
-									connectionConfig.getIdleWriterTimeout(), connectionConfig.getIdleAllTimeout(),
-									TimeUnit.MILLISECONDS));
+				@Override
+				protected void initChannel(SocketChannel ch) throws Exception {
+					ChannelPipeline pipeline = ch.pipeline();
+					if (connectionConfig.isIdleSwitch()) {
+						pipeline.addLast("idleStateHandler",
+								new IdleStateHandler(connectionConfig.getIdleReaderTimeout(),
+										connectionConfig.getIdleWriterTimeout(), connectionConfig.getIdleAllTimeout(),
+										TimeUnit.MILLISECONDS));
+					}
+
+					for (Supplier<ChannelHandler> supplier : channelHandlerSuppliers) {
+						pipeline.addLast(supplier.get());
+					}
+
+					// todo FlushConsolidationHandler
 				}
-
-				for (Supplier<ChannelHandler> supplier : channelHandlerSuppliers) {
-					pipeline.addLast(supplier.get());
-				}
-
-				// todo FlushConsolidationHandler
-			}
-		});
+			});
 	}
 
 	@Override
 	public Connection create(SocketAddress socketAddress) throws RemotingException {
 		bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionConfig.getConnectTimeout());
 		ChannelFuture future = bootstrap.connect(socketAddress);
+
 		future.awaitUninterruptibly();
 		if (!future.isDone()) {
 			String errMsg = "Create connection to " + socketAddress + " timeout!";

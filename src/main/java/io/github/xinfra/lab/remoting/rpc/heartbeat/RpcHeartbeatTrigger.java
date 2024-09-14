@@ -33,7 +33,8 @@ public class RpcHeartbeatTrigger implements HeartbeatTrigger {
 		int heartbeatFailCount = connection.getHeartbeatFailCnt();
 		if (heartbeatFailCount > maxFailCount) {
 			connection.close();
-			log.error("close connection after heartbeat fail {} times", heartbeatFailCount);
+			log.error("close connection after heartbeat fail {} times. remote address:{}", heartbeatFailCount,
+					connection.remoteAddress());
 			return;
 		}
 
