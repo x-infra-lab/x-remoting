@@ -58,15 +58,6 @@ public class ServerConnectionManagerTest {
 	}
 
 	@Test
-	public void testGetOrCreateIfAbsent() {
-		SocketAddress socketAddress = new InetSocketAddress(remoteAddress, serverPort);
-		Assertions.assertThrows(UnsupportedOperationException.class, () -> {
-			connectionManager.getOrCreateIfAbsent(socketAddress);
-		});
-
-	}
-
-	@Test
 	public void testGet1() throws RemotingException {
 		// valid socketAddress
 		SocketAddress socketAddress = new InetSocketAddress(remoteAddress, serverPort);
@@ -75,16 +66,10 @@ public class ServerConnectionManagerTest {
 		Connection connection1 = connectionManager.get(socketAddress);
 		Assertions.assertNull(connection1);
 
-		Assertions.assertThrows(UnsupportedOperationException.class, () -> {
-			connectionManager.getOrCreateIfAbsent(socketAddress);
-		});
-
-		connection1 = connectionManager.get(socketAddress);
-		Assertions.assertNull(connection1);
 	}
 
 	@Test
-	public void testAdd() {
+	public void testAdd() throws RemotingException {
 		Connection connection1 = mock(Connection.class);
 		SocketAddress socketAddress1 = new InetSocketAddress("localhost", 8080);
 		doReturn(socketAddress1).when(connection1).remoteAddress();
@@ -98,7 +83,7 @@ public class ServerConnectionManagerTest {
 		Assertions.assertTrue(connection1 == connectionManager.get(socketAddress1));
 		Assertions.assertTrue(connection2 == connectionManager.get(socketAddress2));
 
-		connectionManager.removeAndClose(connection1);
+		connectionManager.invalidate(connection1);
 		verify(connection1, times(1)).close();
 		Assertions.assertNull(connectionManager.get(socketAddress1));
 		Assertions.assertTrue(connection2 == connectionManager.get(socketAddress2));

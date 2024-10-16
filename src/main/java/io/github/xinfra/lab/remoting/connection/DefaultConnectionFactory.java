@@ -48,7 +48,6 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 	/**
 	 * Q: why use Supplier to get ChannelHandler? A: some ChannelHandler is
 	 * not @ChannelHandler.Sharable. need create instance every time
-	 * @param channelHandlerSuppliers
 	 */
 	public DefaultConnectionFactory(Protocol protocol, List<Supplier<ChannelHandler>> channelHandlerSuppliers) {
 		this(protocol, channelHandlerSuppliers, new ConnectionConfig());
@@ -57,8 +56,6 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 	/**
 	 * Q: why use Supplier to get ChannelHandler? A: some ChannelHandler is
 	 * not @ChannelHandler.Sharable. need create instance every time
-	 * @param channelHandlerSuppliers
-	 * @param connectionConfig
 	 */
 	public DefaultConnectionFactory(Protocol protocol, List<Supplier<ChannelHandler>> channelHandlerSuppliers,
 			ConnectionConfig connectionConfig) {

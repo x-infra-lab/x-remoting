@@ -45,7 +45,7 @@ public class ConnectionEventHandler extends ChannelDuplexHandler {
 	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
 		Connection connection = ctx.channel().attr(CONNECTION).get();
 		if (connectionManager != null && connectionManager.isStarted()) {
-			connectionManager.removeAndClose(connection);
+			connectionManager.invalidate(connection);
 		}
 		userEventTriggered(ctx, ConnectionEvent.CLOSE);
 

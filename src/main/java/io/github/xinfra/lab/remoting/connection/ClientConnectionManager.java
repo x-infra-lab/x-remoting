@@ -5,6 +5,7 @@ import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.netty.channel.ChannelHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Validate;
 
 import java.net.SocketAddress;
 import java.util.ArrayList;
@@ -71,6 +72,20 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 		super.shutdown();
 
 		reconnector.shutdownNow();
+	}
+
+	@Override
+	public synchronized Connection get(SocketAddress socketAddress) throws RemotingException {
+		ensureStarted();
+		Validate.notNull(socketAddress, "socketAddress can not be null");
+
+		ConnectionHolder connectionHolder = connections.get(socketAddress);
+		if (connectionHolder == null) {
+			connectionHolder = createConnectionHolder(socketAddress);
+			createConnectionForHolder(socketAddress, connectionHolder, config.getConnectionNumPreEndpoint());
+		}
+
+		return connectionHolder.get();
 	}
 
 	@Override

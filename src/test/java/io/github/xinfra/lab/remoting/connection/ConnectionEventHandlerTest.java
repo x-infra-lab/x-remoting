@@ -117,7 +117,7 @@ public class ConnectionEventHandlerTest {
 
 		connectionManager = spy(connectionManager);
 		InetSocketAddress socketAddress = new InetSocketAddress(remoteAddress, serverPort);
-		Connection connection = connectionManager.getOrCreateIfAbsent(socketAddress);
+		Connection connection = connectionManager.get(socketAddress);
 		connection = spy(connection);
 		connection.getChannel().attr(CONNECTION).set(connection);
 
@@ -147,7 +147,7 @@ public class ConnectionEventHandlerTest {
 		verify(connectionEventHandler, times(1)).close(any(), any());
 		verify(connection, times(1)).onClose();
 		verify(connectionEventHandler, times(1)).channelInactive(any());
-		verify(connectionManager, times(1)).removeAndClose(eq(connection));
+		verify(connectionManager, times(1)).invalidate(eq(connection));
 
 		verify(connectionEventHandler, times(1)).userEventTriggered(any(), eq(ConnectionEvent.CLOSE));
 		verify(connectionManager, times(1)).asyncReconnect(eq(socketAddress));
@@ -162,7 +162,7 @@ public class ConnectionEventHandlerTest {
 
 		connectionManager = spy(connectionManager);
 		InetSocketAddress socketAddress = new InetSocketAddress(remoteAddress, serverPort);
-		Connection connection = connectionManager.getOrCreateIfAbsent(socketAddress);
+		Connection connection = connectionManager.get(socketAddress);
 		connection = spy(connection);
 		connection.getChannel().attr(CONNECTION).set(connection);
 
@@ -193,7 +193,7 @@ public class ConnectionEventHandlerTest {
 		verify(connection, times(2)).onClose();
 
 		verify(connectionEventHandler, times(1)).channelInactive(any());
-		verify(connectionManager, times(1)).removeAndClose(eq(connection));
+		verify(connectionManager, times(1)).invalidate(eq(connection));
 
 		verify(connectionEventHandler, times(1)).userEventTriggered(any(), eq(ConnectionEvent.CLOSE));
 		verify(connectionManager, times(1)).asyncReconnect(eq(socketAddress));
@@ -208,7 +208,7 @@ public class ConnectionEventHandlerTest {
 
 		connectionManager = spy(connectionManager);
 		InetSocketAddress socketAddress = new InetSocketAddress(remoteAddress, serverPort);
-		Connection connection = connectionManager.getOrCreateIfAbsent(socketAddress);
+		Connection connection = connectionManager.get(socketAddress);
 		connection = spy(connection);
 		connection.getChannel().attr(CONNECTION).set(connection);
 
@@ -237,7 +237,7 @@ public class ConnectionEventHandlerTest {
 		verify(connectionEventHandler, times(1)).close(any(), any());
 		verify(connection, times(1)).onClose();
 		verify(connectionEventHandler, times(1)).channelInactive(any());
-		verify(connectionManager, times(1)).removeAndClose(eq(connection));
+		verify(connectionManager, times(1)).invalidate(eq(connection));
 
 		verify(connectionEventHandler, times(1)).userEventTriggered(any(), eq(ConnectionEvent.CLOSE));
 		verify(connectionManager, times(1)).asyncReconnect(eq(socketAddress));

@@ -54,7 +54,7 @@ public class HeartBeatTest {
 		BaseRemoting baseRemoting = new BaseRemoting(protocol);
 		Message heartbeatRequestMessage = messageFactory.createHeartbeatRequestMessage();
 
-		Connection connection = connectionManager.getOrCreateIfAbsent(remoteAddress);
+		Connection connection = connectionManager.get(remoteAddress);
 
 		Message heartbeatResponseMessage = baseRemoting.syncCall(heartbeatRequestMessage, connection, 1000);
 

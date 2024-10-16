@@ -7,7 +7,6 @@ import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.Channel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -15,7 +14,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
@@ -81,10 +79,10 @@ public class ClientConnectionManagerTest {
 	@Test
 	public void testGetOrCreateIfAbsent() throws RemotingException {
 		InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort);
-		Connection connection1 = connectionManager.getOrCreateIfAbsent(address);
+		Connection connection1 = connectionManager.get(address);
 		Assertions.assertNotNull(connection1);
 
-		Connection connection2 = connectionManager.getOrCreateIfAbsent(address);
+		Connection connection2 = connectionManager.get(address);
 		Assertions.assertTrue(connection1 == connection2);
 	}
 
@@ -93,7 +91,7 @@ public class ClientConnectionManagerTest {
 		// invalid socketAddress
 		InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort + 1);
 		Assertions.assertThrows(RemotingException.class, () -> {
-			connectionManager.getOrCreateIfAbsent(address);
+			connectionManager.get(address);
 		});
 	}
 
@@ -102,15 +100,11 @@ public class ClientConnectionManagerTest {
 		// valid socketAddress
 		InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort);
 
-		// no connection
-		Connection connection1 = connectionManager.get(address);
-		Assertions.assertNull(connection1);
-
 		// create connection
-		Connection connection2 = connectionManager.getOrCreateIfAbsent(address);
-		Assertions.assertNotNull(connection2);
+		Connection connection1 = connectionManager.get(address);
+		Assertions.assertNotNull(connection1);
 
-		connection1 = connectionManager.get(address);
+		Connection connection2 = connectionManager.get(address);
 		Assertions.assertNotNull(connection1);
 
 		Assertions.assertTrue(connection1 == connection2);
@@ -121,17 +115,11 @@ public class ClientConnectionManagerTest {
 		// invalid socketAddress
 		InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort + 1);
 
-		// no connection
-		Connection connection1 = connectionManager.get(address);
-		Assertions.assertNull(connection1);
-
 		// fail create connection
 		Assertions.assertThrows(RemotingException.class, () -> {
-			connectionManager.getOrCreateIfAbsent(address);
+			connectionManager.get(address);
 		});
 
-		connection1 = connectionManager.get(address);
-		Assertions.assertNull(connection1);
 	}
 
 	@Test
@@ -142,7 +130,7 @@ public class ClientConnectionManagerTest {
 
 		// valid socketAddress
 		InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort);
-		Connection connection = connectionManager.getOrCreateIfAbsent(address);
+		Connection connection = connectionManager.get(address);
 		connectionManager.check(connection);
 	}
 
@@ -150,7 +138,7 @@ public class ClientConnectionManagerTest {
 	public void testCheckWritable() throws RemotingException {
 		// valid socketAddress
 		InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort);
-		Connection connection = connectionManager.getOrCreateIfAbsent(address);
+		Connection connection = connectionManager.get(address);
 		connectionManager.check(connection);
 
 		// mock
@@ -175,7 +163,7 @@ public class ClientConnectionManagerTest {
 	public void testCheckActive() throws RemotingException {
 		// valid socketAddress
 		InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort);
-		Connection connection = connectionManager.getOrCreateIfAbsent(address);
+		Connection connection = connectionManager.get(address);
 		connectionManager.check(connection);
 
 		// mock
@@ -192,31 +180,20 @@ public class ClientConnectionManagerTest {
 			spyConnectionManager.check(spyConnection);
 		});
 
-		verify(spyConnectionManager, times(1)).removeAndClose(eq(spyConnection));
+		verify(spyConnectionManager, times(1)).invalidate(eq(spyConnection));
 	}
 
 	@Test
-	public void testRemoveAndClose() throws RemotingException {
+	public void testInvalidate() throws RemotingException {
 		// valid socketAddress
 		InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort);
-		Connection connection = connectionManager.getOrCreateIfAbsent(address);
+		Connection connection = connectionManager.get(address);
 
 		connectionManager.disableReconnect(address);
-		connectionManager.removeAndClose(connection);
+		connectionManager.invalidate(connection);
 		Assertions.assertNull(((ClientConnectionManager) connectionManager).connections.get(address));
-		Assertions.assertNull(connectionManager.get(address));
 		// removeAndClose again
-		connectionManager.removeAndClose(connection);
-
-		Connection mockConnection = mock(Connection.class);
-		// invalid
-		InetSocketAddress invalidAddress = new InetSocketAddress(remoteAddress, serverPort + 1);
-		Assertions.assertNull(connectionManager.get(invalidAddress));
-		doReturn(invalidAddress).when(mockConnection).remoteAddress();
-		connectionManager.removeAndClose(mockConnection);
-		verify(mockConnection, times(1)).close();
-		connectionManager.removeAndClose(mockConnection);
-		verify(mockConnection, times(2)).close();
+		connectionManager.invalidate(connection);
 
 	}
 
@@ -224,7 +201,7 @@ public class ClientConnectionManagerTest {
 	public void testReconnect1() throws RemotingException {
 		// valid socketAddress
 		InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort);
-		Connection connection = connectionManager.getOrCreateIfAbsent(address);
+		Connection connection = connectionManager.get(address);
 		Assertions.assertNotNull(connection);
 
 		Map<SocketAddress, ConnectionHolder> connections = ((ClientConnectionManager) connectionManager).connections;
@@ -247,7 +224,7 @@ public class ClientConnectionManagerTest {
 
 		// valid socketAddress
 		InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort);
-		Connection connection = connectionManager.getOrCreateIfAbsent(address);
+		Connection connection = connectionManager.get(address);
 
 		Map<SocketAddress, ConnectionHolder> connections = ((ClientConnectionManager) connectionManager).connections;
 		ConnectionHolder connectionHolder = connections.get(address);
@@ -285,8 +262,8 @@ public class ClientConnectionManagerTest {
 		InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort);
 		Map<SocketAddress, ConnectionHolder> connections = ((ClientConnectionManager) connectionManager).connections;
 
-		Connection connection = connectionManager.getOrCreateIfAbsent(address);
-		connectionManager.removeAndClose(connection);
+		Connection connection = connectionManager.get(address);
+		connectionManager.invalidate(connection);
 		Assertions.assertTrue(!connections.containsKey(address));
 
 		Wait.untilIsTrue(() -> {
