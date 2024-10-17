@@ -58,8 +58,9 @@ public class ConnectionEventHandler extends ChannelDuplexHandler {
 			Connection connection = ctx.channel().attr(CONNECTION).get();
 			ConnectionEvent connectionEvent = (ConnectionEvent) evt;
 			if (connectionEvent == ConnectionEvent.CLOSE) {
-				if (connectionManager != null && connectionManager.isStarted()) {
-					connectionManager.asyncReconnect(connection.remoteAddress());
+				if (connectionManager != null && connectionManager.isStarted()
+						&& connectionManager.reconnector() != null) {
+					connectionManager.reconnector().asyncReconnect(connection.remoteAddress());
 				}
 			}
 		}

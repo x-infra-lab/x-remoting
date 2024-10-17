@@ -99,7 +99,7 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 
 	protected void createConnectionForHolder(SocketAddress socketAddress, ConnectionHolder connectionHolder, int size)
 			throws RemotingException {
-		for (int i = 0; i < size; i++) {
+		for (int i = connectionHolder.size(); i <= size; i++) {
 			Connection connection = connectionFactory.create(socketAddress);
 			connectionHolder.add(connection);
 		}

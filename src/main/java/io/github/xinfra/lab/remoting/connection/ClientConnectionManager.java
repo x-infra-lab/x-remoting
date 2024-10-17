@@ -1,6 +1,5 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.netty.channel.ChannelHandler;
@@ -10,24 +9,12 @@ import org.apache.commons.lang3.Validate;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 @Slf4j
 public class ClientConnectionManager extends AbstractConnectionManager {
 
-	private ExecutorService reconnector = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
-			new ArrayBlockingQueue<>(1024), new NamedThreadFactory("Reconnector-Worker"));
-
-	private Set<SocketAddress> disableReconnectSocketAddresses = new CopyOnWriteArraySet<>();
+	private Reconnector reconnector;
 
 	public ClientConnectionManager(Protocol protocol) {
 		this.connectionFactory = new DefaultConnectionFactory(protocol, defaultChannelSuppliers());
@@ -65,13 +52,14 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 	}
 
 	@Override
-	public synchronized void shutdown() {
-		for (SocketAddress socketAddress : connections.keySet()) {
-			disableReconnect(socketAddress);
+	public Connection cconnect(SocketAddress socketAddress) throws RemotingException {
+		ConnectionHolder connectionHolder = connections.get(socketAddress);
+		if (connectionHolder == null) {
+			connectionHolder = createConnectionHolder(socketAddress);
 		}
-		super.shutdown();
+		createConnectionForHolder(socketAddress, connectionHolder, config.getConnectionNumPreEndpoint());
 
-		reconnector.shutdownNow();
+		return connectionHolder.get();
 	}
 
 	@Override
@@ -81,76 +69,34 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 
 		ConnectionHolder connectionHolder = connections.get(socketAddress);
 		if (connectionHolder == null) {
-			connectionHolder = createConnectionHolder(socketAddress);
-			createConnectionForHolder(socketAddress, connectionHolder, config.getConnectionNumPreEndpoint());
+			return cconnect(socketAddress);
 		}
 
 		return connectionHolder.get();
 	}
 
 	@Override
-	public synchronized void reconnect(SocketAddress socketAddress) throws RemotingException {
-		ensureStarted();
-		if (disableReconnectSocketAddresses.contains(socketAddress)) {
-			log.warn("socketAddress:{} is disable to reconnect", socketAddress);
-			throw new RemotingException("socketAddress is disable to reconnect:" + socketAddress);
-		}
-		ConnectionHolder connectionHolder = connections.get(socketAddress);
-		if (connectionHolder == null) {
-			connectionHolder = createConnectionHolder(socketAddress);
-			createConnectionForHolder(socketAddress, connectionHolder, config.getConnectionNumPreEndpoint());
-		}
-		else {
-			int needCreateNum = config.getConnectionNumPreEndpoint() - connectionHolder.size();
-			if (needCreateNum > 0) {
-				createConnectionForHolder(socketAddress, connectionHolder, needCreateNum);
+	public Reconnector reconnector() {
+		return reconnector;
+	}
+
+	@Override
+	public void startup() {
+		super.startup();
+		reconnector = new DefaultReconnector(this);
+		reconnector.startup();
+	}
+
+	@Override
+	public synchronized void shutdown() {
+		if (reconnector() != null) {
+			for (SocketAddress socketAddress : connections.keySet()) {
+				reconnector().disableReconnect(socketAddress);
 			}
-		}
-	}
 
-	@Override
-	public synchronized void disableReconnect(SocketAddress socketAddress) {
-		ensureStarted();
-		disableReconnectSocketAddresses.add(socketAddress);
-	}
+			super.shutdown();
 
-	@Override
-	public synchronized void enableReconnect(SocketAddress socketAddress) {
-		ensureStarted();
-		disableReconnectSocketAddresses.remove(socketAddress);
-	}
-
-	@Override
-	public synchronized Future<Void> asyncReconnect(SocketAddress socketAddress) {
-		ensureStarted();
-		if (disableReconnectSocketAddresses.contains(socketAddress)) {
-			log.warn("socketAddress:{} is disable to asyncReconnect", socketAddress);
-			CompletableFuture<Void> future = new CompletableFuture<>();
-			future.completeExceptionally(
-					new RemotingException("socketAddress is disable to asyncReconnect:" + socketAddress));
-			return future;
-		}
-
-		Callable<Void> callable = new Callable<Void>() {
-			@Override
-			public Void call() throws Exception {
-				try {
-					reconnect(socketAddress);
-				}
-				catch (Exception e) {
-					log.warn("reconnect socketAddress:{} fail", socketAddress, e);
-					throw e;
-				}
-				return null;
-			}
-		};
-
-		try {
-			return reconnector.submit(callable);
-		}
-		catch (Throwable t) {
-			log.warn("asyncReconnect submit failed.", t);
-			throw t;
+			reconnector().shutdown();
 		}
 	}
 
