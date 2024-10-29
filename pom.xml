@@ -6,7 +6,7 @@
 
     <groupId>io.github.x-infra-lab</groupId>
     <artifactId>x-remoting</artifactId>
-    <version>0.0.2-SNAPSHOT</version>
+    <version>0.0.2-RC1</version>
     <packaging>jar</packaging>
 
     <name>x-remoting</name>

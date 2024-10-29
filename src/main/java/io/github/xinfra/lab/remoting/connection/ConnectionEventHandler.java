@@ -45,7 +45,7 @@ public class ConnectionEventHandler extends ChannelDuplexHandler {
 	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
 		Connection connection = ctx.channel().attr(CONNECTION).get();
 		if (connectionManager != null && connectionManager.isStarted()) {
-			connectionManager.invalidate(connection);
+			connectionManager.close(connection);
 		}
 		userEventTriggered(ctx, ConnectionEvent.CLOSE);
 
@@ -60,7 +60,7 @@ public class ConnectionEventHandler extends ChannelDuplexHandler {
 			if (connectionEvent == ConnectionEvent.CLOSE) {
 				if (connectionManager != null && connectionManager.isStarted()
 						&& connectionManager.reconnector() != null) {
-					connectionManager.reconnector().asyncReconnect(connection.remoteAddress());
+					connectionManager.reconnector().reconnect(connection.remoteAddress());
 				}
 			}
 		}

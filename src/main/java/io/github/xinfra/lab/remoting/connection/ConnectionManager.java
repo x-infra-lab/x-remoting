@@ -7,13 +7,13 @@ import java.net.SocketAddress;
 
 public interface ConnectionManager extends LifeCycle {
 
-	Connection cconnect(SocketAddress socketAddress) throws RemotingException;
+	Connection connect(SocketAddress socketAddress) throws RemotingException;
 
 	Connection get(SocketAddress socketAddress) throws RemotingException;
 
 	void check(Connection connection) throws RemotingException;
 
-	void invalidate(Connection connection);
+	void close(Connection connection);
 
 	void add(Connection connection);
 

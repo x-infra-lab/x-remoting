@@ -83,7 +83,7 @@ public class ServerConnectionManagerTest {
 		Assertions.assertTrue(connection1 == connectionManager.get(socketAddress1));
 		Assertions.assertTrue(connection2 == connectionManager.get(socketAddress2));
 
-		connectionManager.invalidate(connection1);
+		connectionManager.close(connection1);
 		verify(connection1, times(1)).close();
 		Assertions.assertNull(connectionManager.get(socketAddress1));
 		Assertions.assertTrue(connection2 == connectionManager.get(socketAddress2));

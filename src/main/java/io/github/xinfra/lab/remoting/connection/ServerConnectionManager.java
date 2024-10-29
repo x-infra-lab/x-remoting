@@ -8,7 +8,7 @@ import java.net.SocketAddress;
 public class ServerConnectionManager extends AbstractConnectionManager {
 
 	@Override
-	public Connection cconnect(SocketAddress socketAddress) throws RemotingException {
+	public Connection connect(SocketAddress socketAddress) throws RemotingException {
 		throw new UnsupportedOperationException("ServerConnectionManager not support connect");
 	}
 

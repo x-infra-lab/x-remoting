@@ -35,7 +35,7 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 		Validate.notNull(connection, "connection can not be null");
 
 		if (connection.getChannel() == null || !connection.getChannel().isActive()) {
-			this.invalidate(connection);
+			this.close(connection);
 			throw new RemotingException("Check connection failed for address: " + connection.remoteAddress());
 		}
 		if (!connection.getChannel().isWritable()) {
@@ -46,7 +46,7 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 	}
 
 	@Override
-	public synchronized void invalidate(Connection connection) {
+	public synchronized void close(Connection connection) {
 		ensureStarted();
 		Validate.notNull(connection, "connection can not be null");
 
@@ -99,7 +99,7 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 
 	protected void createConnectionForHolder(SocketAddress socketAddress, ConnectionHolder connectionHolder, int size)
 			throws RemotingException {
-		for (int i = connectionHolder.size(); i <= size; i++) {
+		for (int i = connectionHolder.size(); i < size; i++) {
 			Connection connection = connectionFactory.create(socketAddress);
 			connectionHolder.add(connection);
 		}

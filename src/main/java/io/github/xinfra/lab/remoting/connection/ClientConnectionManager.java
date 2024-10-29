@@ -1,5 +1,6 @@
 package io.github.xinfra.lab.remoting.connection;
 
+import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.netty.channel.ChannelHandler;
@@ -14,7 +15,8 @@ import java.util.function.Supplier;
 @Slf4j
 public class ClientConnectionManager extends AbstractConnectionManager {
 
-	private Reconnector reconnector;
+	@AccessForTest
+	protected Reconnector reconnector;
 
 	public ClientConnectionManager(Protocol protocol) {
 		this.connectionFactory = new DefaultConnectionFactory(protocol, defaultChannelSuppliers());
@@ -52,7 +54,7 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 	}
 
 	@Override
-	public Connection cconnect(SocketAddress socketAddress) throws RemotingException {
+	public Connection connect(SocketAddress socketAddress) throws RemotingException {
 		ConnectionHolder connectionHolder = connections.get(socketAddress);
 		if (connectionHolder == null) {
 			connectionHolder = createConnectionHolder(socketAddress);
@@ -69,7 +71,7 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 
 		ConnectionHolder connectionHolder = connections.get(socketAddress);
 		if (connectionHolder == null) {
-			return cconnect(socketAddress);
+			return connect(socketAddress);
 		}
 
 		return connectionHolder.get();

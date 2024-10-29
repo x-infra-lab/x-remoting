@@ -1,5 +1,6 @@
 package io.github.xinfra.lab.remoting.connection;
 
+import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
@@ -7,24 +8,22 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.net.SocketAddress;
 import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
 public class DefaultReconnector extends AbstractLifeCycle implements Reconnector {
 
-	private Set<SocketAddress> disableReconnectSocketAddresses = new CopyOnWriteArraySet<>();
+	private Set<SocketAddress> disabledAddresses = new CopyOnWriteArraySet<>();
 
-	private ConnectionManager connectionManager;
+	@AccessForTest
+	protected LinkedBlockingQueue<SocketAddress> reconnectAddressQueue = new LinkedBlockingQueue<>();
 
-	private ExecutorService reconnector = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
-			new ArrayBlockingQueue<>(1024), new NamedThreadFactory("Reconnector-Worker"));
+	@AccessForTest
+	protected ConnectionManager connectionManager;
+
+	private final Thread reconeectThread = new NamedThreadFactory("reconnect-thread").newThread(new ReconnectTask());
 
 	public DefaultReconnector(ConnectionManager connectionManager) {
 		this.connectionManager = connectionManager;
@@ -33,69 +32,71 @@ public class DefaultReconnector extends AbstractLifeCycle implements Reconnector
 	@Override
 	public void startup() {
 		super.startup();
-		// todo start reconnect thread
+		reconeectThread.start();
 	}
 
 	@Override
 	public void shutdown() {
 		super.shutdown();
-		// todo shutdown reconnect thread
+		reconeectThread.interrupt();
+		disabledAddresses.clear();
+		reconnectAddressQueue.clear();
 	}
 
 	@Override
 	public synchronized void reconnect(SocketAddress socketAddress) throws RemotingException {
 		ensureStarted();
-		if (disableReconnectSocketAddresses.contains(socketAddress)) {
-			log.warn("socketAddress:{} is disable to reconnect", socketAddress);
-			throw new RemotingException("socketAddress is disable to reconnect:" + socketAddress);
-		}
-		connectionManager.cconnect(socketAddress);
+		reconnectAddressQueue.add(socketAddress);
 	}
 
 	@Override
 	public synchronized void disableReconnect(SocketAddress socketAddress) {
 		ensureStarted();
-		disableReconnectSocketAddresses.add(socketAddress);
+		disabledAddresses.add(socketAddress);
 	}
 
 	@Override
 	public synchronized void enableReconnect(SocketAddress socketAddress) {
 		ensureStarted();
-		disableReconnectSocketAddresses.remove(socketAddress);
+		disabledAddresses.remove(socketAddress);
 	}
 
-	@Override
-	public synchronized Future<Void> asyncReconnect(SocketAddress socketAddress) {
-		ensureStarted();
-		if (disableReconnectSocketAddresses.contains(socketAddress)) {
-			log.warn("socketAddress:{} is disable to asyncReconnect", socketAddress);
-			CompletableFuture<Void> future = new CompletableFuture<>();
-			future.completeExceptionally(
-					new RemotingException("socketAddress is disable to asyncReconnect:" + socketAddress));
-			return future;
-		}
+	class ReconnectTask implements Runnable {
 
-		Callable<Void> callable = new Callable<Void>() {
-			@Override
-			public Void call() throws Exception {
+		@Override
+		public void run() {
+			while (isStarted()) {
+				SocketAddress socketAddress = null;
 				try {
-					reconnect(socketAddress);
+					socketAddress = reconnectAddressQueue.take();
 				}
-				catch (Exception e) {
-					log.warn("reconnect socketAddress:{} fail", socketAddress, e);
-					throw e;
+				catch (InterruptedException e) {
+					break;
 				}
-				return null;
-			}
-		};
 
-		try {
-			return reconnector.submit(callable);
+				if (disabledAddresses.contains(socketAddress)) {
+					log.warn("reconnect to {} has been disabled", socketAddress);
+				}
+				else {
+					try {
+						connectionManager.connect(socketAddress);
+					}
+					catch (Throwable e) {
+						log.warn("reconnect {} fail.", socketAddress);
+						reconnectAddressQueue.add(socketAddress);
+					}
+				}
+
+				try {
+					TimeUnit.SECONDS.sleep(1);
+				}
+				catch (InterruptedException e) {
+					break;
+				}
+
+			}
 		}
-		catch (Throwable t) {
-			log.warn("asyncReconnect submit failed.", t);
-			throw t;
-		}
+
 	}
 
 }
