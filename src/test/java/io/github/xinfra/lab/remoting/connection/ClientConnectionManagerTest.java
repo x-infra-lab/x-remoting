@@ -76,25 +76,6 @@ public class ClientConnectionManagerTest {
 	}
 
 	@Test
-	public void testGetOrCreateIfAbsent() throws RemotingException {
-		InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort);
-		Connection connection1 = connectionManager.get(address);
-		Assertions.assertNotNull(connection1);
-
-		Connection connection2 = connectionManager.get(address);
-		Assertions.assertTrue(connection1 == connection2);
-	}
-
-	@Test
-	public void testGetOrCreateIfAbsentFail() {
-		// invalid socketAddress
-		InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort + 1);
-		Assertions.assertThrows(RemotingException.class, () -> {
-			connectionManager.get(address);
-		});
-	}
-
-	@Test
 	public void testGet() throws RemotingException {
 		// valid socketAddress
 		InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort);
@@ -205,7 +186,9 @@ public class ClientConnectionManagerTest {
 
 		Map<SocketAddress, ConnectionHolder> connections = ((ClientConnectionManager) connectionManager).connections;
 		Assertions.assertTrue(connections.containsKey(address));
-		connections.remove(address);
+		connectionManager.close(connection);
+
+		Assertions.assertTrue(!connections.containsKey(address));
 
 		connectionManager.reconnector().reconnect(address);
 		Wait.untilIsTrue(() -> {
@@ -234,7 +217,7 @@ public class ClientConnectionManagerTest {
 		ConnectionHolder connectionHolder = connections.get(address);
 		Assertions.assertEquals(connectionHolder.size(), numPreEndpoint);
 
-		connectionHolder.connections.remove(connection);
+		connectionManager.close(connection);
 		Assertions.assertEquals(connectionHolder.size(), numPreEndpoint - 1);
 
 		connectionManager.reconnector().reconnect(address);
@@ -256,8 +239,10 @@ public class ClientConnectionManagerTest {
 
 		Reconnector reconnector = connectionManager.reconnector();
 
-		connectionManager = spy(connectionManager);
-		((DefaultReconnector) reconnector).connectionManager = connectionManager;
+		ConnectionManager spyConnectionManager = spy(connectionManager);
+		((DefaultReconnector) reconnector).connectionManager = spyConnectionManager;
+
+		Assertions.assertTrue(!connections.containsKey(address));
 
 		reconnector.reconnect(address);
 
@@ -268,31 +253,7 @@ public class ClientConnectionManagerTest {
 			return false;
 		}, 30, 100);
 
-		verify(connectionManager, times(1)).connect(eq(address));
-	}
-
-	@Test
-	public void testReconnect4()
-			throws InterruptedException, RemotingException, TimeoutException, UnknownHostException {
-		// valid socketAddress
-		InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort);
-		Map<SocketAddress, ConnectionHolder> connections = ((ClientConnectionManager) connectionManager).connections;
-
-		Connection connection = connectionManager.get(address);
-		connectionManager.close(connection);
-		Assertions.assertTrue(!connections.containsKey(address));
-
-		Wait.untilIsTrue(() -> {
-			ConnectionHolder connectionHolder = connections.get(address);
-			if (connectionHolder != null && connectionHolder.get() != null) {
-				return true;
-			}
-			return false;
-		}, 100, 30);
-
-		Assertions.assertTrue(connections.containsKey(address));
-		connection = connectionManager.get(address);
-		Assertions.assertNotNull(connection);
+		verify(spyConnectionManager, times(1)).connect(eq(address));
 	}
 
 	@Test
