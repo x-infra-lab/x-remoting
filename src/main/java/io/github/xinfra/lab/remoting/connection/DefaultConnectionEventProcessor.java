@@ -40,6 +40,7 @@ public class DefaultConnectionEventProcessor extends AbstractLifeCycle implement
 	@Override
 	public void handleEvent(ConnectionEvent event, Connection connection) {
 		ensureStarted();
+		Validate.notNull(connection, "connection must not be null");
 		eventQueue.add(new Event(event, connection));
 	}
 
