@@ -22,6 +22,8 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 
 	protected ConnectionManagerConfig config = new ConnectionManagerConfig();
 
+	private ConnectionEventProcessor connectionEventProcessor;
+
 	public AbstractConnectionManager() {
 	}
 
@@ -80,6 +82,19 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 	}
 
 	@Override
+	public ConnectionEventProcessor connectionEventProcessor() {
+		return connectionEventProcessor;
+	}
+
+	@Override
+	public void startup() {
+		super.startup();
+
+		connectionEventProcessor = new DefaultConnectionEventProcessor();
+		connectionEventProcessor.startup();
+	}
+
+	@Override
 	public synchronized void shutdown() {
 		super.shutdown();
 		for (Map.Entry<SocketAddress, ConnectionHolder> entry : connections.entrySet()) {
@@ -89,6 +104,7 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 			connections.remove(socketAddress);
 		}
 
+		connectionEventProcessor.shutdown();
 	}
 
 	protected ConnectionHolder createConnectionHolder(SocketAddress socketAddress) {

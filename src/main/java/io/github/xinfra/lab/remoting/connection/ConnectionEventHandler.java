@@ -63,6 +63,11 @@ public class ConnectionEventHandler extends ChannelDuplexHandler {
 					connectionManager.reconnector().reconnect(connection.remoteAddress());
 				}
 			}
+
+			if (connectionManager != null && connectionManager.isStarted()
+					&& connectionManager.connectionEventProcessor() != null) {
+				connectionManager.connectionEventProcessor().handleEvent((ConnectionEvent) evt, connection);
+			}
 		}
 		else {
 			super.userEventTriggered(ctx, evt);

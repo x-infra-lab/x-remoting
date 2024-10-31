@@ -16,11 +16,11 @@ import org.junit.jupiter.api.Test;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.net.UnknownHostException;
 import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
@@ -91,7 +91,7 @@ public class ClientConnectionManagerTest {
 	}
 
 	@Test
-	public void testGetFail() throws RemotingException {
+	public void testGetFail() {
 		// invalid socketAddress
 		InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort + 1);
 
@@ -257,7 +257,7 @@ public class ClientConnectionManagerTest {
 	}
 
 	@Test
-	void testDisableReconnect() throws RemotingException, ExecutionException, InterruptedException, TimeoutException {
+	void testDisableReconnect() throws InterruptedException, TimeoutException {
 		InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort);
 		Reconnector reconnector = connectionManager.reconnector();
 		Map<SocketAddress, ConnectionHolder> connections = ((ClientConnectionManager) connectionManager).connections;
@@ -277,6 +277,61 @@ public class ClientConnectionManagerTest {
 			return ((DefaultReconnector) reconnector).reconnectAddressQueue.isEmpty()
 					&& connections.containsKey(address);
 		}, 100, 30);
+	}
+
+	@Test
+	void testConnectionEventListener() throws RemotingException, InterruptedException, TimeoutException {
+		AtomicBoolean connectFlag = new AtomicBoolean(false);
+		AtomicReference<Connection> connectionRef1 = new AtomicReference<>();
+		connectionManager.connectionEventProcessor().addConnectionEventListener(new ConnectionEventListener() {
+			@Override
+			public ConnectionEvent interest() {
+				return ConnectionEvent.CONNECT;
+			}
+
+			@Override
+			public void onEvent(Connection connection) {
+				connectionRef1.set(connection);
+				connectFlag.set(true);
+			}
+		});
+
+		AtomicBoolean closeFlag = new AtomicBoolean(false);
+		AtomicReference<Connection> connectionRef2 = new AtomicReference<>();
+		connectionManager.connectionEventProcessor().addConnectionEventListener(new ConnectionEventListener() {
+			@Override
+			public ConnectionEvent interest() {
+				return ConnectionEvent.CLOSE;
+			}
+
+			@Override
+			public void onEvent(Connection connection) {
+				connectionRef2.set(connection);
+				closeFlag.set(true);
+			}
+		});
+
+		// valid socketAddress
+		InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort);
+
+		// create connection
+		Connection connection = connectionManager.get(address);
+		Assertions.assertNotNull(connection);
+
+		Wait.untilIsTrue(() -> {
+			return connectFlag.get();
+		}, 30, 100);
+
+		Assertions.assertSame(connection, connectionRef1.get());
+
+		connectionManager.reconnector().disableReconnect(address);
+		connectionManager.close(connection);
+
+		Wait.untilIsTrue(() -> {
+			return closeFlag.get();
+		}, 30, 100);
+
+		Assertions.assertSame(connection, connectionRef2.get());
 	}
 
 }

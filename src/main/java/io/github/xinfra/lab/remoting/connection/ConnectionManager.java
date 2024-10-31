@@ -19,4 +19,6 @@ public interface ConnectionManager extends LifeCycle {
 
 	Reconnector reconnector();
 
+	ConnectionEventProcessor connectionEventProcessor();
+
 }

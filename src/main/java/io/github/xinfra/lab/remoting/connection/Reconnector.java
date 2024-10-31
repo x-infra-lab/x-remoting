@@ -11,6 +11,6 @@ public interface Reconnector extends LifeCycle {
 
 	void enableReconnect(SocketAddress socketAddress);
 
-	void reconnect(SocketAddress socketAddress) throws RemotingException;
+	void reconnect(SocketAddress socketAddress);
 
 }

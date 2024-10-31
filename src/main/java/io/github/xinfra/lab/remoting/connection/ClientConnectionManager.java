@@ -85,20 +85,21 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 	@Override
 	public void startup() {
 		super.startup();
+
 		reconnector = new DefaultReconnector(this);
 		reconnector.startup();
 	}
 
 	@Override
 	public synchronized void shutdown() {
-		if (reconnector() != null) {
+		if (reconnector != null) {
 			for (SocketAddress socketAddress : connections.keySet()) {
-				reconnector().disableReconnect(socketAddress);
+				reconnector.disableReconnect(socketAddress);
 			}
 
 			super.shutdown();
 
-			reconnector().shutdown();
+			reconnector.shutdown();
 		}
 	}
 
