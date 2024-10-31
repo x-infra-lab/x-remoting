@@ -6,6 +6,7 @@ import io.github.xinfra.lab.remoting.heartbeat.HeartbeatTrigger;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
 import io.github.xinfra.lab.remoting.rpc.message.RpcMessageFactory;
+import io.netty.channel.ChannelHandlerContext;
 import lombok.Setter;
 
 import java.io.IOException;
@@ -29,7 +30,22 @@ public class TestProtocol implements Protocol {
 	private MessageFactory testMessageFactory;
 
 	@Setter
-	private HeartbeatTrigger testHeartbeatTrigger;
+	private HeartbeatTrigger testHeartbeatTrigger = new HeartbeatTrigger() {
+		@Override
+		public void triggerHeartBeat(ChannelHandlerContext ctx) {
+			// do nothing
+		}
+
+		@Override
+		public void setHeartbeatMaxFailCount(int failCount) {
+
+		}
+
+		@Override
+		public void setHeartbeatTimeoutMills(int timeoutMills) {
+
+		}
+	};
 
 	@Override
 	public byte[] protocolCode() {

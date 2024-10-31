@@ -117,9 +117,12 @@ public class ConnectionEventHandlerTest {
 
 		connectionManager = spy(connectionManager);
 		InetSocketAddress socketAddress = new InetSocketAddress(remoteAddress, serverPort);
-		Connection connection = connectionManager.getOrCreateIfAbsent(socketAddress);
+		Connection connection = connectionManager.get(socketAddress);
 		connection = spy(connection);
 		connection.getChannel().attr(CONNECTION).set(connection);
+
+		Reconnector reconnector = spy(connectionManager.reconnector());
+		((ClientConnectionManager) connectionManager).reconnector = reconnector;
 
 		ConnectionEventHandler connectionEventHandler = new ConnectionEventHandler(connectionManager);
 		connectionEventHandler = spy(connectionEventHandler);
@@ -133,10 +136,9 @@ public class ConnectionEventHandlerTest {
 		channelFuture.await();
 		Assertions.assertTrue(channelFuture.isDone());
 
-		ConnectionManager tempConnectionManager = connectionManager;
 		Wait.untilIsTrue(() -> {
 			try {
-				verify(tempConnectionManager, times(1)).reconnect(eq(socketAddress));
+				verify(reconnector, times(1)).reconnect(eq(socketAddress));
 				return true;
 			}
 			catch (Throwable e) {
@@ -147,10 +149,10 @@ public class ConnectionEventHandlerTest {
 		verify(connectionEventHandler, times(1)).close(any(), any());
 		verify(connection, times(1)).onClose();
 		verify(connectionEventHandler, times(1)).channelInactive(any());
-		verify(connectionManager, times(1)).removeAndClose(eq(connection));
+		verify(connectionManager, times(1)).close(eq(connection));
 
 		verify(connectionEventHandler, times(1)).userEventTriggered(any(), eq(ConnectionEvent.CLOSE));
-		verify(connectionManager, times(1)).asyncReconnect(eq(socketAddress));
+		verify(reconnector, times(1)).reconnect(eq(socketAddress));
 
 		connectionManager.shutdown();
 	}
@@ -162,9 +164,12 @@ public class ConnectionEventHandlerTest {
 
 		connectionManager = spy(connectionManager);
 		InetSocketAddress socketAddress = new InetSocketAddress(remoteAddress, serverPort);
-		Connection connection = connectionManager.getOrCreateIfAbsent(socketAddress);
+		Connection connection = connectionManager.get(socketAddress);
 		connection = spy(connection);
 		connection.getChannel().attr(CONNECTION).set(connection);
+
+		Reconnector reconnector = spy(connectionManager.reconnector());
+		((ClientConnectionManager) connectionManager).reconnector = reconnector;
 
 		ConnectionEventHandler connectionEventHandler = new ConnectionEventHandler(connectionManager);
 		connectionEventHandler = spy(connectionEventHandler);
@@ -177,10 +182,9 @@ public class ConnectionEventHandlerTest {
 		ChannelFuture channelFuture = connection.getChannel().disconnect().await();
 		Assertions.assertTrue(channelFuture.isDone());
 
-		ConnectionManager tempConnectionManager = connectionManager;
 		Wait.untilIsTrue(() -> {
 			try {
-				verify(tempConnectionManager, times(1)).reconnect(eq(socketAddress));
+				verify(reconnector, times(1)).reconnect(eq(socketAddress));
 				return true;
 			}
 			catch (Throwable e) {
@@ -193,10 +197,10 @@ public class ConnectionEventHandlerTest {
 		verify(connection, times(2)).onClose();
 
 		verify(connectionEventHandler, times(1)).channelInactive(any());
-		verify(connectionManager, times(1)).removeAndClose(eq(connection));
+		verify(connectionManager, times(1)).close(eq(connection));
 
 		verify(connectionEventHandler, times(1)).userEventTriggered(any(), eq(ConnectionEvent.CLOSE));
-		verify(connectionManager, times(1)).asyncReconnect(eq(socketAddress));
+		verify(reconnector, times(1)).reconnect(eq(socketAddress));
 
 		connectionManager.shutdown();
 	}
@@ -208,9 +212,12 @@ public class ConnectionEventHandlerTest {
 
 		connectionManager = spy(connectionManager);
 		InetSocketAddress socketAddress = new InetSocketAddress(remoteAddress, serverPort);
-		Connection connection = connectionManager.getOrCreateIfAbsent(socketAddress);
+		Connection connection = connectionManager.get(socketAddress);
 		connection = spy(connection);
 		connection.getChannel().attr(CONNECTION).set(connection);
+
+		Reconnector reconnector = spy(connectionManager.reconnector());
+		((ClientConnectionManager) connectionManager).reconnector = reconnector;
 
 		ConnectionEventHandler connectionEventHandler = new ConnectionEventHandler(connectionManager);
 		connectionEventHandler = spy(connectionEventHandler);
@@ -222,10 +229,9 @@ public class ConnectionEventHandlerTest {
 
 		connection.getChannel().pipeline().fireExceptionCaught(new RuntimeException("testChannelExceptionCaught"));
 
-		ConnectionManager tempConnectionManager = connectionManager;
 		Wait.untilIsTrue(() -> {
 			try {
-				verify(tempConnectionManager, times(1)).reconnect(eq(socketAddress));
+				verify(reconnector, times(1)).reconnect(eq(socketAddress));
 				return true;
 			}
 			catch (Throwable e) {
@@ -237,10 +243,10 @@ public class ConnectionEventHandlerTest {
 		verify(connectionEventHandler, times(1)).close(any(), any());
 		verify(connection, times(1)).onClose();
 		verify(connectionEventHandler, times(1)).channelInactive(any());
-		verify(connectionManager, times(1)).removeAndClose(eq(connection));
+		verify(connectionManager, times(1)).close(eq(connection));
 
 		verify(connectionEventHandler, times(1)).userEventTriggered(any(), eq(ConnectionEvent.CLOSE));
-		verify(connectionManager, times(1)).asyncReconnect(eq(socketAddress));
+		verify(reconnector, times(1)).reconnect(eq(socketAddress));
 
 		connectionManager.shutdown();
 	}

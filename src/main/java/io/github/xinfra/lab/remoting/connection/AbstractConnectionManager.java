@@ -30,26 +30,12 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 	}
 
 	@Override
-	public synchronized Connection getOrCreateIfAbsent(SocketAddress socketAddress) throws RemotingException {
-		ensureStarted();
-		Validate.notNull(socketAddress, "socketAddress can not be null");
-
-		ConnectionHolder connectionHolder = connections.get(socketAddress);
-		if (connectionHolder == null) {
-			connectionHolder = createConnectionHolder(socketAddress);
-			createConnectionForHolder(socketAddress, connectionHolder, config.getConnectionNumPreEndpoint());
-		}
-
-		return connectionHolder.get();
-	}
-
-	@Override
 	public void check(Connection connection) throws RemotingException {
 		ensureStarted();
 		Validate.notNull(connection, "connection can not be null");
 
 		if (connection.getChannel() == null || !connection.getChannel().isActive()) {
-			this.removeAndClose(connection);
+			this.close(connection);
 			throw new RemotingException("Check connection failed for address: " + connection.remoteAddress());
 		}
 		if (!connection.getChannel().isWritable()) {
@@ -60,7 +46,7 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 	}
 
 	@Override
-	public synchronized void removeAndClose(Connection connection) {
+	public synchronized void close(Connection connection) {
 		ensureStarted();
 		Validate.notNull(connection, "connection can not be null");
 
@@ -70,23 +56,11 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 			connection.close();
 		}
 		else {
-			connectionHolder.removeAndClose(connection);
+			connectionHolder.invalidate(connection);
 			if (connectionHolder.isEmpty()) {
 				connections.remove(socketAddress);
 			}
 		}
-	}
-
-	@Override
-	public Connection get(SocketAddress socketAddress) {
-		ensureStarted();
-		Validate.notNull(socketAddress, "socketAddress can not be null");
-
-		ConnectionHolder connectionHolder = connections.get(socketAddress);
-		if (connectionHolder == null) {
-			return null;
-		}
-		return connectionHolder.get();
 	}
 
 	@Override
@@ -111,7 +85,7 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 		for (Map.Entry<SocketAddress, ConnectionHolder> entry : connections.entrySet()) {
 			SocketAddress socketAddress = entry.getKey();
 			ConnectionHolder connectionHolder = entry.getValue();
-			connectionHolder.removeAndCloseAll();
+			connectionHolder.close();
 			connections.remove(socketAddress);
 		}
 
@@ -125,7 +99,7 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 
 	protected void createConnectionForHolder(SocketAddress socketAddress, ConnectionHolder connectionHolder, int size)
 			throws RemotingException {
-		for (int i = 0; i < size; i++) {
+		for (int i = connectionHolder.size(); i < size; i++) {
 			Connection connection = connectionFactory.create(socketAddress);
 			connectionHolder.add(connection);
 		}

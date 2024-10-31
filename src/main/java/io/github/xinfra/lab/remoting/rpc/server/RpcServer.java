@@ -5,6 +5,7 @@ import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
 import io.github.xinfra.lab.remoting.rpc.client.RpcInvokeCallBack;
 import io.github.xinfra.lab.remoting.rpc.client.RpcInvokeFuture;
+import io.github.xinfra.lab.remoting.rpc.client.RpcRemoting;
 import io.github.xinfra.lab.remoting.server.BaseRemotingServer;
 import lombok.Getter;
 
@@ -17,7 +18,7 @@ public class RpcServer extends BaseRemotingServer {
 	private RpcProtocol protocol;
 
 	@Getter
-	private RpcServerRemoting rpcServerRemoting;
+	private RpcRemoting rpcServerRemoting;
 
 	public RpcServer() {
 		super(new RpcServerConfig());
@@ -31,7 +32,7 @@ public class RpcServer extends BaseRemotingServer {
 	public void startup() {
 		super.startup();
 		protocol = new RpcProtocol();
-		rpcServerRemoting = new RpcServerRemoting(protocol, connectionManager);
+		rpcServerRemoting = new RpcRemoting(protocol, connectionManager);
 	}
 
 	@Override

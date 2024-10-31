@@ -2,9 +2,12 @@ package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 
+import java.io.Closeable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class ConnectionHolder {
+public class ConnectionHolder implements Closeable {
 
 	@AccessForTest
 	protected CopyOnWriteArrayList<Connection> connections = new CopyOnWriteArrayList<>();
@@ -16,14 +19,18 @@ public class ConnectionHolder {
 	}
 
 	public Connection get() {
-		return connectionSelectStrategy.select(connections);
+		List<Connection> snapshot = new ArrayList<>(connections);
+		if (snapshot.size() > 0) {
+			return connectionSelectStrategy.select(new ArrayList<>(connections));
+		}
+		return null;
 	}
 
 	public void add(Connection connection) {
-		connections.add(connection);
+		connections.addIfAbsent(connection);
 	}
 
-	public void removeAndClose(Connection connection) {
+	public void invalidate(Connection connection) {
 		connections.remove(connection);
 		connection.close();
 	}
@@ -32,15 +39,16 @@ public class ConnectionHolder {
 		return connections.isEmpty();
 	}
 
-	public void removeAndCloseAll() {
+	public int size() {
+		return connections.size();
+	}
+
+	@Override
+	public void close() {
 		for (Connection connection : connections) {
 			connections.remove(connection);
 			connection.close();
 		}
-	}
-
-	public int size() {
-		return connections.size();
 	}
 
 }
