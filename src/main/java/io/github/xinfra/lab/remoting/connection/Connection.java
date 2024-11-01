@@ -43,6 +43,7 @@ public class Connection {
 		this.protocol = protocol;
 		this.channel = channel;
 		this.channel.attr(CONNECTION).set(this);
+		this.channel.pipeline().fireUserEventTriggered(ConnectionEvent.CONNECT);
 	}
 
 	public void addInvokeFuture(InvokeFuture<?> invokeFuture) {

@@ -5,6 +5,7 @@ import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Validate;
 
 import java.net.SocketAddress;
 import java.util.Set;
@@ -44,20 +45,23 @@ public class DefaultReconnector extends AbstractLifeCycle implements Reconnector
 	}
 
 	@Override
-	public synchronized void reconnect(SocketAddress socketAddress) throws RemotingException {
+	public synchronized void reconnect(SocketAddress socketAddress) {
 		ensureStarted();
+		Validate.notNull(socketAddress, "socketAddress must not be null");
 		reconnectAddressQueue.add(socketAddress);
 	}
 
 	@Override
 	public synchronized void disableReconnect(SocketAddress socketAddress) {
 		ensureStarted();
+		Validate.notNull(socketAddress, "socketAddress must not be null");
 		disabledAddresses.add(socketAddress);
 	}
 
 	@Override
 	public synchronized void enableReconnect(SocketAddress socketAddress) {
 		ensureStarted();
+		Validate.notNull(socketAddress, "socketAddress must not be null");
 		disabledAddresses.remove(socketAddress);
 	}
 
@@ -71,7 +75,7 @@ public class DefaultReconnector extends AbstractLifeCycle implements Reconnector
 					socketAddress = reconnectAddressQueue.take();
 				}
 				catch (InterruptedException e) {
-					break;
+					continue;
 				}
 
 				if (disabledAddresses.contains(socketAddress)) {
@@ -91,7 +95,7 @@ public class DefaultReconnector extends AbstractLifeCycle implements Reconnector
 					TimeUnit.SECONDS.sleep(1);
 				}
 				catch (InterruptedException e) {
-					break;
+					continue;
 				}
 
 			}

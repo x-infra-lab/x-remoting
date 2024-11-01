@@ -45,21 +45,6 @@ public class ConnectionEventHandlerTest {
 	}
 
 	@Test
-	public void testChannelActive() throws Exception {
-		ConnectionEventHandler connectionEventHandler = new ConnectionEventHandler();
-		ConnectionEventHandler spyHandler = spy(connectionEventHandler);
-
-		Connection connection = mock(Connection.class);
-		EmbeddedChannel embeddedChannel = new EmbeddedChannel();
-		embeddedChannel.pipeline().addLast(spyHandler);
-		embeddedChannel.attr(CONNECTION).set(connection);
-
-		embeddedChannel.pipeline().fireChannelActive();
-		verify(spyHandler, times(1)).channelActive(any());
-		verify(spyHandler, times(1)).userEventTriggered(any(), eq(ConnectionEvent.CONNECT));
-	}
-
-	@Test
 	public void testChannelClose_withoutConnectionManager() throws Exception {
 		ConnectionEventHandler connectionEventHandler = new ConnectionEventHandler();
 		ConnectionEventHandler spyHandler = spy(connectionEventHandler);

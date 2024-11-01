@@ -36,7 +36,9 @@ public class ConnectionEventHandler extends ChannelDuplexHandler {
 
 	@Override
 	public void channelActive(ChannelHandlerContext ctx) throws Exception {
-		userEventTriggered(ctx, ConnectionEvent.CONNECT);
+		// Q: why we do not trigger ConnectionEvent.CONNECT here?
+		// A: At this point, the channel may not have a CONNECTION attribute
+		// userEventTriggered(ctx, ConnectionEvent.CONNECT);
 
 		super.channelActive(ctx);
 	}
@@ -62,6 +64,11 @@ public class ConnectionEventHandler extends ChannelDuplexHandler {
 						&& connectionManager.reconnector() != null) {
 					connectionManager.reconnector().reconnect(connection.remoteAddress());
 				}
+			}
+
+			if (connectionManager != null && connectionManager.isStarted()
+					&& connectionManager.connectionEventProcessor() != null) {
+				connectionManager.connectionEventProcessor().handleEvent((ConnectionEvent) evt, connection);
 			}
 		}
 		else {
