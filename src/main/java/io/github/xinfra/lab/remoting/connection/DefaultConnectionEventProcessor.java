@@ -21,7 +21,7 @@ public class DefaultConnectionEventProcessor extends AbstractLifeCycle implement
 
 	protected LinkedBlockingQueue<Event> eventQueue = new LinkedBlockingQueue<>();
 
-	private Map<ConnectionEvent, List<ConnectionEventListener>> listeners = new ConcurrentHashMap<>();
+	private CopyOnWriteArrayList<ConnectionEventListener> listeners = new CopyOnWriteArrayList<>();
 
 	@Override
 	public void startup() {
@@ -48,14 +48,7 @@ public class DefaultConnectionEventProcessor extends AbstractLifeCycle implement
 	public void addConnectionEventListener(ConnectionEventListener listener) {
 		ensureStarted();
 		Validate.notNull(listener, "listener must not be null");
-		Validate.notNull(listener.interest(), "listener interest event must not be null");
-		ConnectionEvent event = listener.interest();
-		List<ConnectionEventListener> connectionEventListeners = listeners.get(event);
-		if (connectionEventListeners == null) {
-			listeners.computeIfAbsent(event, e -> new CopyOnWriteArrayList<>());
-			connectionEventListeners = listeners.get(event);
-		}
-		connectionEventListeners.add(listener);
+		listeners.addIfAbsent(listener);
 	}
 
 	@AllArgsConstructor
@@ -81,17 +74,15 @@ public class DefaultConnectionEventProcessor extends AbstractLifeCycle implement
 					continue;
 				}
 
-				List<ConnectionEventListener> connectionEventListeners = listeners.get(event.connectionEvent);
-				if (connectionEventListeners != null) {
-					for (ConnectionEventListener listener : connectionEventListeners) {
-						try {
-							listener.onEvent(event.connection);
-						}
-						catch (Throwable t) {
-							log.warn("{} onEvent execute fail", listener, t);
-						}
+				for (ConnectionEventListener listener : listeners) {
+					try {
+						listener.onEvent(event.connectionEvent, event.connection);
+					}
+					catch (Throwable t) {
+						log.warn("{} onEvent execute fail", listener, t);
 					}
 				}
+
 			}
 		}
 
