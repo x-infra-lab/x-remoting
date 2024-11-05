@@ -281,18 +281,24 @@ public class ClientConnectionManagerTest {
 
 	@Test
 	void testConnectionEventListener() throws RemotingException, InterruptedException, TimeoutException {
+
+		connectionManager.connectionEventProcessor().addConnectionEventListener(new ConnectionEventListener() {
+			@Override
+			public void onEvent(ConnectionEvent connectionEvent, Connection connection) {
+				// threw exception will not affect others listener
+				throw new RuntimeException("test throw exception");
+			}
+		});
+
 		AtomicBoolean connectFlag = new AtomicBoolean(false);
 		AtomicReference<Connection> connectionRef1 = new AtomicReference<>();
 		connectionManager.connectionEventProcessor().addConnectionEventListener(new ConnectionEventListener() {
 			@Override
-			public ConnectionEvent interest() {
-				return ConnectionEvent.CONNECT;
-			}
-
-			@Override
-			public void onEvent(Connection connection) {
-				connectionRef1.set(connection);
-				connectFlag.set(true);
+			public void onEvent(ConnectionEvent connectionEvent, Connection connection) {
+				if (ConnectionEvent.CONNECT == connectionEvent) {
+					connectionRef1.set(connection);
+					connectFlag.set(true);
+				}
 			}
 		});
 
@@ -300,14 +306,11 @@ public class ClientConnectionManagerTest {
 		AtomicReference<Connection> connectionRef2 = new AtomicReference<>();
 		connectionManager.connectionEventProcessor().addConnectionEventListener(new ConnectionEventListener() {
 			@Override
-			public ConnectionEvent interest() {
-				return ConnectionEvent.CLOSE;
-			}
-
-			@Override
-			public void onEvent(Connection connection) {
-				connectionRef2.set(connection);
-				closeFlag.set(true);
+			public void onEvent(ConnectionEvent connectionEvent, Connection connection) {
+				if (ConnectionEvent.CLOSE == connectionEvent) {
+					connectionRef2.set(connection);
+					closeFlag.set(true);
+				}
 			}
 		});
 
