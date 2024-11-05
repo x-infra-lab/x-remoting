@@ -281,6 +281,15 @@ public class ClientConnectionManagerTest {
 
 	@Test
 	void testConnectionEventListener() throws RemotingException, InterruptedException, TimeoutException {
+
+		connectionManager.connectionEventProcessor().addConnectionEventListener(new ConnectionEventListener() {
+			@Override
+			public void onEvent(ConnectionEvent connectionEvent, Connection connection) {
+				// threw exception will not affect others listener
+				throw new RuntimeException("test throw exception");
+			}
+		});
+
 		AtomicBoolean connectFlag = new AtomicBoolean(false);
 		AtomicReference<Connection> connectionRef1 = new AtomicReference<>();
 		connectionManager.connectionEventProcessor().addConnectionEventListener(new ConnectionEventListener() {
