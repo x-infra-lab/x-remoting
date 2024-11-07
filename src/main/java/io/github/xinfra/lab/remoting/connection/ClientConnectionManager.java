@@ -7,6 +7,7 @@ import io.netty.channel.ChannelHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
 
+import java.io.IOException;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,8 +18,6 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 
 	@AccessForTest
 	protected Reconnector reconnector = new DefaultReconnector(this);
-
-	;
 
 	public ClientConnectionManager(Protocol protocol) {
 		this.connectionFactory = new DefaultConnectionFactory(protocol, defaultChannelSuppliers());
@@ -94,6 +93,12 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 	@Override
 	public synchronized void shutdown() {
 		super.shutdown();
+		try {
+			connectionFactory.close();
+		}
+		catch (IOException e) {
+			log.warn("connectionFactory close ex", e);
+		}
 		reconnector.shutdown();
 	}
 

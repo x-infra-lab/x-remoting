@@ -21,6 +21,7 @@ import io.netty.handler.timeout.IdleStateHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
 
+import java.io.IOException;
 import java.net.SocketAddress;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -36,7 +37,7 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 	private ConnectionConfig connectionConfig;
 
 	// todo EpollUtils
-	private static final EventLoopGroup workerGroup = Epoll.isAvailable()
+	private final EventLoopGroup workerGroup = Epoll.isAvailable()
 			? new EpollEventLoopGroup(Runtime.getRuntime().availableProcessors(),
 					new NamedThreadFactory("Remoting-Client-Worker"))
 			: new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(),
@@ -113,6 +114,11 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 		}
 		Channel channel = future.channel();
 		return new Connection(protocol, channel);
+	}
+
+	@Override
+	public void close() throws IOException {
+		workerGroup.shutdownGracefully();
 	}
 
 }

@@ -46,7 +46,7 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 			? new EpollEventLoopGroup(1, new NamedThreadFactory("Remoting-Server-Boss"))
 			: new NioEventLoopGroup(1, new NamedThreadFactory("Remoting-Server-Boss"));
 
-	private static final EventLoopGroup workerGroup = Epoll.isAvailable()
+	private final EventLoopGroup workerGroup = Epoll.isAvailable()
 			? new EpollEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2,
 					new NamedThreadFactory("Remoting-Server-Worker"))
 			: new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2,
@@ -144,6 +144,8 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 	@Override
 	public void shutdown() {
 		super.shutdown();
+		bossGroup.shutdownGracefully();
+		workerGroup.shutdownGracefully();
 		if (connectionManager != null) {
 			connectionManager.shutdown();
 		}
