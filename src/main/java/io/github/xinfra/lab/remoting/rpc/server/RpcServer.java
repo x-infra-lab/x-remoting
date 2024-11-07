@@ -17,7 +17,6 @@ public class RpcServer extends BaseRemotingServer {
 	@Getter
 	private RpcProtocol protocol;
 
-	@Getter
 	private RpcRemoting rpcServerRemoting;
 
 	public RpcServer() {

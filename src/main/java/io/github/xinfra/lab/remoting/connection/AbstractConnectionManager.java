@@ -22,13 +22,29 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 
 	protected ConnectionManagerConfig config = new ConnectionManagerConfig();
 
-	private ConnectionEventProcessor connectionEventProcessor;
+	private ConnectionEventProcessor connectionEventProcessor = new DefaultConnectionEventProcessor();
 
 	public AbstractConnectionManager() {
 	}
 
 	public AbstractConnectionManager(ConnectionManagerConfig config) {
 		this.config = config;
+	}
+
+	@Override
+	public synchronized void disconnect(SocketAddress socketAddress) {
+		ensureStarted();
+		Validate.notNull(socketAddress, "socket address can not be null");
+		if (reconnector() != null) {
+			reconnector().disconnect(socketAddress);
+		}
+
+		ConnectionHolder connectionHolder = connections.get(socketAddress);
+		if (connectionHolder != null) {
+			connectionHolder.close();
+			connections.remove(socketAddress);
+		}
+		log.info("Disconnect connection for address: {}", socketAddress);
 	}
 
 	@Override
@@ -58,7 +74,11 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 			connection.close();
 		}
 		else {
-			connectionHolder.invalidate(connection);
+			if (connectionHolder.invalidate(connection)) {
+				if (reconnector() != null) {
+					reconnector().reconnect(socketAddress);
+				}
+			}
 			if (connectionHolder.isEmpty()) {
 				connections.remove(socketAddress);
 			}
@@ -89,8 +109,6 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 	@Override
 	public void startup() {
 		super.startup();
-
-		connectionEventProcessor = new DefaultConnectionEventProcessor();
 		connectionEventProcessor.startup();
 	}
 

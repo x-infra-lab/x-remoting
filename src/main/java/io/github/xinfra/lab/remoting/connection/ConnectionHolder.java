@@ -30,9 +30,9 @@ public class ConnectionHolder implements Closeable {
 		connections.addIfAbsent(connection);
 	}
 
-	public void invalidate(Connection connection) {
-		connections.remove(connection);
+	public boolean invalidate(Connection connection) {
 		connection.close();
+		return connections.remove(connection);
 	}
 
 	public boolean isEmpty() {

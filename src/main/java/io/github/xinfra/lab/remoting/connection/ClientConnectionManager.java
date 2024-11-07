@@ -54,7 +54,8 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 	}
 
 	@Override
-	public Connection connect(SocketAddress socketAddress) throws RemotingException {
+	public synchronized Connection connect(SocketAddress socketAddress) throws RemotingException {
+		ensureStarted();
 		ConnectionHolder connectionHolder = connections.get(socketAddress);
 		if (connectionHolder == null) {
 			connectionHolder = createConnectionHolder(socketAddress);
@@ -92,13 +93,9 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 
 	@Override
 	public synchronized void shutdown() {
+		super.shutdown();
+
 		if (reconnector != null) {
-			for (SocketAddress socketAddress : connections.keySet()) {
-				reconnector.disableReconnect(socketAddress);
-			}
-
-			super.shutdown();
-
 			reconnector.shutdown();
 		}
 	}

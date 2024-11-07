@@ -35,6 +35,10 @@ public class Connection {
 	@Setter
 	private int heartbeatFailCnt = 0;
 
+	@Getter
+	@Setter
+	private boolean reconnectable = true;
+
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 
 	public Connection(Protocol protocol, Channel channel) {

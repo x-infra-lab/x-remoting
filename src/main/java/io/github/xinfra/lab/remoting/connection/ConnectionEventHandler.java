@@ -18,13 +18,17 @@ public class ConnectionEventHandler extends ChannelDuplexHandler {
 
 	private ConnectionManager connectionManager;
 
+	private ConnectionEventProcessor connectionEventProcessor;
+
 	public ConnectionEventHandler(ConnectionManager connectionManager) {
 		Validate.notNull(connectionManager, "connectionManager can not be null.");
+		Validate.notNull(connectionManager.connectionEventProcessor(), "connectionEventProcessor can not be null.");
 		this.connectionManager = connectionManager;
+		this.connectionEventProcessor = connectionManager.connectionEventProcessor();
 	}
 
-	public ConnectionEventHandler() {
-		// server side do not manage connections
+	public ConnectionEventHandler(ConnectionEventProcessor connectionEventProcessor) {
+		this.connectionEventProcessor = connectionEventProcessor;
 	}
 
 	@Override
@@ -58,17 +62,8 @@ public class ConnectionEventHandler extends ChannelDuplexHandler {
 	public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
 		if (evt instanceof ConnectionEvent) {
 			Connection connection = ctx.channel().attr(CONNECTION).get();
-			ConnectionEvent connectionEvent = (ConnectionEvent) evt;
-			if (connectionEvent == ConnectionEvent.CLOSE) {
-				if (connectionManager != null && connectionManager.isStarted()
-						&& connectionManager.reconnector() != null) {
-					connectionManager.reconnector().reconnect(connection.remoteAddress());
-				}
-			}
-
-			if (connectionManager != null && connectionManager.isStarted()
-					&& connectionManager.connectionEventProcessor() != null) {
-				connectionManager.connectionEventProcessor().handleEvent((ConnectionEvent) evt, connection);
+			if (connectionEventProcessor.isStarted()) {
+				connectionEventProcessor.handleEvent((ConnectionEvent) evt, connection);
 			}
 		}
 		else {

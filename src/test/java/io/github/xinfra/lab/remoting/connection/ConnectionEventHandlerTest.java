@@ -46,7 +46,8 @@ public class ConnectionEventHandlerTest {
 
 	@Test
 	public void testChannelClose_withoutConnectionManager() throws Exception {
-		ConnectionEventHandler connectionEventHandler = new ConnectionEventHandler();
+		ConnectionEventHandler connectionEventHandler = new ConnectionEventHandler(
+				mock(ConnectionEventProcessor.class));
 		ConnectionEventHandler spyHandler = spy(connectionEventHandler);
 
 		Connection connection = mock(Connection.class);
@@ -64,7 +65,8 @@ public class ConnectionEventHandlerTest {
 
 	@Test
 	public void testChannelInactive_withoutConnectionManager() throws Exception {
-		ConnectionEventHandler connectionEventHandler = new ConnectionEventHandler();
+		ConnectionEventHandler connectionEventHandler = new ConnectionEventHandler(
+				mock(ConnectionEventProcessor.class));
 		ConnectionEventHandler spyHandler = spy(connectionEventHandler);
 
 		Connection connection = mock(Connection.class);
@@ -80,7 +82,8 @@ public class ConnectionEventHandlerTest {
 
 	@Test
 	public void testChannelExceptionCaught_withoutConnectionManager() throws Exception {
-		ConnectionEventHandler connectionEventHandler = new ConnectionEventHandler();
+		ConnectionEventHandler connectionEventHandler = new ConnectionEventHandler(
+				mock(ConnectionEventProcessor.class));
 		ConnectionEventHandler spyHandler = spy(connectionEventHandler);
 
 		Connection connection = mock(Connection.class);
