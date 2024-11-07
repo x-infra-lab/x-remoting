@@ -35,10 +35,6 @@ public class Connection {
 	@Setter
 	private int heartbeatFailCnt = 0;
 
-	@Getter
-	@Setter
-	private boolean reconnectable = true;
-
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 
 	public Connection(Protocol protocol, Channel channel) {
@@ -65,6 +61,7 @@ public class Connection {
 
 	public ChannelFuture close() {
 		if (closed.compareAndSet(false, true)) {
+			onClose();
 			return channel.close().addListener(new ChannelFutureListener() {
 				@Override
 				public void operationComplete(ChannelFuture future) throws Exception {
@@ -78,6 +75,10 @@ public class Connection {
 			});
 		}
 		return channel.newSucceededFuture();
+	}
+
+	public boolean isClosed() {
+		return closed.get();
 	}
 
 	public void onClose() {

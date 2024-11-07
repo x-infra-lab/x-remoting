@@ -78,7 +78,6 @@ public class DefaultReconnector extends AbstractLifeCycle implements Reconnector
 		@Override
 		public void run() {
 			while (isStarted()) {
-
 				synchronized (this) {
 					if (!reconnectAddresses.isEmpty()) {
 						SocketAddress socketAddress = reconnectAddresses.remove(0);

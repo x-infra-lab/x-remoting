@@ -52,7 +52,7 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 		ensureStarted();
 		Validate.notNull(connection, "connection can not be null");
 
-		if (connection.getChannel() == null || !connection.getChannel().isActive()) {
+		if (connection.getChannel() == null || !connection.getChannel().isActive() || connection.isClosed()) {
 			this.close(connection);
 			throw new RemotingException("Check connection failed for address: " + connection.remoteAddress());
 		}
@@ -114,14 +114,10 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 
 	@Override
 	public synchronized void shutdown() {
-		super.shutdown();
 		for (Map.Entry<SocketAddress, ConnectionHolder> entry : connections.entrySet()) {
-			SocketAddress socketAddress = entry.getKey();
-			ConnectionHolder connectionHolder = entry.getValue();
-			connectionHolder.close();
-			connections.remove(socketAddress);
+			disconnect(entry.getKey());
 		}
-
+		super.shutdown();
 		connectionEventProcessor.shutdown();
 	}
 

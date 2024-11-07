@@ -33,8 +33,6 @@ public class ConnectionEventHandler extends ChannelDuplexHandler {
 
 	@Override
 	public void close(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
-		Connection connection = ctx.channel().attr(CONNECTION).get();
-		connection.onClose();
 		super.close(ctx, promise);
 	}
 

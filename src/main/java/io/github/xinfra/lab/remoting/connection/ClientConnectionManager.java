@@ -16,7 +16,9 @@ import java.util.function.Supplier;
 public class ClientConnectionManager extends AbstractConnectionManager {
 
 	@AccessForTest
-	protected Reconnector reconnector;
+	protected Reconnector reconnector = new DefaultReconnector(this);
+
+	;
 
 	public ClientConnectionManager(Protocol protocol) {
 		this.connectionFactory = new DefaultConnectionFactory(protocol, defaultChannelSuppliers());
@@ -86,18 +88,13 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 	@Override
 	public void startup() {
 		super.startup();
-
-		reconnector = new DefaultReconnector(this);
 		reconnector.startup();
 	}
 
 	@Override
 	public synchronized void shutdown() {
 		super.shutdown();
-
-		if (reconnector != null) {
-			reconnector.shutdown();
-		}
+		reconnector.shutdown();
 	}
 
 }
