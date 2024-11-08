@@ -7,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
 
 import java.net.SocketAddress;
-import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
@@ -17,7 +16,7 @@ public class DefaultReconnector extends AbstractLifeCycle implements Reconnector
 
 	private static final long DEFAULT_RECONNECT_INTERVAL = 1000L;
 
-	private Set<SocketAddress> disabledAddresses = new CopyOnWriteArraySet<>();
+	private CopyOnWriteArraySet<SocketAddress> disabledAddresses = new CopyOnWriteArraySet<>();
 
 	@AccessForTest
 	protected CopyOnWriteArrayList<SocketAddress> reconnectAddresses = new CopyOnWriteArrayList<>();
@@ -46,28 +45,32 @@ public class DefaultReconnector extends AbstractLifeCycle implements Reconnector
 	}
 
 	@Override
-	public synchronized void reconnect(SocketAddress socketAddress) {
+	public void reconnect(SocketAddress socketAddress) {
 		ensureStarted();
 		Validate.notNull(socketAddress, "socketAddress must not be null");
-		reconnectAddresses.addIfAbsent(socketAddress);
+		synchronized (connectionManager) {
+			reconnectAddresses.addIfAbsent(socketAddress);
+		}
 	}
 
 	@Override
-	public synchronized void disconnect(SocketAddress socketAddress) {
+	public void disconnect(SocketAddress socketAddress) {
 		ensureStarted();
 		Validate.notNull(socketAddress, "socketAddress must not be null");
-		reconnectAddresses.remove(socketAddress);
+		synchronized (connectionManager) {
+			reconnectAddresses.remove(socketAddress);
+		}
 	}
 
 	@Override
-	public synchronized void disableReconnect(SocketAddress socketAddress) {
+	public void disableReconnect(SocketAddress socketAddress) {
 		ensureStarted();
 		Validate.notNull(socketAddress, "socketAddress must not be null");
 		disabledAddresses.add(socketAddress);
 	}
 
 	@Override
-	public synchronized void enableReconnect(SocketAddress socketAddress) {
+	public void enableReconnect(SocketAddress socketAddress) {
 		ensureStarted();
 		Validate.notNull(socketAddress, "socketAddress must not be null");
 		disabledAddresses.remove(socketAddress);
@@ -78,7 +81,7 @@ public class DefaultReconnector extends AbstractLifeCycle implements Reconnector
 		@Override
 		public void run() {
 			while (isStarted()) {
-				synchronized (this) {
+				synchronized (connectionManager) {
 					if (!reconnectAddresses.isEmpty()) {
 						SocketAddress socketAddress = reconnectAddresses.remove(0);
 						if (disabledAddresses.contains(socketAddress)) {
