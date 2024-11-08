@@ -67,7 +67,7 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 	}
 
 	@Override
-	public synchronized Connection get(SocketAddress socketAddress) throws RemotingException {
+	public Connection get(SocketAddress socketAddress) throws RemotingException {
 		ensureStarted();
 		Validate.notNull(socketAddress, "socketAddress can not be null");
 
