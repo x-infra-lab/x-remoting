@@ -89,7 +89,7 @@ public class DefaultReconnector extends AbstractLifeCycle implements Reconnector
 								connectionManager.connect(socketAddress);
 							}
 							catch (Throwable e) {
-								log.warn("reconnect {} fail.", socketAddress);
+								log.warn("reconnect {} fail.", socketAddress, e);
 								reconnectAddresses.addIfAbsent(socketAddress);
 							}
 						}
