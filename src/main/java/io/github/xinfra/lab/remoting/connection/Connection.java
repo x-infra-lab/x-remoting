@@ -61,6 +61,7 @@ public class Connection {
 
 	public ChannelFuture close() {
 		if (closed.compareAndSet(false, true)) {
+			onClose();
 			return channel.close().addListener(new ChannelFutureListener() {
 				@Override
 				public void operationComplete(ChannelFuture future) throws Exception {
@@ -74,6 +75,10 @@ public class Connection {
 			});
 		}
 		return channel.newSucceededFuture();
+	}
+
+	public boolean isClosed() {
+		return closed.get();
 	}
 
 	public void onClose() {

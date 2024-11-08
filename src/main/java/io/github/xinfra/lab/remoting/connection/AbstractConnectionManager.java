@@ -22,7 +22,7 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 
 	protected ConnectionManagerConfig config = new ConnectionManagerConfig();
 
-	private ConnectionEventProcessor connectionEventProcessor;
+	private ConnectionEventProcessor connectionEventProcessor = new DefaultConnectionEventProcessor();
 
 	public AbstractConnectionManager() {
 	}
@@ -32,11 +32,27 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 	}
 
 	@Override
+	public synchronized void disconnect(SocketAddress socketAddress) {
+		ensureStarted();
+		Validate.notNull(socketAddress, "socket address can not be null");
+		if (reconnector() != null) {
+			reconnector().disconnect(socketAddress);
+		}
+
+		ConnectionHolder connectionHolder = connections.get(socketAddress);
+		if (connectionHolder != null) {
+			connectionHolder.close();
+			connections.remove(socketAddress);
+		}
+		log.info("Disconnect connection for address: {}", socketAddress);
+	}
+
+	@Override
 	public void check(Connection connection) throws RemotingException {
 		ensureStarted();
 		Validate.notNull(connection, "connection can not be null");
 
-		if (connection.getChannel() == null || !connection.getChannel().isActive()) {
+		if (connection.getChannel() == null || !connection.getChannel().isActive() || connection.isClosed()) {
 			this.close(connection);
 			throw new RemotingException("Check connection failed for address: " + connection.remoteAddress());
 		}
@@ -58,7 +74,11 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 			connection.close();
 		}
 		else {
-			connectionHolder.invalidate(connection);
+			if (connectionHolder.invalidate(connection)) {
+				if (reconnector() != null) {
+					reconnector().reconnect(socketAddress);
+				}
+			}
 			if (connectionHolder.isEmpty()) {
 				connections.remove(socketAddress);
 			}
@@ -89,21 +109,15 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 	@Override
 	public void startup() {
 		super.startup();
-
-		connectionEventProcessor = new DefaultConnectionEventProcessor();
 		connectionEventProcessor.startup();
 	}
 
 	@Override
 	public synchronized void shutdown() {
-		super.shutdown();
 		for (Map.Entry<SocketAddress, ConnectionHolder> entry : connections.entrySet()) {
-			SocketAddress socketAddress = entry.getKey();
-			ConnectionHolder connectionHolder = entry.getValue();
-			connectionHolder.close();
-			connections.remove(socketAddress);
+			disconnect(entry.getKey());
 		}
-
+		super.shutdown();
 		connectionEventProcessor.shutdown();
 	}
 

@@ -9,6 +9,8 @@ public interface ConnectionManager extends LifeCycle {
 
 	Connection connect(SocketAddress socketAddress) throws RemotingException;
 
+	void disconnect(SocketAddress socketAddress);
+
 	Connection get(SocketAddress socketAddress) throws RemotingException;
 
 	void check(Connection connection) throws RemotingException;

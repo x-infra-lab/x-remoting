@@ -5,6 +5,8 @@ import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.connection.ConnectionEventHandler;
+import io.github.xinfra.lab.remoting.connection.ConnectionEventProcessor;
+import io.github.xinfra.lab.remoting.connection.DefaultConnectionEventProcessor;
 import io.github.xinfra.lab.remoting.connection.ProtocolDecoder;
 import io.github.xinfra.lab.remoting.connection.ProtocolEncoder;
 import io.github.xinfra.lab.remoting.connection.ProtocolHandler;
@@ -44,7 +46,7 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 			? new EpollEventLoopGroup(1, new NamedThreadFactory("Remoting-Server-Boss"))
 			: new NioEventLoopGroup(1, new NamedThreadFactory("Remoting-Server-Boss"));
 
-	private static final EventLoopGroup workerGroup = Epoll.isAvailable()
+	private final EventLoopGroup workerGroup = Epoll.isAvailable()
 			? new EpollEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2,
 					new NamedThreadFactory("Remoting-Server-Worker"))
 			: new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2,
@@ -63,6 +65,8 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 
 	private RemotingServerConfig config;
 
+	private ConnectionEventProcessor connectionEventProcessor;
+
 	public BaseRemotingServer(RemotingServerConfig config) {
 		Validate.notNull(config, "RemotingServerConfig can not be null");
 		Validate.inclusiveBetween(0, 0xFFFF, config.getPort(), "port out of range: " + config.getPort());
@@ -75,7 +79,8 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 			this.connectionEventHandler = new ConnectionEventHandler(this.connectionManager);
 		}
 		else {
-			this.connectionEventHandler = new ConnectionEventHandler();
+			this.connectionEventProcessor = new DefaultConnectionEventProcessor();
+			this.connectionEventHandler = new ConnectionEventHandler(connectionEventProcessor);
 		}
 	}
 
@@ -84,6 +89,9 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 		super.startup();
 		if (this.connectionManager != null) {
 			this.connectionManager.startup();
+		}
+		if (this.connectionEventProcessor != null) {
+			this.connectionEventProcessor.startup();
 		}
 		this.serverBootstrap = new ServerBootstrap();
 		this.serverBootstrap.group(bossGroup, workerGroup)
@@ -136,8 +144,13 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 	@Override
 	public void shutdown() {
 		super.shutdown();
+		bossGroup.shutdownGracefully();
+		workerGroup.shutdownGracefully();
 		if (connectionManager != null) {
 			connectionManager.shutdown();
+		}
+		if (this.connectionEventProcessor != null) {
+			this.connectionEventProcessor.shutdown();
 		}
 	}
 

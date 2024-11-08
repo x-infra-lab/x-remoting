@@ -266,16 +266,14 @@ public class ClientConnectionManagerTest {
 		reconnector.reconnect(address);
 
 		Wait.untilIsTrue(() -> {
-			return ((DefaultReconnector) reconnector).reconnectAddressQueue.isEmpty()
-					&& !connections.containsKey(address);
+			return ((DefaultReconnector) reconnector).reconnectAddresses.isEmpty() && !connections.containsKey(address);
 		}, 100, 30);
 
 		reconnector.enableReconnect(address);
 		reconnector.reconnect(address);
 
 		Wait.untilIsTrue(() -> {
-			return ((DefaultReconnector) reconnector).reconnectAddressQueue.isEmpty()
-					&& connections.containsKey(address);
+			return ((DefaultReconnector) reconnector).reconnectAddresses.isEmpty() && connections.containsKey(address);
 		}, 100, 30);
 	}
 

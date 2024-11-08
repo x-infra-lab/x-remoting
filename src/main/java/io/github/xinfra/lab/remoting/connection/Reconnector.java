@@ -13,4 +13,6 @@ public interface Reconnector extends LifeCycle {
 
 	void reconnect(SocketAddress socketAddress);
 
+	void disconnect(SocketAddress socketAddress);
+
 }

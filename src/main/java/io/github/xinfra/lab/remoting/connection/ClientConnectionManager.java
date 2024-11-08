@@ -7,6 +7,7 @@ import io.netty.channel.ChannelHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
 
+import java.io.IOException;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +17,7 @@ import java.util.function.Supplier;
 public class ClientConnectionManager extends AbstractConnectionManager {
 
 	@AccessForTest
-	protected Reconnector reconnector;
+	protected Reconnector reconnector = new DefaultReconnector(this);
 
 	public ClientConnectionManager(Protocol protocol) {
 		this.connectionFactory = new DefaultConnectionFactory(protocol, defaultChannelSuppliers());
@@ -54,7 +55,8 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 	}
 
 	@Override
-	public Connection connect(SocketAddress socketAddress) throws RemotingException {
+	public synchronized Connection connect(SocketAddress socketAddress) throws RemotingException {
+		ensureStarted();
 		ConnectionHolder connectionHolder = connections.get(socketAddress);
 		if (connectionHolder == null) {
 			connectionHolder = createConnectionHolder(socketAddress);
@@ -65,7 +67,7 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 	}
 
 	@Override
-	public synchronized Connection get(SocketAddress socketAddress) throws RemotingException {
+	public Connection get(SocketAddress socketAddress) throws RemotingException {
 		ensureStarted();
 		Validate.notNull(socketAddress, "socketAddress can not be null");
 
@@ -85,22 +87,19 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 	@Override
 	public void startup() {
 		super.startup();
-
-		reconnector = new DefaultReconnector(this);
 		reconnector.startup();
 	}
 
 	@Override
 	public synchronized void shutdown() {
-		if (reconnector != null) {
-			for (SocketAddress socketAddress : connections.keySet()) {
-				reconnector.disableReconnect(socketAddress);
-			}
-
-			super.shutdown();
-
-			reconnector.shutdown();
+		super.shutdown();
+		try {
+			connectionFactory.close();
 		}
+		catch (IOException e) {
+			log.warn("connectionFactory close ex", e);
+		}
+		reconnector.shutdown();
 	}
 
 }
