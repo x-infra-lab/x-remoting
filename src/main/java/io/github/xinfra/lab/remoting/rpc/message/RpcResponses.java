@@ -30,6 +30,10 @@ public class RpcResponses {
 		if (responseMessage.getCause() != null) {
 			throw new RemotingException("rpc invoke fail. remote address:" + remoteAddress, responseMessage.getCause());
 		}
+		else if (responseMessage.getContent() instanceof Throwable) {
+			throw new RemotingException("rpc invoke fail. remote address:" + remoteAddress,
+					(Throwable) responseMessage.getContent());
+		}
 		else {
 			throw new RemotingException("rpc invoke fail. remote address:" + remoteAddress);
 		}
