@@ -1,6 +1,7 @@
 package io.github.xinfra.lab.remoting.rpc.client;
 
 import io.github.xinfra.lab.remoting.exception.RemotingException;
+import io.github.xinfra.lab.remoting.rpc.exception.RpcServerException;
 import io.github.xinfra.lab.remoting.rpc.server.RpcServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -26,6 +27,7 @@ public class RpcClientTest {
 		rpcServer.startup();
 
 		rpcServer.registerUserProcessor(new SimpleUserProcessor());
+		rpcServer.registerUserProcessor(new ExceptionProcessor());
 	}
 
 	@AfterAll
@@ -51,6 +53,20 @@ public class RpcClientTest {
 		String result = rpcClient.syncCall(request, rpcServer.localAddress(), 1000);
 
 		Assertions.assertEquals(result, "echo:" + msg);
+	}
+
+	@Test
+	public void testSyncCallException() throws RemotingException, InterruptedException {
+		String msg = "test UserProcessor throw Exception";
+		ExceptionRequest request = new ExceptionRequest(msg);
+
+		RemotingException remotingException = Assertions.assertThrows(RemotingException.class, () -> {
+			rpcClient.syncCall(request, rpcServer.localAddress(), 1000);
+		});
+
+		Assertions.assertInstanceOf(RpcServerException.class, remotingException.getCause());
+
+		remotingException.printStackTrace();
 	}
 
 	@Test

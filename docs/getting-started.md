@@ -65,7 +65,6 @@ RpcClient rpcClient = new RpcClient();
 rpcClient.startup();
 ```
 ### SyncCall
-[link](https://github.com/x-infra-lab/x-remoting/blob/main/src/test/java/io/github/xinfra/lab/remoting/rpc/client/RpcClientTest.java#L50)
 ```java
 @Test
 public void testSyncCall() throws RemotingException, InterruptedException {
@@ -77,7 +76,6 @@ public void testSyncCall() throws RemotingException, InterruptedException {
 }
 ```
 ### AsyncCall - Future
-[link](https://github.com/x-infra-lab/x-remoting/blob/main/src/test/java/io/github/xinfra/lab/remoting/rpc/client/RpcClientTest.java#L59)
 ```java
 @Test
 public void testAsyncCall1() throws RemotingException, InterruptedException, TimeoutException {
@@ -90,7 +88,6 @@ public void testAsyncCall1() throws RemotingException, InterruptedException, Tim
 }
 ```
 ### AsyncCall - Callback
-[link](https://github.com/x-infra-lab/x-remoting/blob/main/src/test/java/io/github/xinfra/lab/remoting/rpc/client/RpcClientTest.java#L69)
 ```java
 @Test
 public void testAsyncCall2() throws RemotingException, InterruptedException, TimeoutException {
@@ -117,7 +114,6 @@ public void testAsyncCall2() throws RemotingException, InterruptedException, Tim
 }
 ```
 ### OnewayCall
-[link](https://github.com/x-infra-lab/x-remoting/blob/main/src/test/java/io/github/xinfra/lab/remoting/rpc/client/RpcClientTest.java#L93)
 ```java
 @Test
 public void testOnewayCall() throws RemotingException, InterruptedException {

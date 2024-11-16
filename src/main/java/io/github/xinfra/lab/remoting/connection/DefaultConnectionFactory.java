@@ -46,18 +46,13 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 	private static final Class<? extends SocketChannel> channelClass = Epoll.isAvailable() ? EpollSocketChannel.class
 			: NioSocketChannel.class;
 
-	/**
-	 * Q: why use Supplier to get ChannelHandler? A: some ChannelHandler is
-	 * not @ChannelHandler.Sharable. need create instance every time
-	 */
 	public DefaultConnectionFactory(Protocol protocol, List<Supplier<ChannelHandler>> channelHandlerSuppliers) {
 		this(protocol, channelHandlerSuppliers, new ConnectionConfig());
 	}
 
-	/**
-	 * Q: why use Supplier to get ChannelHandler? A: some ChannelHandler is
-	 * not @ChannelHandler.Sharable. need create instance every time
-	 */
+	// Q: why use Supplier to get ChannelHandler?
+	// A: some ChannelHandler is not @ChannelHandler.Sharable. need create instance every
+	// time
 	public DefaultConnectionFactory(Protocol protocol, List<Supplier<ChannelHandler>> channelHandlerSuppliers,
 			ConnectionConfig connectionConfig) {
 		Validate.notNull(protocol, "protocol can not be null");

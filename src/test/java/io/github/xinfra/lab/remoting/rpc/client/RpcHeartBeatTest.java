@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import static io.github.xinfra.lab.remoting.common.TestSocketUtils.findAvailableTcpPort;
 
-public class HeartBeatTest {
+public class RpcHeartBeatTest {
 
 	private RpcServer rpcServer;
 
