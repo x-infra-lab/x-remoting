@@ -1,7 +1,7 @@
 package io.github.xinfra.lab.remoting.message;
 
 import io.github.xinfra.lab.remoting.connection.Connection;
-import io.github.xinfra.lab.remoting.processor.UserProcessor;
+import io.github.xinfra.lab.remoting.rpc.processor.UserProcessor;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.Getter;
@@ -27,7 +27,7 @@ public class MessageHandlerContext {
 	@Getter
 	private ExecutorService messageDefaultExecutor;
 
-	public MessageHandlerContext(ChannelHandlerContext ctx) {
+	public MessageHandlerContext(ChannelHandlerContext ctx, RpcMessageHandler messageHandler) {
 		this.channelContext = ctx;
 		this.connection = ctx.channel().attr(CONNECTION).get();
 		this.protocol = connection.getProtocol();
@@ -36,7 +36,7 @@ public class MessageHandlerContext {
 	}
 
 	public UserProcessor<?> getUserProcessor(String contentType) {
-		return this.protocol.messageHandler().userProcessor(contentType);
+		return messageHandler.userProcessor(contentType);
 	}
 
 }

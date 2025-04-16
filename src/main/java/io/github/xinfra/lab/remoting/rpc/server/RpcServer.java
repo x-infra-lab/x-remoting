@@ -1,6 +1,7 @@
 package io.github.xinfra.lab.remoting.rpc.server;
 
 import io.github.xinfra.lab.remoting.exception.RemotingException;
+import io.github.xinfra.lab.remoting.rpc.processor.UserProcessor;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
 import io.github.xinfra.lab.remoting.rpc.client.RpcInvokeCallBack;
@@ -75,6 +76,11 @@ public class RpcServer extends BaseRemotingServer {
 	@Override
 	public Protocol protocol() {
 		return protocol;
+	}
+
+
+	public void registerUserProcessor(UserProcessor<?> userProcessor) {
+		protocol().messageHandler().registerUserProcessor(userProcessor);
 	}
 
 }

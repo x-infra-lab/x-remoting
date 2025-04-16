@@ -3,15 +3,13 @@ package io.github.xinfra.lab.remoting.connection;
 import io.github.xinfra.lab.remoting.message.MessageHandlerContext;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
-import io.github.xinfra.lab.remoting.message.MessageType;
-import io.github.xinfra.lab.remoting.processor.MessageProcessor;
-import io.github.xinfra.lab.remoting.processor.UserProcessor;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.util.Timer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -34,33 +32,18 @@ public class ProtocolHandlerTest {
 		MessageHandler messageHandler = new MessageHandler() {
 
 			@Override
+			public void close() throws IOException {
+
+			}
+
+			@Override
 			public ExecutorService executor() {
 				return null;
 			}
 
 			@Override
-			public void handleMessage(MessageHandlerContext remotingContext, Object msg) {
+			public void handleMessage(MessageHandlerContext remotingContext, Message msg) {
 
-			}
-
-			@Override
-			public void registerMessageProcessor(MessageType messageType, MessageProcessor<?> messageProcessor) {
-
-			}
-
-			@Override
-			public MessageProcessor<?> messageProcessor(MessageType messageType) {
-				return null;
-			}
-
-			@Override
-			public void registerUserProcessor(UserProcessor<?> userProcessor) {
-
-			}
-
-			@Override
-			public UserProcessor<?> userProcessor(String contentType) {
-				return null;
 			}
 
 			@Override

@@ -1,19 +1,19 @@
 package io.github.xinfra.lab.remoting.rpc.message;
 
+import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageHandlerContext;
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
-import io.github.xinfra.lab.remoting.message.MessageType;
-import io.github.xinfra.lab.remoting.processor.MessageProcessor;
-import io.github.xinfra.lab.remoting.processor.UserProcessor;
+import io.github.xinfra.lab.remoting.rpc.processor.MessageProcessor;
+import io.github.xinfra.lab.remoting.rpc.processor.UserProcessor;
 import io.github.xinfra.lab.remoting.rpc.processor.RpcHeartbeatMessageProcessor;
 import io.github.xinfra.lab.remoting.rpc.processor.RpcRequestMessageProcessor;
 import io.github.xinfra.lab.remoting.rpc.processor.RpcResponseMessageProcessor;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timer;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,11 +21,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import static io.github.xinfra.lab.remoting.message.MessageType.heartbeatRequest;
-import static io.github.xinfra.lab.remoting.message.MessageType.request;
+import static io.github.xinfra.lab.remoting.rpc.message.MessageType.heartbeatRequest;
+import static io.github.xinfra.lab.remoting.rpc.message.MessageType.request;
 
 @Slf4j
-public class RpcMessageHandler implements MessageHandler, Closeable {
+public class RpcMessageHandler implements MessageHandler {
 
 	private Timer timer;
 
@@ -56,8 +56,9 @@ public class RpcMessageHandler implements MessageHandler, Closeable {
 	}
 
 	@Override
-	public void handleMessage(MessageHandlerContext messageHandlerContext, Object msg) {
+	public void handleMessage(ChannelHandlerContext ctx, Message msg) {
 		RpcMessage rpcMessage = (RpcMessage) msg;
+		MessageHandlerContext messageHandlerContext = new MessageHandlerContext(ctx);
 		try {
 			rpcMessage.setRemoteAddress(messageHandlerContext.getConnection().remoteAddress());
 			messageProcessors.get(rpcMessage.messageType()).handleMessage(messageHandlerContext, rpcMessage);
@@ -67,8 +68,7 @@ public class RpcMessageHandler implements MessageHandler, Closeable {
 		}
 	}
 
-	@Override
-	public void registerMessageProcessor(MessageType messageType, MessageProcessor<?> messageProcessor) {
+	private void registerMessageProcessor(MessageType messageType, MessageProcessor<?> messageProcessor) {
 		MessageProcessor<RpcMessage> prevMessageProcessor = messageProcessors.putIfAbsent(messageType,
 				(MessageProcessor<RpcMessage>) messageProcessor);
 		if (prevMessageProcessor != null) {
@@ -76,12 +76,10 @@ public class RpcMessageHandler implements MessageHandler, Closeable {
 		}
 	}
 
-	@Override
 	public MessageProcessor<RpcMessage> messageProcessor(MessageType messageType) {
 		return messageProcessors.get(messageType);
 	}
 
-	@Override
 	public void registerUserProcessor(UserProcessor<?> userProcessor) {
 		UserProcessor<?> prevUserProcessor = userProcessors.putIfAbsent(userProcessor.interest(), userProcessor);
 		if (prevUserProcessor != null) {
@@ -89,7 +87,6 @@ public class RpcMessageHandler implements MessageHandler, Closeable {
 		}
 	}
 
-	@Override
 	public UserProcessor<?> userProcessor(String contentType) {
 		return userProcessors.get(contentType);
 	}

@@ -10,10 +10,6 @@ public interface Message {
 
 	int id();
 
-	MessageType messageType();
-
-	SerializationType serializationType();
-
 	void serialize() throws SerializeException;
 
 	void deserialize() throws DeserializeException;

@@ -3,16 +3,12 @@ package io.github.xinfra.lab.remoting.client;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
-import io.github.xinfra.lab.remoting.message.MessageHandler;
-import io.github.xinfra.lab.remoting.message.MessageType;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.netty.channel.ChannelFuture;
 import io.netty.util.Timeout;
 import io.netty.util.Timer;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 

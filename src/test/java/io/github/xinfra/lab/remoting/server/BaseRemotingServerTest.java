@@ -7,7 +7,7 @@ import io.github.xinfra.lab.remoting.connection.DefaultConnectionFactory;
 import io.github.xinfra.lab.remoting.connection.ServerConnectionManager;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
-import io.github.xinfra.lab.remoting.processor.UserProcessor;
+import io.github.xinfra.lab.remoting.rpc.processor.UserProcessor;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.ChannelHandler;

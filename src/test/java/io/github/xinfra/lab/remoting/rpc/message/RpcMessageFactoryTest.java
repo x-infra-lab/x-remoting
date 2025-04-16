@@ -4,7 +4,6 @@ import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.exception.ConnectionClosedException;
 import io.github.xinfra.lab.remoting.exception.SendMessageException;
 import io.github.xinfra.lab.remoting.exception.TimeoutException;
-import io.github.xinfra.lab.remoting.message.MessageType;
 import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
 import io.github.xinfra.lab.remoting.rpc.exception.RpcServerException;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;

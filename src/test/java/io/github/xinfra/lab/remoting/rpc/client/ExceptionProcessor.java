@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.rpc.client;
 
-import io.github.xinfra.lab.remoting.processor.UserProcessor;
+import io.github.xinfra.lab.remoting.rpc.processor.UserProcessor;
 
 public class ExceptionProcessor implements UserProcessor<ExceptionRequest> {
 

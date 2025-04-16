@@ -1,4 +1,4 @@
-package io.github.xinfra.lab.remoting.message;
+package io.github.xinfra.lab.remoting.rpc.message;
 
 public enum MessageType {
 

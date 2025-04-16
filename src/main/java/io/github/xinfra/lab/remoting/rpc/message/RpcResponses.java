@@ -19,7 +19,7 @@ public class RpcResponses {
 
 	public static <R> R getResponseObject(RpcResponseMessage responseMessage) throws RemotingException {
 		SocketAddress remoteAddress = responseMessage.getRemoteAddress();
-		// fixme classloader problem
+		// todo: fixme classloader problem
 		responseMessage.deserialize();
 		ResponseStatus status = ResponseStatus.valueOf(responseMessage.getStatus());
 

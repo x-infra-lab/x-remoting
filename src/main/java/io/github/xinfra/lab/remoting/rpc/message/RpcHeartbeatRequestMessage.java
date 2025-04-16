@@ -1,6 +1,5 @@
 package io.github.xinfra.lab.remoting.rpc.message;
 
-import io.github.xinfra.lab.remoting.message.MessageType;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
 
 public class RpcHeartbeatRequestMessage extends RpcRequestMessage {

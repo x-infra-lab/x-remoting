@@ -2,10 +2,8 @@ package io.github.xinfra.lab.remoting.rpc.heartbeat;
 
 import io.github.xinfra.lab.remoting.common.Wait;
 import io.github.xinfra.lab.remoting.connection.Connection;
-import io.github.xinfra.lab.remoting.message.MessageType;
-import io.github.xinfra.lab.remoting.protocol.Protocol;
+import io.github.xinfra.lab.remoting.rpc.message.MessageType;
 import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
-import io.github.xinfra.lab.remoting.rpc.message.RpcMessageFactory;
 import io.github.xinfra.lab.remoting.rpc.message.RpcRequestMessage;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;

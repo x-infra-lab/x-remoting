@@ -11,7 +11,6 @@ import io.github.xinfra.lab.remoting.connection.ProtocolDecoder;
 import io.github.xinfra.lab.remoting.connection.ProtocolEncoder;
 import io.github.xinfra.lab.remoting.connection.ProtocolHandler;
 import io.github.xinfra.lab.remoting.connection.ServerConnectionManager;
-import io.github.xinfra.lab.remoting.processor.UserProcessor;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler;
@@ -157,11 +156,6 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 	@Override
 	public SocketAddress localAddress() {
 		return this.localAddress;
-	}
-
-	@Override
-	public void registerUserProcessor(UserProcessor<?> userProcessor) {
-		protocol().messageHandler().registerUserProcessor(userProcessor);
 	}
 
 }

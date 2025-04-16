@@ -3,7 +3,7 @@ package io.github.xinfra.lab.remoting.rpc.codec;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.exception.CodecException;
 import io.github.xinfra.lab.remoting.message.Message;
-import io.github.xinfra.lab.remoting.message.MessageType;
+import io.github.xinfra.lab.remoting.rpc.message.MessageType;
 import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
 import io.github.xinfra.lab.remoting.rpc.message.ResponseStatus;
 import io.github.xinfra.lab.remoting.rpc.message.RpcMessageHeader;

@@ -2,7 +2,7 @@ package io.github.xinfra.lab.remoting.rpc.codec;
 
 import io.github.xinfra.lab.remoting.codec.MessageDecoder;
 import io.github.xinfra.lab.remoting.exception.CodecException;
-import io.github.xinfra.lab.remoting.message.MessageType;
+import io.github.xinfra.lab.remoting.rpc.message.MessageType;
 import io.github.xinfra.lab.remoting.rpc.message.RpcHeartbeatRequestMessage;
 import io.github.xinfra.lab.remoting.rpc.message.RpcMessage;
 import io.github.xinfra.lab.remoting.rpc.message.RpcRequestMessage;
@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
-import static io.github.xinfra.lab.remoting.message.MessageType.onewayRequest;
+import static io.github.xinfra.lab.remoting.rpc.message.MessageType.onewayRequest;
 
 @Slf4j
 public class RpcMessageDecoder implements MessageDecoder {
