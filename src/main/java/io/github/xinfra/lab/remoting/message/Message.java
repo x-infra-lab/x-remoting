@@ -2,13 +2,10 @@ package io.github.xinfra.lab.remoting.message;
 
 import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
-import io.github.xinfra.lab.remoting.serialization.SerializationType;
 
 public interface Message {
 
-	byte[] protocolCode();
-
-	int id();
+    MessageHeader header();
 
 	void serialize() throws SerializeException;
 
