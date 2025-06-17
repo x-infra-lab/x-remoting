@@ -20,6 +20,4 @@ public interface Protocol extends Closeable {
 
 	MessageFactory messageFactory();
 
-	HeartbeatTrigger heartbeatTrigger();
-
 }

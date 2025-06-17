@@ -2,6 +2,7 @@ package io.github.xinfra.lab.remoting.rpc.client;
 
 import io.github.xinfra.lab.remoting.client.InvokeCallBack;
 import io.github.xinfra.lab.remoting.message.Message;
+import io.github.xinfra.lab.remoting.message.ResponseMessage;
 import io.github.xinfra.lab.remoting.rpc.message.RpcResponses;
 import io.github.xinfra.lab.remoting.rpc.message.RpcResponseMessage;
 import org.slf4j.Logger;
@@ -15,11 +16,11 @@ public interface RpcInvokeCallBack<R> extends InvokeCallBack {
 	Logger LOGGER = LoggerFactory.getLogger(RpcInvokeCallBack.class);
 
 	@Override
-	default void complete(Message message) {
+	default void complete(ResponseMessage responseMessage) {
 		Runnable task = () -> {
 			try {
-				RpcResponseMessage responseMessage = (RpcResponseMessage) message;
-				Object responseObject = RpcResponses.getResponseObject(responseMessage);
+				RpcResponseMessage rpcResponseMessage = (RpcResponseMessage) responseMessage;
+				Object responseObject = RpcResponses.getResponseObject(rpcResponseMessage);
 				try {
 					onResponse((R) responseObject);
 				}
@@ -44,7 +45,7 @@ public interface RpcInvokeCallBack<R> extends InvokeCallBack {
 				executor.execute(task);
 			}
 			catch (RejectedExecutionException re) {
-				LOGGER.error("fail execute callback. id:{}", message.id(), re);
+				LOGGER.error("fail execute callback. id:{}", rpcResponseMessage.id(), re);
 			}
 		}
 		else {

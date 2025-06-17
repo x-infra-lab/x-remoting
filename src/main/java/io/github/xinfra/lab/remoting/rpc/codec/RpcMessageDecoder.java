@@ -2,7 +2,7 @@ package io.github.xinfra.lab.remoting.rpc.codec;
 
 import io.github.xinfra.lab.remoting.codec.MessageDecoder;
 import io.github.xinfra.lab.remoting.exception.CodecException;
-import io.github.xinfra.lab.remoting.rpc.message.MessageType;
+import io.github.xinfra.lab.remoting.rpc.message.RpcMessageType;
 import io.github.xinfra.lab.remoting.rpc.message.RpcHeartbeatRequestMessage;
 import io.github.xinfra.lab.remoting.rpc.message.RpcMessage;
 import io.github.xinfra.lab.remoting.rpc.message.RpcRequestMessage;
@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
-import static io.github.xinfra.lab.remoting.rpc.message.MessageType.onewayRequest;
+import static io.github.xinfra.lab.remoting.rpc.message.RpcMessageType.onewayRequest;
 
 @Slf4j
 public class RpcMessageDecoder implements MessageDecoder {
@@ -31,11 +31,11 @@ public class RpcMessageDecoder implements MessageDecoder {
 			in.skipBytes(protocolCodeLength);
 
 			byte messageTypeCode = in.readByte();
-			MessageType messageType = MessageType.valueOf(messageTypeCode);
+			RpcMessageType rpcMessageType = RpcMessageType.valueOf(messageTypeCode);
 
 			// check for response
 			int alreadyRead = protocolCodeLength + 1;
-			if (messageType == MessageType.response
+			if (rpcMessageType == RpcMessageType.response
 					&& in.readableBytes() < RpcProtocol.RESPONSE_HEADER_LEN - alreadyRead) {
 				in.resetReaderIndex();
 				return;
@@ -46,7 +46,7 @@ public class RpcMessageDecoder implements MessageDecoder {
 			SerializationType serializationType = SerializationType.valueOf(serializationTypeCode);
 
 			short status = 0;
-			if (messageType == MessageType.response) {
+			if (rpcMessageType == RpcMessageType.response) {
 				status = in.readShort();
 			}
 
@@ -58,7 +58,7 @@ public class RpcMessageDecoder implements MessageDecoder {
 
 			if (remainLength <= in.readableBytes()) {
 				RpcMessage rpcMessage;
-				switch (messageType) {
+				switch (rpcMessageType) {
 					case request:
 						rpcMessage = new RpcRequestMessage(requestId, serializationType);
 						break;
@@ -74,8 +74,8 @@ public class RpcMessageDecoder implements MessageDecoder {
 						rpcMessage = new RpcHeartbeatRequestMessage(requestId, serializationType);
 						break;
 					default:
-						log.warn("MessageType not support:{}", messageType);
-						throw new CodecException("MessageType not support:" + messageType);
+						log.warn("MessageType not support:{}", rpcMessageType);
+						throw new CodecException("MessageType not support:" + rpcMessageType);
 
 				}
 

@@ -2,7 +2,7 @@ package io.github.xinfra.lab.remoting.rpc.processor;
 
 import io.github.xinfra.lab.remoting.message.MessageHandlerContext;
 import io.github.xinfra.lab.remoting.exception.DeserializeException;
-import io.github.xinfra.lab.remoting.rpc.message.MessageType;
+import io.github.xinfra.lab.remoting.rpc.message.RpcMessageType;
 import io.github.xinfra.lab.remoting.rpc.message.ResponseStatus;
 import io.github.xinfra.lab.remoting.rpc.message.RpcDeserializeLevel;
 import io.github.xinfra.lab.remoting.rpc.message.RpcMessage;
@@ -87,7 +87,7 @@ public class RpcRequestMessageProcessor extends AbstractMessageProcessor<RpcMess
 
 	private void sendResponse(MessageHandlerContext messageHandlerContext, RpcRequestMessage requestMessage,
 			RpcResponseMessage responseMessage) {
-		if (requestMessage.messageType() != MessageType.onewayRequest) {
+		if (requestMessage.messageType() != RpcMessageType.onewayRequest) {
 			RpcResponses.sendResponse(messageHandlerContext, responseMessage);
 		}
 	}

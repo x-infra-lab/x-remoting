@@ -7,14 +7,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public class ConnectionHolder implements Closeable {
+public class Connections implements Closeable {
 
 	@AccessForTest
 	protected CopyOnWriteArrayList<Connection> connections = new CopyOnWriteArrayList<>();
 
 	private ConnectionSelectStrategy connectionSelectStrategy;
 
-	public ConnectionHolder(ConnectionSelectStrategy connectionSelectStrategy) {
+	public Connections(ConnectionSelectStrategy connectionSelectStrategy) {
 		this.connectionSelectStrategy = connectionSelectStrategy;
 	}
 

@@ -1,10 +1,10 @@
 package io.github.xinfra.lab.remoting.heartbeat;
 
-import io.netty.channel.ChannelHandlerContext;
+import io.github.xinfra.lab.remoting.connection.Connection;
 
 public interface HeartbeatTrigger {
 
-	void triggerHeartBeat(ChannelHandlerContext ctx);
+	void triggerHeartBeat(Connection connection);
 
 	void setHeartbeatMaxFailCount(int failCount);
 

@@ -27,7 +27,7 @@ public class RpcResponseMessage extends RpcMessage {
 	}
 
 	public RpcResponseMessage(int id, SerializationType serializationType) {
-		super(id, MessageType.response, serializationType);
+		super(id, RpcMessageType.response, serializationType);
 	}
 
 }

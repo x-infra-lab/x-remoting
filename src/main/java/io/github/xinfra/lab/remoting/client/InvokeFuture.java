@@ -1,9 +1,9 @@
 package io.github.xinfra.lab.remoting.client;
 
 import io.github.xinfra.lab.remoting.annotation.AccessForTest;
-import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
-import io.github.xinfra.lab.remoting.rpc.message.MessageType;
+import io.github.xinfra.lab.remoting.message.ResponseMessage;
+import io.github.xinfra.lab.remoting.rpc.message.RpcMessageType;
 import io.github.xinfra.lab.remoting.rpc.processor.MessageProcessor;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.netty.util.Timeout;
@@ -21,7 +21,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
-public class InvokeFuture<T extends Message> implements Future<Message> {
+public class InvokeFuture<T extends ResponseMessage> implements Future<ResponseMessage> {
 
 	@Getter
 	private final int requestId;
@@ -30,7 +30,7 @@ public class InvokeFuture<T extends Message> implements Future<Message> {
 
 	private final CountDownLatch countDownLatch;
 
-	private volatile Message message;
+	private volatile ResponseMessage responseMessage;
 
 	@AccessForTest
 	protected volatile Timeout timeout;
@@ -63,7 +63,7 @@ public class InvokeFuture<T extends Message> implements Future<Message> {
 			MessageHandler messageHandler = protocol.messageHandler();
 
 			ExecutorService responseMessageExecutor = null;
-			MessageProcessor<?> responseMessageProcessor = messageHandler.messageProcessor(MessageType.response);
+			MessageProcessor<?> responseMessageProcessor = messageHandler.messageProcessor(RpcMessageType.response);
 			if (responseMessageProcessor != null) {
 				responseMessageExecutor = responseMessageProcessor.executor();
 			}
@@ -75,13 +75,13 @@ public class InvokeFuture<T extends Message> implements Future<Message> {
 					executeCallBack();
 				}
 				catch (Throwable t) {
-					log.error("executeCallBack fail. id:{}", message.id(), t);
+					log.error("executeCallBack fail. id:{}", responseMessage.id(), t);
 				}
 			});
 
 		}
 		catch (Exception e) {
-			log.error("asyncExecuteCallBack fail. id:{}", message.id(), e);
+			log.error("asyncExecuteCallBack fail. id:{}", responseMessage.id(), e);
 		}
 	}
 
@@ -96,7 +96,7 @@ public class InvokeFuture<T extends Message> implements Future<Message> {
 							contextClassLoader = Thread.currentThread().getContextClassLoader();
 							Thread.currentThread().setContextClassLoader(appClassLoader);
 						}
-						invokeCallBack.complete(message);
+						invokeCallBack.complete(responseMessage);
 					}
 					finally {
 						if (contextClassLoader != null) {
@@ -112,9 +112,9 @@ public class InvokeFuture<T extends Message> implements Future<Message> {
 		return classLoader;
 	}
 
-	public void complete(Message result) {
-		Validate.isTrue(this.message == null, "requestId: %s InvokeFuture already finished.", requestId);
-		this.message = result;
+	public void complete(ResponseMessage responseMessage) {
+		Validate.isTrue(this.responseMessage == null, "requestId: %s InvokeFuture already finished.", requestId);
+		this.responseMessage = responseMessage;
 		countDownLatch.countDown();
 	}
 
@@ -140,18 +140,18 @@ public class InvokeFuture<T extends Message> implements Future<Message> {
 	}
 
 	@Override
-	public Message get() throws InterruptedException {
+	public ResponseMessage get() throws InterruptedException {
 		countDownLatch.await();
-		return message;
+		return responseMessage;
 	}
 
 	@Override
-	public Message get(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
+	public ResponseMessage get(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException {
 		boolean finished = countDownLatch.await(timeout, unit);
 		if (!finished) {
 			throw new TimeoutException("InvokeFuture timeout");
 		}
-		return message;
+		return responseMessage;
 	}
 
 }

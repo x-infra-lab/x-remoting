@@ -21,15 +21,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import static io.github.xinfra.lab.remoting.rpc.message.MessageType.heartbeatRequest;
-import static io.github.xinfra.lab.remoting.rpc.message.MessageType.request;
+import static io.github.xinfra.lab.remoting.rpc.message.RpcMessageType.heartbeatRequest;
+import static io.github.xinfra.lab.remoting.rpc.message.RpcMessageType.request;
 
 @Slf4j
 public class RpcMessageHandler implements MessageHandler {
 
 	private Timer timer;
 
-	private ConcurrentHashMap<MessageType, MessageProcessor<RpcMessage>> messageProcessors = new ConcurrentHashMap<>();
+	private ConcurrentHashMap<RpcMessageType, MessageProcessor<RpcMessage>> messageProcessors = new ConcurrentHashMap<>();
 
 	private ConcurrentHashMap<String, UserProcessor<?>> userProcessors = new ConcurrentHashMap<>();
 
@@ -42,12 +42,12 @@ public class RpcMessageHandler implements MessageHandler {
 
 		// request
 		RpcRequestMessageProcessor rpcRequestMessageProcessor = new RpcRequestMessageProcessor();
-		this.registerMessageProcessor(MessageType.request, rpcRequestMessageProcessor);
-		this.registerMessageProcessor(MessageType.onewayRequest, rpcRequestMessageProcessor);
+		this.registerMessageProcessor(RpcMessageType.request, rpcRequestMessageProcessor);
+		this.registerMessageProcessor(RpcMessageType.onewayRequest, rpcRequestMessageProcessor);
 		// response
-		this.registerMessageProcessor(MessageType.response, new RpcResponseMessageProcessor());
+		this.registerMessageProcessor(RpcMessageType.response, new RpcResponseMessageProcessor());
 		// heartbeat
-		this.registerMessageProcessor(MessageType.heartbeatRequest, new RpcHeartbeatMessageProcessor());
+		this.registerMessageProcessor(RpcMessageType.heartbeatRequest, new RpcHeartbeatMessageProcessor());
 	}
 
 	@Override
@@ -68,16 +68,16 @@ public class RpcMessageHandler implements MessageHandler {
 		}
 	}
 
-	private void registerMessageProcessor(MessageType messageType, MessageProcessor<?> messageProcessor) {
-		MessageProcessor<RpcMessage> prevMessageProcessor = messageProcessors.putIfAbsent(messageType,
+	private void registerMessageProcessor(RpcMessageType rpcMessageType, MessageProcessor<?> messageProcessor) {
+		MessageProcessor<RpcMessage> prevMessageProcessor = messageProcessors.putIfAbsent(rpcMessageType,
 				(MessageProcessor<RpcMessage>) messageProcessor);
 		if (prevMessageProcessor != null) {
-			throw new RuntimeException("repeat register message processor for " + messageType);
+			throw new RuntimeException("repeat register message processor for " + rpcMessageType);
 		}
 	}
 
-	public MessageProcessor<RpcMessage> messageProcessor(MessageType messageType) {
-		return messageProcessors.get(messageType);
+	public MessageProcessor<RpcMessage> messageProcessor(RpcMessageType rpcMessageType) {
+		return messageProcessors.get(rpcMessageType);
 	}
 
 	public void registerUserProcessor(UserProcessor<?> userProcessor) {
@@ -97,10 +97,10 @@ public class RpcMessageHandler implements MessageHandler {
 	}
 
 	private void exceptionForMessage(MessageHandlerContext messageHandlerContext, RpcMessage rpcMessage, Throwable t) {
-		MessageType messageType = rpcMessage.messageType();
-		String errorMsg = String.format("handle %s message fail, id: %s", messageType, rpcMessage.id());
+		RpcMessageType rpcMessageType = rpcMessage.messageType();
+		String errorMsg = String.format("handle %s message fail, id: %s", rpcMessageType, rpcMessage.id());
 		log.error(errorMsg);
-		if (request == messageType || heartbeatRequest == messageType) {
+		if (request == rpcMessageType || heartbeatRequest == rpcMessageType) {
 			RpcResponseMessage responseMessage = messageHandlerContext.getMessageFactory()
 				.createExceptionResponse(rpcMessage.id(), t, errorMsg);
 			RpcResponses.sendResponse(messageHandlerContext, responseMessage);

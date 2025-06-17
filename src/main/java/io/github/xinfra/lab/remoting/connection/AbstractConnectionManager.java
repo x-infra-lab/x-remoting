@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public abstract class AbstractConnectionManager extends AbstractLifeCycle implements ConnectionManager {
 
 	@AccessForTest
-	protected Map<SocketAddress, ConnectionHolder> connections = new ConcurrentHashMap<>();
+	protected Map<SocketAddress, Connections> connections = new ConcurrentHashMap<>();
 
 	protected ConnectionFactory connectionFactory;
 
@@ -39,10 +39,10 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 			reconnector().disconnect(socketAddress);
 		}
 
-		ConnectionHolder connectionHolder = connections.get(socketAddress);
-		if (connectionHolder != null) {
-			connectionHolder.close();
-			connections.remove(socketAddress);
+		Connections connections = this.connections.get(socketAddress);
+		if (connections != null) {
+			connections.close();
+			this.connections.remove(socketAddress);
 		}
 		log.info("Disconnect connection for address: {}", socketAddress);
 	}
@@ -69,18 +69,18 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 		Validate.notNull(connection, "connection can not be null");
 
 		SocketAddress socketAddress = connection.remoteAddress();
-		ConnectionHolder connectionHolder = connections.get(socketAddress);
-		if (connectionHolder == null) {
+		Connections connections = this.connections.get(socketAddress);
+		if (connections == null) {
 			connection.close();
 		}
 		else {
-			if (connectionHolder.invalidate(connection)) {
+			if (connections.invalidate(connection)) {
 				if (reconnector() != null) {
 					reconnector().reconnect(socketAddress);
 				}
 			}
-			if (connectionHolder.isEmpty()) {
-				connections.remove(socketAddress);
+			if (connections.isEmpty()) {
+				this.connections.remove(socketAddress);
 			}
 		}
 	}
@@ -91,13 +91,13 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 		Validate.notNull(connection, "connection can not be null");
 
 		SocketAddress socketAddress = connection.remoteAddress();
-		ConnectionHolder connectionHolder = connections.get(socketAddress);
-		if (connectionHolder == null) {
-			connectionHolder = createConnectionHolder(socketAddress);
-			connectionHolder.add(connection);
+		Connections connections = this.connections.get(socketAddress);
+		if (connections == null) {
+			connections = createConnectionHolder(socketAddress);
+			connections.add(connection);
 		}
 		else {
-			connectionHolder.add(connection);
+			connections.add(connection);
 		}
 	}
 
@@ -114,24 +114,24 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 
 	@Override
 	public synchronized void shutdown() {
-		for (Map.Entry<SocketAddress, ConnectionHolder> entry : connections.entrySet()) {
+		for (Map.Entry<SocketAddress, Connections> entry : connections.entrySet()) {
 			disconnect(entry.getKey());
 		}
 		super.shutdown();
 		connectionEventProcessor.shutdown();
 	}
 
-	protected ConnectionHolder createConnectionHolder(SocketAddress socketAddress) {
-		ConnectionHolder connectionHolder = new ConnectionHolder(connectionSelectStrategy);
-		connections.put(socketAddress, connectionHolder);
-		return connectionHolder;
+	protected Connections createConnectionHolder(SocketAddress socketAddress) {
+		Connections connections = new Connections(connectionSelectStrategy);
+		this.connections.put(socketAddress, connections);
+		return connections;
 	}
 
-	protected void createConnectionForHolder(SocketAddress socketAddress, ConnectionHolder connectionHolder, int size)
+	protected void createConnectionForHolder(SocketAddress socketAddress, Connections connections, int size)
 			throws RemotingException {
-		for (int i = connectionHolder.size(); i < size; i++) {
+		for (int i = connections.size(); i < size; i++) {
 			Connection connection = connectionFactory.create(socketAddress);
-			connectionHolder.add(connection);
+			connections.add(connection);
 		}
 	}
 

@@ -2,7 +2,9 @@ package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
+import io.github.xinfra.lab.remoting.heartbeat.HeartbeatTrigger;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
+import io.github.xinfra.lab.remoting.heartbeat.DefaultHeartbeatTrigger;
 import io.netty.channel.ChannelHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
@@ -19,7 +21,12 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 	@AccessForTest
 	protected Reconnector reconnector = new DefaultReconnector(this);
 
+	@AccessForTest
+	protected HeartbeatTrigger heartbeatTrigger = new DefaultHeartbeatTrigger();
+
+
 	public ClientConnectionManager(Protocol protocol) {
+		heartbeatTrigger = new DefaultHeartbeatTrigger(protocol);
 		this.connectionFactory = new DefaultConnectionFactory(protocol, defaultChannelSuppliers());
 	}
 
@@ -39,7 +46,7 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 	}
 
 	private List<Supplier<ChannelHandler>> defaultChannelSuppliers() {
-		ProtocolHeartBeatHandler protocolHeartBeatHandler = new ProtocolHeartBeatHandler();
+		ProtocolHeartBeatHandler protocolHeartBeatHandler = new ProtocolHeartBeatHandler(heartbeatTrigger);
 		ProtocolHandler protocolHandler = new ProtocolHandler();
 		ConnectionEventHandler connectionEventHandler = new ConnectionEventHandler(this);
 
@@ -57,13 +64,13 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 	@Override
 	public synchronized Connection connect(SocketAddress socketAddress) throws RemotingException {
 		ensureStarted();
-		ConnectionHolder connectionHolder = connections.get(socketAddress);
-		if (connectionHolder == null) {
-			connectionHolder = createConnectionHolder(socketAddress);
+		Connections connections = this.connections.get(socketAddress);
+		if (connections == null) {
+			connections = createConnectionHolder(socketAddress);
 		}
-		createConnectionForHolder(socketAddress, connectionHolder, config.getConnectionNumPreEndpoint());
+		createConnectionForHolder(socketAddress, connections, config.getConnectionNumPreEndpoint());
 
-		return connectionHolder.get();
+		return connections.get();
 	}
 
 	@Override
@@ -71,12 +78,12 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 		ensureStarted();
 		Validate.notNull(socketAddress, "socketAddress can not be null");
 
-		ConnectionHolder connectionHolder = connections.get(socketAddress);
-		if (connectionHolder == null) {
+		Connections connections = this.connections.get(socketAddress);
+		if (connections == null) {
 			return connect(socketAddress);
 		}
 
-		return connectionHolder.get();
+		return connections.get();
 	}
 
 	@Override

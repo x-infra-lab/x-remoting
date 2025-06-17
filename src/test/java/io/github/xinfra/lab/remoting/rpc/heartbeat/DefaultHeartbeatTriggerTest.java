@@ -2,7 +2,8 @@ package io.github.xinfra.lab.remoting.rpc.heartbeat;
 
 import io.github.xinfra.lab.remoting.common.Wait;
 import io.github.xinfra.lab.remoting.connection.Connection;
-import io.github.xinfra.lab.remoting.rpc.message.MessageType;
+import io.github.xinfra.lab.remoting.heartbeat.DefaultHeartbeatTrigger;
+import io.github.xinfra.lab.remoting.rpc.message.RpcMessageType;
 import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
 import io.github.xinfra.lab.remoting.rpc.message.RpcRequestMessage;
 import io.netty.channel.ChannelHandlerContext;
@@ -27,7 +28,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-public class RpcHeartbeatTriggerTest {
+public class DefaultHeartbeatTriggerTest {
 
 	private RpcProtocol protocol;
 
@@ -43,7 +44,7 @@ public class RpcHeartbeatTriggerTest {
 
 	@Test
 	public void testHeartbeat() throws InterruptedException, TimeoutException {
-		RpcHeartbeatTrigger trigger = protocol.heartbeatTrigger();
+		DefaultHeartbeatTrigger trigger = protocol.heartbeatTrigger();
 
 		ChannelHandlerContext context = mock(ChannelHandlerContext.class);
 		EmbeddedChannel channel = new EmbeddedChannel();
@@ -70,7 +71,7 @@ public class RpcHeartbeatTriggerTest {
 			@Override
 			public boolean matches(RpcRequestMessage argument) {
 
-				if (!Objects.equals(argument.messageType(), MessageType.heartbeatRequest)) {
+				if (!Objects.equals(argument.messageType(), RpcMessageType.heartbeatRequest)) {
 					return false;
 				}
 				return true;
@@ -80,7 +81,7 @@ public class RpcHeartbeatTriggerTest {
 
 	@Test
 	public void testHeartbeatFailed() throws InterruptedException, TimeoutException {
-		RpcHeartbeatTrigger trigger = protocol.heartbeatTrigger();
+		DefaultHeartbeatTrigger trigger = protocol.heartbeatTrigger();
 
 		ChannelHandlerContext context = mock(ChannelHandlerContext.class);
 		EmbeddedChannel channel = new EmbeddedChannel();
@@ -151,7 +152,7 @@ public class RpcHeartbeatTriggerTest {
 
 	@Test
 	public void testHeartbeatOverThreshold() throws InterruptedException, TimeoutException {
-		RpcHeartbeatTrigger trigger = protocol.heartbeatTrigger();
+		DefaultHeartbeatTrigger trigger = protocol.heartbeatTrigger();
 
 		ChannelHandlerContext context = mock(ChannelHandlerContext.class);
 		EmbeddedChannel channel = new EmbeddedChannel();

@@ -184,7 +184,7 @@ public class ClientConnectionManagerTest {
 		Connection connection = connectionManager.get(address);
 		Assertions.assertNotNull(connection);
 
-		Map<SocketAddress, ConnectionHolder> connections = ((ClientConnectionManager) connectionManager).connections;
+		Map<SocketAddress, Connections> connections = ((ClientConnectionManager) connectionManager).connections;
 		Assertions.assertTrue(connections.containsKey(address));
 		connectionManager.close(connection);
 
@@ -213,8 +213,8 @@ public class ClientConnectionManagerTest {
 		InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort);
 		Connection connection = connectionManager.get(address);
 
-		Map<SocketAddress, ConnectionHolder> connections = ((ClientConnectionManager) connectionManager).connections;
-		ConnectionHolder connectionHolder = connections.get(address);
+		Map<SocketAddress, Connections> connections = ((ClientConnectionManager) connectionManager).connections;
+		Connections connectionHolder = connections.get(address);
 		Assertions.assertEquals(connectionHolder.size(), numPreEndpoint);
 
 		connectionManager.close(connection);
@@ -235,7 +235,7 @@ public class ClientConnectionManagerTest {
 	public void testReconnect3() throws InterruptedException, RemotingException, TimeoutException {
 		// valid socketAddress
 		InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort);
-		Map<SocketAddress, ConnectionHolder> connections = ((ClientConnectionManager) connectionManager).connections;
+		Map<SocketAddress, Connections> connections = ((ClientConnectionManager) connectionManager).connections;
 
 		Reconnector reconnector = connectionManager.reconnector();
 
@@ -260,7 +260,7 @@ public class ClientConnectionManagerTest {
 	void testDisableReconnect() throws InterruptedException, TimeoutException {
 		InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort);
 		Reconnector reconnector = connectionManager.reconnector();
-		Map<SocketAddress, ConnectionHolder> connections = ((ClientConnectionManager) connectionManager).connections;
+		Map<SocketAddress, Connections> connections = ((ClientConnectionManager) connectionManager).connections;
 
 		reconnector.disableReconnect(address);
 		reconnector.reconnect(address);

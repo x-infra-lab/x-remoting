@@ -3,7 +3,7 @@ package io.github.xinfra.lab.remoting.rpc.codec;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.exception.CodecException;
 import io.github.xinfra.lab.remoting.message.Message;
-import io.github.xinfra.lab.remoting.rpc.message.MessageType;
+import io.github.xinfra.lab.remoting.rpc.message.RpcMessageType;
 import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
 import io.github.xinfra.lab.remoting.rpc.message.ResponseStatus;
 import io.github.xinfra.lab.remoting.rpc.message.RpcMessageHeader;
@@ -43,7 +43,7 @@ public class RpcMessageEncoderTest {
 		byte[] dataProtocolCodes = new byte[protocolCodes.length];
 		byteBuf.readBytes(dataProtocolCodes);
 		Assertions.assertArrayEquals(protocolCodes, dataProtocolCodes);
-		Assertions.assertEquals(byteBuf.readByte(), MessageType.request.data());
+		Assertions.assertEquals(byteBuf.readByte(), RpcMessageType.request.data());
 		Assertions.assertEquals(byteBuf.readInt(), requestId);
 		Assertions.assertEquals(byteBuf.readByte(), requestMessage.serializationType().data());
 		Assertions.assertEquals(byteBuf.readShort(), requestMessage.getContentTypeLength());
@@ -92,7 +92,7 @@ public class RpcMessageEncoderTest {
 		byte[] dataProtocolCodes = new byte[protocolCodes.length];
 		byteBuf.readBytes(dataProtocolCodes);
 		Assertions.assertArrayEquals(protocolCodes, dataProtocolCodes);
-		Assertions.assertEquals(byteBuf.readByte(), MessageType.response.data());
+		Assertions.assertEquals(byteBuf.readByte(), RpcMessageType.response.data());
 		Assertions.assertEquals(byteBuf.readInt(), requestId);
 		Assertions.assertEquals(byteBuf.readByte(), responseMessage.serializationType().data());
 		Assertions.assertEquals(byteBuf.readShort(), responseMessage.getStatus());

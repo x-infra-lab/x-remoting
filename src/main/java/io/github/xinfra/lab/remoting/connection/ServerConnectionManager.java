@@ -17,11 +17,11 @@ public class ServerConnectionManager extends AbstractConnectionManager {
 		ensureStarted();
 		Validate.notNull(socketAddress, "socketAddress can not be null");
 
-		ConnectionHolder connectionHolder = connections.get(socketAddress);
-		if (connectionHolder == null) {
+		Connections connections = this.connections.get(socketAddress);
+		if (connections == null) {
 			return null;
 		}
-		return connectionHolder.get();
+		return connections.get();
 	}
 
 	@Override

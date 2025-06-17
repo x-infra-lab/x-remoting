@@ -19,7 +19,7 @@ public abstract class RpcMessage implements Message {
 
 	private int id;
 
-	private MessageType messageType;
+	private RpcMessageType rpcMessageType;
 
 	private SerializationType serializationType;
 
@@ -57,9 +57,9 @@ public abstract class RpcMessage implements Message {
 	@Setter
 	private SocketAddress remoteAddress;
 
-	public RpcMessage(int id, MessageType messageType, SerializationType serializationType) {
+	public RpcMessage(int id, RpcMessageType rpcMessageType, SerializationType serializationType) {
 		this.id = id;
-		this.messageType = messageType;
+		this.rpcMessageType = rpcMessageType;
 		this.protocolCode = RpcProtocol.PROTOCOL_CODE;
 		this.serializationType = serializationType;
 	}
@@ -74,8 +74,8 @@ public abstract class RpcMessage implements Message {
 		return id;
 	}
 
-	public MessageType messageType() {
-		return messageType;
+	public RpcMessageType messageType() {
+		return rpcMessageType;
 	}
 
 	public SerializationType serializationType() {

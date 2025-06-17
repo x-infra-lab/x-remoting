@@ -2,6 +2,7 @@ package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.common.LifeCycle;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
+import io.github.xinfra.lab.remoting.heartbeat.HeartbeatTrigger;
 
 import java.net.SocketAddress;
 
@@ -22,5 +23,7 @@ public interface ConnectionManager extends LifeCycle {
 	Reconnector reconnector();
 
 	ConnectionEventProcessor connectionEventProcessor();
+
+	HeartbeatTrigger heartbeatTrigger();
 
 }
