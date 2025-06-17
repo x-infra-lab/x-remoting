@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.rpc.client;
 
-import io.github.xinfra.lab.remoting.client.BaseRemoting;
+import io.github.xinfra.lab.remoting.client.Remoting;
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.connection.ConnectionManager;
@@ -13,7 +13,7 @@ import io.github.xinfra.lab.remoting.rpc.message.RpcResponses;
 
 import java.net.SocketAddress;
 
-public class RpcRemoting extends BaseRemoting {
+public class RpcRemoting extends Remoting {
 
 	protected ConnectionManager connectionManager;
 

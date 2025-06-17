@@ -1,6 +1,5 @@
 package io.github.xinfra.lab.remoting.client;
 
-import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.ResponseMessage;
 
 import java.util.concurrent.Executor;

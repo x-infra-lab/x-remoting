@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.rpc.client;
 
-import io.github.xinfra.lab.remoting.client.BaseRemoting;
+import io.github.xinfra.lab.remoting.client.Remoting;
 import io.github.xinfra.lab.remoting.connection.ClientConnectionManager;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.connection.ConnectionManager;
@@ -51,18 +51,18 @@ public class RpcHeartBeatTest {
 		connectionManager.startup();
 
 		MessageFactory messageFactory = protocol.messageFactory();
-		BaseRemoting baseRemoting = new BaseRemoting(protocol);
+		Remoting remoting = new Remoting(protocol);
 		Message heartbeatRequestMessage = messageFactory.createHeartbeatRequestMessage();
 
 		Connection connection = connectionManager.get(remoteAddress);
 
-		Message heartbeatResponseMessage = baseRemoting.syncCall(heartbeatRequestMessage, connection, 1000);
+		Message heartbeatResponseMessage = remoting.syncCall(heartbeatRequestMessage, connection, 1000);
 
 		Assertions.assertNotNull(heartbeatResponseMessage);
 
 		CountDownLatch countDownLatch = new CountDownLatch(1);
 		AtomicReference<Message> messageAtomicReference = new AtomicReference<>();
-		baseRemoting.asyncCall(heartbeatRequestMessage, connection, 1000, message -> {
+		remoting.asyncCall(heartbeatRequestMessage, connection, 1000, message -> {
 			messageAtomicReference.set(message);
 			countDownLatch.countDown();
 		});

@@ -15,6 +15,12 @@ public interface Message {
 
 	SerializationType serializationType();
 
+	MessageHeader header();
+
+	String payloadType();
+
+	<T> T payload();
+
 	void serialize() throws SerializeException;
 
 	void deserialize() throws DeserializeException;

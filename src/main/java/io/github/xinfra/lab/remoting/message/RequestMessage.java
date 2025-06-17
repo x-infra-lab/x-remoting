@@ -5,6 +5,8 @@ public interface RequestMessage extends Message {
 
     String path();
 
-    boolean isHeartbeat();
+    default boolean isHeartbeat() {
+        return false;
+    }
 
 }

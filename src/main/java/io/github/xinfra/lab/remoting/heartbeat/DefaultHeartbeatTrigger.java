@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.heartbeat;
 
-import io.github.xinfra.lab.remoting.client.BaseRemoting;
+import io.github.xinfra.lab.remoting.client.Remoting;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.message.RequestMessage;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
@@ -18,11 +18,11 @@ public class DefaultHeartbeatTrigger implements HeartbeatTrigger {
 
 	private  Protocol protocol;
 
-	private  BaseRemoting baseRemoting;
+	private Remoting remoting;
 
 	public DefaultHeartbeatTrigger(Protocol protocol) {
 		this.protocol = protocol;
-		this.baseRemoting = new BaseRemoting(protocol);
+		this.remoting = new Remoting(protocol);
 	}
 
 	@Override
@@ -36,7 +36,7 @@ public class DefaultHeartbeatTrigger implements HeartbeatTrigger {
 		}
 
 		RequestMessage heartbeatRequestMessage = protocol.messageFactory().createHeartbeatRequestMessage();
-		baseRemoting.asyncCall(heartbeatRequestMessage, connection, heartbeatTimeoutMills, responseMessage -> {
+		remoting.asyncCall(heartbeatRequestMessage, connection, heartbeatTimeoutMills, responseMessage -> {
 
 			if (responseMessage.isOk()) {
 				log.debug("heartbeat success. remote address:{}", connection.remoteAddress());

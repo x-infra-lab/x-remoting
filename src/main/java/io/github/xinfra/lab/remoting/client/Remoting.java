@@ -1,7 +1,6 @@
 package io.github.xinfra.lab.remoting.client;
 
 import io.github.xinfra.lab.remoting.connection.Connection;
-import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.message.RequestMessage;
 import io.github.xinfra.lab.remoting.message.ResponseMessage;
@@ -15,13 +14,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 @Slf4j
-public class BaseRemoting {
+public class Remoting {
 
 	protected MessageFactory messageFactory;
 
 	private final Timer timer;
 
-	public BaseRemoting(Protocol protocol) {
+	public Remoting(Protocol protocol) {
 		this.messageFactory = protocol.messageFactory();
 		this.timer = protocol.messageHandler().timer();
 	}
@@ -63,7 +62,7 @@ public class BaseRemoting {
 		return responseMessage;
 	}
 
-	public InvokeFuture<?> asyncCall(RequestMessage requestMessage, Connection connection, int timeoutMills) {
+	public InvokeFuture<? extends ResponseMessage> asyncCall(RequestMessage requestMessage, Connection connection, int timeoutMills) {
 		int requestId = requestMessage.id();
 		InvokeFuture<?> invokeFuture = new InvokeFuture<>(requestId, connection.getProtocol());
 
@@ -155,6 +154,8 @@ public class BaseRemoting {
 				if (!future.isSuccess()) {
 					log.error("Send requestMessage fail. id:{} remoteAddress:{}", requestId, connection.remoteAddress(),
 							future.cause());
+				} else {
+					log.debug("Send requestMessage success. id:{} remoteAddress:{}", requestId, connection.remoteAddress());
 				}
 			});
 		}
