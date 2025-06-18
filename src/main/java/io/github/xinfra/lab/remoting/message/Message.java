@@ -17,9 +17,7 @@ public interface Message {
 
 	MessageHeader header();
 
-	String payloadType();
-
-	<T> T payload();
+	MessagePayload payload();
 
 	void serialize() throws SerializeException;
 
