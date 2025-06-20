@@ -2,7 +2,7 @@ package io.github.xinfra.lab.remoting.rpc.heartbeat;
 
 import io.github.xinfra.lab.remoting.common.Wait;
 import io.github.xinfra.lab.remoting.connection.Connection;
-import io.github.xinfra.lab.remoting.heartbeat.DefaultHeartbeatTrigger;
+import io.github.xinfra.lab.remoting.connection.DefaultHeartbeater;
 import io.github.xinfra.lab.remoting.rpc.message.RpcMessageType;
 import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
 import io.github.xinfra.lab.remoting.rpc.message.RpcRequestMessage;
@@ -44,7 +44,7 @@ public class DefaultHeartbeatTriggerTest {
 
 	@Test
 	public void testHeartbeat() throws InterruptedException, TimeoutException {
-		DefaultHeartbeatTrigger trigger = protocol.heartbeatTrigger();
+		DefaultHeartbeater trigger = protocol.heartbeatTrigger();
 
 		ChannelHandlerContext context = mock(ChannelHandlerContext.class);
 		EmbeddedChannel channel = new EmbeddedChannel();
@@ -81,7 +81,7 @@ public class DefaultHeartbeatTriggerTest {
 
 	@Test
 	public void testHeartbeatFailed() throws InterruptedException, TimeoutException {
-		DefaultHeartbeatTrigger trigger = protocol.heartbeatTrigger();
+		DefaultHeartbeater trigger = protocol.heartbeatTrigger();
 
 		ChannelHandlerContext context = mock(ChannelHandlerContext.class);
 		EmbeddedChannel channel = new EmbeddedChannel();
@@ -152,7 +152,7 @@ public class DefaultHeartbeatTriggerTest {
 
 	@Test
 	public void testHeartbeatOverThreshold() throws InterruptedException, TimeoutException {
-		DefaultHeartbeatTrigger trigger = protocol.heartbeatTrigger();
+		DefaultHeartbeater trigger = protocol.heartbeatTrigger();
 
 		ChannelHandlerContext context = mock(ChannelHandlerContext.class);
 		EmbeddedChannel channel = new EmbeddedChannel();

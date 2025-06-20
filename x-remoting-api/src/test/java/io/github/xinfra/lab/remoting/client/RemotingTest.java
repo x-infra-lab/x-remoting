@@ -6,6 +6,8 @@ import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
+import io.github.xinfra.lab.remoting.message.RequestMessage;
+import io.github.xinfra.lab.remoting.message.ResponseMessage;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.Channel;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -53,7 +55,6 @@ public class RemotingTest {
 		// set message handler
 
 		MessageHandler messageHandler = mock(MessageHandler.class);
-		doReturn(executor).when(messageHandler).executor(responseMessage);
 
 		timer = new HashedWheelTimer();
 		doReturn(timer).when(messageHandler).timer();
@@ -74,20 +75,20 @@ public class RemotingTest {
 
 	@Test
 	public void testSyncCall() throws InterruptedException {
-		Message message = mock(Message.class);
-		doReturn(requestId).when(message).id();
+		RequestMessage requestMessage = mock(RequestMessage.class);
+		doReturn(requestId).when(requestMessage).id();
 
 		Channel channel = new EmbeddedChannel();
 		Connection connection = new Connection(testProtocol, channel);
 
-		Message result = mock(Message.class);
+		ResponseMessage responseMessage = mock(ResponseMessage.class);
 		// complete invokeFuture
 		executor.submit(() -> {
 			try {
 				Wait.untilIsTrue(() -> {
 					InvokeFuture invokeFuture = connection.removeInvokeFuture(requestId);
 					if (invokeFuture != null) {
-						invokeFuture.complete(result);
+						invokeFuture.complete(responseMessage);
 						return true;
 					}
 					return false;
@@ -98,9 +99,9 @@ public class RemotingTest {
 			}
 		});
 
-		Message msg = remoting.syncCall(message, connection, 1000);
+		Message msg = remoting.syncCall(requestMessage, connection, 1000);
 
-		Assertions.assertTrue(msg == result);
+		Assertions.assertTrue(msg == responseMessage);
 	}
 
 	@Test
@@ -109,15 +110,15 @@ public class RemotingTest {
 		Message sendFailedMessage = mock(Message.class);
 		doReturn(sendFailedMessage).when(messageFactory).createSendFailResponseMessage(anyInt(), any(), any());
 
-		Message message = mock(Message.class);
-		doReturn(requestId).when(message).id();
+		RequestMessage requestMessage = mock(RequestMessage.class);
+		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
 		Connection connection = new Connection(testProtocol, channel);
 
 		doThrow(new RuntimeException("network error")).when(channel).writeAndFlush(any());
 
-		Message msg = remoting.syncCall(message, connection, 1000);
+		Message msg = remoting.syncCall(requestMessage, connection, 1000);
 		Assertions.assertTrue(msg == sendFailedMessage);
 	}
 
@@ -127,15 +128,15 @@ public class RemotingTest {
 		Message sendFailedMessage = mock(Message.class);
 		doReturn(sendFailedMessage).when(messageFactory).createSendFailResponseMessage(anyInt(), any(), any());
 
-		Message message = mock(Message.class);
-		doReturn(requestId).when(message).id();
+		RequestMessage requestMessage = mock(RequestMessage.class);
+		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
 		Connection connection = new Connection(testProtocol, channel);
 
 		doReturn(channel.newFailedFuture(new RuntimeException("network error"))).when(channel).writeAndFlush(any());
 
-		Message msg = remoting.syncCall(message, connection, 1000);
+		Message msg = remoting.syncCall(requestMessage, connection, 1000);
 		Assertions.assertTrue(msg == sendFailedMessage);
 	}
 
@@ -145,38 +146,38 @@ public class RemotingTest {
 		Message timeoutMessage = mock(Message.class);
 		doReturn(timeoutMessage).when(messageFactory).createTimeoutResponseMessage(anyInt(), any());
 
-		Message message = mock(Message.class);
-		doReturn(requestId).when(message).id();
+		RequestMessage requestMessage = mock(RequestMessage.class);
+		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
 		Connection connection = new Connection(testProtocol, channel);
-		Message msg = remoting.syncCall(message, connection, 1000);
+		Message msg = remoting.syncCall(requestMessage, connection, 1000);
 		Assertions.assertTrue(msg == timeoutMessage);
 	}
 
 	@Test
 	public void testAsyncCall() throws InterruptedException, TimeoutException {
 
-		Message result = mock(Message.class);
+		ResponseMessage responseMessage = mock(ResponseMessage.class);
 
-		Message message = mock(Message.class);
-		doReturn(requestId).when(message).id();
+		RequestMessage requestMessage = mock(RequestMessage.class);
+		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
 		Connection connection = new Connection(testProtocol, channel);
-		InvokeFuture invokeFuture = remoting.asyncCall(message, connection, 1000);
+		InvokeFuture invokeFuture = remoting.asyncCall(requestMessage, connection, 1000);
 
 		// complete invokeFuture
 		Wait.untilIsTrue(() -> {
 			InvokeFuture future = connection.removeInvokeFuture(requestId);
 			if (future != null) {
-				future.complete(result);
+				future.complete(responseMessage);
 				return true;
 			}
 			return false;
 		}, 30, 100);
 
-		Assertions.assertTrue(invokeFuture.get() == result);
+		Assertions.assertTrue(invokeFuture.get() == responseMessage);
 
 	}
 
@@ -186,15 +187,15 @@ public class RemotingTest {
 		Message sendFailedMessage = mock(Message.class);
 		doReturn(sendFailedMessage).when(messageFactory).createSendFailResponseMessage(anyInt(), any(), any());
 
-		Message message = mock(Message.class);
-		doReturn(requestId).when(message).id();
+		RequestMessage requestMessage = mock(RequestMessage.class);
+		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
 		Connection connection = new Connection(testProtocol, channel);
 
 		doThrow(new RuntimeException("network error")).when(channel).writeAndFlush(any());
 
-		InvokeFuture invokeFuture = remoting.asyncCall(message, connection, 1000);
+		InvokeFuture invokeFuture = remoting.asyncCall(requestMessage, connection, 1000);
 		Assertions.assertTrue(invokeFuture.get() == sendFailedMessage);
 	}
 
@@ -204,15 +205,15 @@ public class RemotingTest {
 		Message sendFailedMessage = mock(Message.class);
 		doReturn(sendFailedMessage).when(messageFactory).createSendFailResponseMessage(anyInt(), any(), any());
 
-		Message message = mock(Message.class);
-		doReturn(requestId).when(message).id();
+		RequestMessage requestMessage = mock(RequestMessage.class);
+		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
 		Connection connection = new Connection(testProtocol, channel);
 
 		doReturn(channel.newFailedFuture(new RuntimeException("network error"))).when(channel).writeAndFlush(any());
 
-		InvokeFuture invokeFuture = remoting.asyncCall(message, connection, 1000);
+		InvokeFuture invokeFuture = remoting.asyncCall(requestMessage, connection, 1000);
 		Assertions.assertTrue(invokeFuture.get() == sendFailedMessage);
 	}
 
@@ -222,38 +223,38 @@ public class RemotingTest {
 		Message timeoutMessage = mock(Message.class);
 		doReturn(timeoutMessage).when(messageFactory).createTimeoutResponseMessage(anyInt(), any());
 
-		Message message = mock(Message.class);
-		doReturn(requestId).when(message).id();
+		RequestMessage requestMessage = mock(RequestMessage.class);
+		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
 		Connection connection = new Connection(testProtocol, channel);
-		InvokeFuture invokeFuture = remoting.asyncCall(message, connection, 1000);
+		InvokeFuture invokeFuture = remoting.asyncCall(requestMessage, connection, 1000);
 		Assertions.assertTrue(invokeFuture.get() == timeoutMessage);
 	}
 
 	@Test
 	public void testAsyncCallWithCallback() throws InterruptedException {
 
-		Message result = mock(Message.class);
+		ResponseMessage responseMessage = mock(ResponseMessage.class);
 
-		Message message = mock(Message.class);
-		doReturn(requestId).when(message).id();
+		RequestMessage requestMessage = mock(RequestMessage.class);
+		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
 		Connection connection = new Connection(testProtocol, channel);
 
 		AtomicReference<Message> callbackMessage = new AtomicReference<>();
-		remoting.asyncCall(message, connection, 1000, (msg) -> {
+		remoting.asyncCall(requestMessage, connection, 1000, (msg) -> {
 			callbackMessage.set(msg);
 		});
 
 		// complete invokeFuture
 		InvokeFuture future = connection.removeInvokeFuture(requestId);
 		future.cancelTimeout();
-		future.complete(result);
+		future.complete(responseMessage);
 		future.executeCallBack();
 
-		Assertions.assertTrue(callbackMessage.get() == result);
+		Assertions.assertTrue(callbackMessage.get() == responseMessage);
 	}
 
 	@Test
@@ -262,8 +263,8 @@ public class RemotingTest {
 		Message sendFailedMessage = mock(Message.class);
 		doReturn(sendFailedMessage).when(messageFactory).createSendFailResponseMessage(anyInt(), any(), any());
 
-		Message message = mock(Message.class);
-		doReturn(requestId).when(message).id();
+		RequestMessage requestMessage = mock(RequestMessage.class);
+		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
 		Connection connection = new Connection(testProtocol, channel);
@@ -271,7 +272,7 @@ public class RemotingTest {
 		doThrow(new RuntimeException("network error")).when(channel).writeAndFlush(any());
 
 		AtomicReference<Message> callbackMessage = new AtomicReference<>();
-		remoting.asyncCall(message, connection, 1000, (msg) -> {
+		remoting.asyncCall(requestMessage, connection, 1000, (msg) -> {
 			callbackMessage.set(msg);
 		});
 
@@ -291,8 +292,8 @@ public class RemotingTest {
 		Message sendFailedMessage = mock(Message.class);
 		doReturn(sendFailedMessage).when(messageFactory).createSendFailResponseMessage(anyInt(), any(), any());
 
-		Message message = mock(Message.class);
-		doReturn(requestId).when(message).id();
+		RequestMessage requestMessage = mock(RequestMessage.class);
+		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
 		Connection connection = new Connection(testProtocol, channel);
@@ -300,7 +301,7 @@ public class RemotingTest {
 		doReturn(channel.newFailedFuture(new RuntimeException("network error"))).when(channel).writeAndFlush(any());
 
 		AtomicReference<Message> callbackMessage = new AtomicReference<>();
-		remoting.asyncCall(message, connection, 1000, (msg) -> {
+		remoting.asyncCall(requestMessage, connection, 1000, (msg) -> {
 			callbackMessage.set(msg);
 		});
 
@@ -320,14 +321,14 @@ public class RemotingTest {
 		Message timeoutMessage = mock(Message.class);
 		doReturn(timeoutMessage).when(messageFactory).createTimeoutResponseMessage(anyInt(), any());
 
-		Message message = mock(Message.class);
-		doReturn(requestId).when(message).id();
+		RequestMessage requestMessage = mock(RequestMessage.class);
+		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
 		Connection connection = new Connection(testProtocol, channel);
 
 		AtomicReference<Message> callbackMessage = new AtomicReference<>();
-		remoting.asyncCall(message, connection, 1000, (msg) -> {
+		remoting.asyncCall(requestMessage, connection, 1000, (msg) -> {
 			callbackMessage.set(msg);
 		});
 
@@ -344,12 +345,12 @@ public class RemotingTest {
 	@Test
 	public void testOneway() throws InterruptedException, TimeoutException {
 
-		Message message = mock(Message.class);
-		doReturn(requestId).when(message).id();
+		RequestMessage requestMessage = mock(RequestMessage.class);
+		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
 		Connection connection = new Connection(testProtocol, channel);
-		remoting.oneway(message, connection);
+		remoting.oneway(requestMessage, connection);
 
 		// complete invokeFuture
 		Channel finalChannel = channel;
@@ -363,21 +364,21 @@ public class RemotingTest {
 			}
 		}, 30, 100);
 
-		verify(channel, times(1)).writeAndFlush(eq(message));
+		verify(channel, times(1)).writeAndFlush(eq(requestMessage));
 	}
 
 	@Test
 	public void testOnewaySendFailed1() throws InterruptedException, TimeoutException {
 
-		Message message = mock(Message.class);
-		doReturn(requestId).when(message).id();
+		RequestMessage requestMessage = mock(RequestMessage.class);
+		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
 		Connection connection = new Connection(testProtocol, channel);
 
 		doThrow(new RuntimeException("network error")).when(channel).writeAndFlush(any());
 
-		remoting.oneway(message, connection);
+		remoting.oneway(requestMessage, connection);
 
 		// complete invokeFuture
 		Channel finalChannel = channel;
@@ -391,21 +392,21 @@ public class RemotingTest {
 			}
 		}, 30, 100);
 
-		verify(channel, times(1)).writeAndFlush(eq(message));
+		verify(channel, times(1)).writeAndFlush(eq(requestMessage));
 	}
 
 	@Test
 	public void testOnewaySendFailed2() throws InterruptedException, TimeoutException {
 
-		Message message = mock(Message.class);
-		doReturn(requestId).when(message).id();
+		RequestMessage requestMessage = mock(RequestMessage.class);
+		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
 		Connection connection = new Connection(testProtocol, channel);
 
 		doReturn(channel.newFailedFuture(new RuntimeException("network error"))).when(channel).writeAndFlush(any());
 
-		remoting.oneway(message, connection);
+		remoting.oneway(requestMessage, connection);
 
 		// complete invokeFuture
 		Channel finalChannel = channel;
@@ -419,7 +420,7 @@ public class RemotingTest {
 			}
 		}, 30, 100);
 
-		verify(channel, times(1)).writeAndFlush(eq(message));
+		verify(channel, times(1)).writeAndFlush(eq(requestMessage));
 	}
 
 }

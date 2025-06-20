@@ -2,9 +2,7 @@ package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
-import io.github.xinfra.lab.remoting.heartbeat.HeartbeatTrigger;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
-import io.github.xinfra.lab.remoting.heartbeat.DefaultHeartbeatTrigger;
 import io.netty.channel.ChannelHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
@@ -22,31 +20,33 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 	protected Reconnector reconnector = new DefaultReconnector(this);
 
 	@AccessForTest
-	protected HeartbeatTrigger heartbeatTrigger = new DefaultHeartbeatTrigger();
-
+	protected Heartbeater heartbeater;
 
 	public ClientConnectionManager(Protocol protocol) {
-		heartbeatTrigger = new DefaultHeartbeatTrigger(protocol);
+		this.heartbeater = new DefaultHeartbeater(protocol);
 		this.connectionFactory = new DefaultConnectionFactory(protocol, defaultChannelSuppliers());
 	}
 
 	public ClientConnectionManager(Protocol protocol, ConnectionConfig connectionConfig) {
+		this.heartbeater = new DefaultHeartbeater(protocol);
 		this.connectionFactory = new DefaultConnectionFactory(protocol, defaultChannelSuppliers(), connectionConfig);
 	}
 
 	public ClientConnectionManager(Protocol protocol, ConnectionManagerConfig connectionManagerConfig) {
 		super(connectionManagerConfig);
+		this.heartbeater = new DefaultHeartbeater(protocol);
 		this.connectionFactory = new DefaultConnectionFactory(protocol, defaultChannelSuppliers());
 	}
 
 	public ClientConnectionManager(Protocol protocol, ConnectionConfig connectionConfig,
 			ConnectionManagerConfig connectionManagerConfig) {
 		super(connectionManagerConfig);
+		this.heartbeater = new DefaultHeartbeater(protocol);
 		this.connectionFactory = new DefaultConnectionFactory(protocol, defaultChannelSuppliers(), connectionConfig);
 	}
 
 	private List<Supplier<ChannelHandler>> defaultChannelSuppliers() {
-		ProtocolHeartBeatHandler protocolHeartBeatHandler = new ProtocolHeartBeatHandler(heartbeatTrigger);
+		ProtocolHeartBeatHandler protocolHeartBeatHandler = new ProtocolHeartBeatHandler(heartbeater);
 		ProtocolHandler protocolHandler = new ProtocolHandler();
 		ConnectionEventHandler connectionEventHandler = new ConnectionEventHandler(this);
 
@@ -89,6 +89,11 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 	@Override
 	public Reconnector reconnector() {
 		return reconnector;
+	}
+
+	@Override
+	public Heartbeater heartbeatTrigger() {
+		return null;
 	}
 
 	@Override

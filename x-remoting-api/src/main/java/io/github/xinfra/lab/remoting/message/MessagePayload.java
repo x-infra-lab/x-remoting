@@ -5,11 +5,12 @@ import io.github.xinfra.lab.remoting.exception.SerializeException;
 
 public interface MessagePayload {
 
-    String payloadType();
+	String payloadType();
 
-    Object payload();
+	Object payload();
 
-    void serialize() throws SerializeException;
+	void serialize() throws SerializeException;
 
-    void deserialize() throws DeserializeException;
+	void deserialize() throws DeserializeException;
+
 }

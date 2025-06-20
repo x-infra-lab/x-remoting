@@ -2,7 +2,6 @@ package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
-import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.ResponseMessage;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.netty.channel.Channel;
@@ -35,6 +34,14 @@ public class Connection {
 	@Getter
 	@Setter
 	private int heartbeatFailCnt = 0;
+
+	@Getter
+	@Setter
+	private int heartbeatTimeoutMills = 1000;
+
+	@Getter
+	@Setter
+	private int heartbeatMaxFailCount = 3;
 
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 
@@ -87,12 +94,12 @@ public class Connection {
 			InvokeFuture<?> invokeFuture = removeInvokeFuture(requestId);
 			if (invokeFuture != null) {
 				invokeFuture.cancelTimeout();
-				ResponseMessage responseMessage = protocol.messageFactory().createConnectionClosedMessage(requestId, remoteAddress());
+				ResponseMessage responseMessage = protocol.messageFactory()
+					.createConnectionClosedMessage(requestId, remoteAddress());
 				invokeFuture.complete(responseMessage);
 				invokeFuture.asyncExecuteCallBack(protocol.messageHandler().executor(responseMessage));
 			}
 		}
 	}
-
 
 }

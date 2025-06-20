@@ -8,7 +8,7 @@ import java.io.Closeable;
 
 public interface Protocol extends Closeable {
 
-	byte[] protocolCode();
+	ProtocolCode protocolCode();
 
 	MessageCodec messageCodec();
 

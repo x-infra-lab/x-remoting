@@ -6,8 +6,6 @@ import io.github.xinfra.lab.remoting.connection.ConnectionFactory;
 import io.github.xinfra.lab.remoting.connection.DefaultConnectionFactory;
 import io.github.xinfra.lab.remoting.connection.ServerConnectionManager;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
-import io.github.xinfra.lab.remoting.message.MessageHandler;
-import io.github.xinfra.lab.remoting.rpc.processor.UserProcessor;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.ChannelHandler;
@@ -119,43 +117,6 @@ public class RemotingServerTest {
 		Assertions.assertNotNull(serverConnection);
 
 		server.shutdown();
-	}
-
-	@Test
-	public void testRegisterUserProcessor() throws RemotingException, InterruptedException, TimeoutException {
-		testProtocol = spy(testProtocol);
-		MessageHandler messageHandler = mock(MessageHandler.class);
-		doReturn(messageHandler).when(testProtocol).messageHandler();
-
-		RemotingServerConfig config = new RemotingServerConfig();
-		config.setPort(findAvailableTcpPort());
-		config.setManageConnection(true);
-
-		BaseRemotingServer server = new BaseRemotingServer(config) {
-			@Override
-			public Protocol protocol() {
-				return testProtocol;
-			}
-		};
-
-		server.startup();
-
-		UserProcessor<String> userProcessor1 = new UserProcessor<String>() {
-			@Override
-			public String interest() {
-				return String.class.getName();
-			}
-
-			@Override
-			public Object handRequest(String request) {
-				// do nothing
-				return null;
-			}
-		};
-
-		server.registerUserProcessor(userProcessor1);
-
-		verify(messageHandler, times(1)).registerUserProcessor(eq(userProcessor1));
 	}
 
 }

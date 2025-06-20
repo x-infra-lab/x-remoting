@@ -1,6 +1,5 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import io.github.xinfra.lab.remoting.message.MessageHandlerContext;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;

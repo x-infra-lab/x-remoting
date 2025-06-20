@@ -20,7 +20,7 @@ public class ProtocolDecoder extends ByteToMessageDecoder {
 	protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
 		try {
 			Connection connection = ctx.channel().attr(CONNECTION).get();
-			byte[] protocolCode = connection.getProtocol().protocolCode();
+			byte[] protocolCode = connection.getProtocol().protocolCode().code();
 			int protocolLength = protocolCode.length;
 
 			if (in.readableBytes() >= protocolLength) {
@@ -30,7 +30,7 @@ public class ProtocolDecoder extends ByteToMessageDecoder {
 				in.resetReaderIndex();
 
 				if (Arrays.equals(decodeProtocolCode, protocolCode)) {
-					connection.getProtocol().decoder().decode(ctx, in, out);
+					connection.getProtocol().messageCodec().decoder().decode(ctx, in, out);
 				}
 				else {
 					throw new CodecException(

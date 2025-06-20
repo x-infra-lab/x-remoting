@@ -5,8 +5,8 @@ import io.github.xinfra.lab.remoting.exception.SerializeException;
 
 public interface MessageHeader {
 
-    void serialize() throws SerializeException;
+	void serialize() throws SerializeException;
 
-    void deserialize() throws DeserializeException;
+	void deserialize() throws DeserializeException;
 
 }

@@ -39,8 +39,8 @@ public class ProtocolDecoderTest {
 		};
 		testProtocol.setTestMessageDecoder(messageDecoder);
 
-		ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer(testProtocol.protocolCode().length);
-		byteBuf.writeBytes(testProtocol.protocolCode());
+		ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer(testProtocol.protocolCode().code().length);
+		byteBuf.writeBytes(testProtocol.protocolCode().code());
 		channel.writeInbound(byteBuf);
 		Assertions.assertTrue(channel.finish());
 		Message message = (Message) channel.inboundMessages().poll();
@@ -68,7 +68,7 @@ public class ProtocolDecoderTest {
 		testProtocol.setTestMessageDecoder(messageDecoder);
 
 		// split data
-		byte[] bytes = testProtocol.protocolCode();
+		byte[] bytes = testProtocol.protocolCode().code();
 		int length = bytes.length;
 
 		int part1Length = length / 2;
@@ -104,8 +104,8 @@ public class ProtocolDecoderTest {
 		channel.pipeline().addLast(protocolDecoder);
 		new Connection(testProtocol, channel);
 
-		ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer(testProtocol.protocolCode().length);
-		byteBuf.writeBytes(testProtocol.protocolCode());
+		ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer(testProtocol.protocolCode().code().length);
+		byteBuf.writeBytes(testProtocol.protocolCode().code());
 		// Bad header
 		ByteBuf invalidByteBuf = byteBuf.copy();
 		invalidByteBuf.setByte(0, byteBuf.getByte(0) + 1);

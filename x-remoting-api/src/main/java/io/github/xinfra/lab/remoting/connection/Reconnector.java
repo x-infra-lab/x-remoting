@@ -1,7 +1,6 @@
 package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.common.LifeCycle;
-import io.github.xinfra.lab.remoting.exception.RemotingException;
 
 import java.net.SocketAddress;
 

@@ -2,11 +2,15 @@ package io.github.xinfra.lab.remoting.rpc.server;
 
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
+import io.github.xinfra.lab.remoting.message.MessageHandler;
+import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.rpc.client.RpcClient;
 import io.github.xinfra.lab.remoting.rpc.client.RpcInvokeCallBack;
 import io.github.xinfra.lab.remoting.rpc.client.RpcInvokeFuture;
 import io.github.xinfra.lab.remoting.rpc.client.SimpleRequest;
 import io.github.xinfra.lab.remoting.rpc.client.SimpleUserProcessor;
+import io.github.xinfra.lab.remoting.server.BaseRemotingServer;
+import io.github.xinfra.lab.remoting.server.RemotingServerConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -131,5 +135,43 @@ public class RpcServerTest {
 
 		TimeUnit.SECONDS.sleep(2);
 	}
+
+	@Test
+	public void testRegisterUserProcessor() throws RemotingException, InterruptedException, TimeoutException {
+		testProtocol = spy(testProtocol);
+		MessageHandler messageHandler = mock(MessageHandler.class);
+		doReturn(messageHandler).when(testProtocol).messageHandler();
+
+		RemotingServerConfig config = new RemotingServerConfig();
+		config.setPort(findAvailableTcpPort());
+		config.setManageConnection(true);
+
+		BaseRemotingServer server = new BaseRemotingServer(config) {
+			@Override
+			public Protocol protocol() {
+				return testProtocol;
+			}
+		};
+
+		server.startup();
+
+		UserProcessor<String> userProcessor1 = new UserProcessor<String>() {
+			@Override
+			public String interest() {
+				return String.class.getName();
+			}
+
+			@Override
+			public Object handRequest(String request) {
+				// do nothing
+				return null;
+			}
+		};
+
+		server.registerUserProcessor(userProcessor1);
+
+		verify(messageHandler, times(1)).registerUserProcessor(eq(userProcessor1));
+	}
+
 
 }

@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.rpc;
 
-import io.github.xinfra.lab.remoting.heartbeat.DefaultHeartbeatTrigger;
+import io.github.xinfra.lab.remoting.connection.DefaultHeartbeater;
 import io.github.xinfra.lab.remoting.rpc.message.RpcMessageFactory;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.rpc.codec.RpcMessageDecoder;
@@ -37,14 +37,14 @@ public class RpcProtocol implements Protocol {
 
 	private final RpcMessageFactory rpcMessageFactory;
 
-	private final DefaultHeartbeatTrigger defaultHeartbeatTrigger;
+	private final DefaultHeartbeater defaultHeartbeatTrigger;
 
 	public RpcProtocol() {
 		this.rpcMessageFactory = new RpcMessageFactory();
 		this.rpcMessageEncoder = new RpcMessageEncoder();
 		this.rpcMessageDecoder = new RpcMessageDecoder();
 		this.rpcMessageHandler = new RpcMessageHandler();
-		this.defaultHeartbeatTrigger = new DefaultHeartbeatTrigger();
+		this.defaultHeartbeatTrigger = new DefaultHeartbeater();
 	}
 
 	@Override
@@ -73,7 +73,7 @@ public class RpcProtocol implements Protocol {
 	}
 
 	@Override
-	public DefaultHeartbeatTrigger heartbeatTrigger() {
+	public DefaultHeartbeater heartbeatTrigger() {
 		return defaultHeartbeatTrigger;
 	}
 

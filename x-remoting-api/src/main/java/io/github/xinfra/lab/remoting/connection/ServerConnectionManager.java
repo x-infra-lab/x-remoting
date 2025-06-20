@@ -29,4 +29,9 @@ public class ServerConnectionManager extends AbstractConnectionManager {
 		return null;
 	}
 
+	@Override
+	public Heartbeater heartbeatTrigger() {
+		return null;
+	}
+
 }

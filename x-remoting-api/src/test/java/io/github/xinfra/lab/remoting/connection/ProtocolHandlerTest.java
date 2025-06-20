@@ -1,10 +1,10 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import io.github.xinfra.lab.remoting.message.MessageHandlerContext;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
 import io.github.xinfra.lab.remoting.message.ResponseMessage;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
+import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.util.Timer;
 import org.junit.jupiter.api.Assertions;
@@ -38,12 +38,12 @@ public class ProtocolHandlerTest {
 			}
 
 			@Override
-			public ExecutorService executor(ResponseMessage responseMessage) {
+			public ExecutorService executor(Message message) {
 				return null;
 			}
 
 			@Override
-			public void handleMessage(MessageHandlerContext remotingContext, Message msg) {
+			public void handleMessage(ChannelHandlerContext ctx, Message msg) {
 
 			}
 

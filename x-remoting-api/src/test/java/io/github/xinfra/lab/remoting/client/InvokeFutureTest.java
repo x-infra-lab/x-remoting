@@ -4,6 +4,7 @@ import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.common.Wait;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
+import io.github.xinfra.lab.remoting.message.ResponseMessage;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timeout;
@@ -38,7 +39,7 @@ public class InvokeFutureTest {
 	public void before() {
 		testProtocol = new TestProtocol();
 		final int requestId = IDGenerator.nextRequestId();
-		invokeFuture = new InvokeFuture<>(requestId, testProtocol);
+		invokeFuture = new InvokeFuture<>(requestId);
 	}
 
 	@Test
@@ -66,7 +67,7 @@ public class InvokeFutureTest {
 
 	@Test
 	public void testGet() throws InterruptedException, TimeoutException {
-		Message message = mock(Message.class);
+		ResponseMessage responseMessage = mock(ResponseMessage.class);
 		ExecutorService executorService = Executors.newFixedThreadPool(2);
 		executorService.submit(() -> {
 			try {
@@ -75,7 +76,7 @@ public class InvokeFutureTest {
 			catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			invokeFuture.complete(message);
+			invokeFuture.complete(responseMessage);
 		});
 
 		Assertions.assertThrows(TimeoutException.class, () -> {
@@ -84,11 +85,11 @@ public class InvokeFutureTest {
 		Assertions.assertFalse(invokeFuture.isDone());
 
 		Message result = invokeFuture.get(3, TimeUnit.SECONDS);
-		Assertions.assertSame(result, message);
+		Assertions.assertSame(result, responseMessage);
 		Assertions.assertTrue(invokeFuture.isDone());
 
 		result = invokeFuture.get(3, TimeUnit.SECONDS);
-		Assertions.assertSame(result, message);
+		Assertions.assertSame(result, responseMessage);
 		Assertions.assertTrue(invokeFuture.isDone());
 
 		executorService.shutdownNow();
@@ -103,7 +104,7 @@ public class InvokeFutureTest {
 			URLClassLoader urlClassLoader = new URLClassLoader(new URL[] {}, contextClassLoader);
 			Thread.currentThread().setContextClassLoader(urlClassLoader);
 
-			InvokeFuture<?> future = new InvokeFuture<>(IDGenerator.nextRequestId(), testProtocol);
+			InvokeFuture<?> future = new InvokeFuture<>(IDGenerator.nextRequestId());
 			Assertions.assertSame(future.getAppClassLoader(), urlClassLoader);
 		}
 		finally {
@@ -127,8 +128,8 @@ public class InvokeFutureTest {
 			invokeFuture.addCallBack(callBack);
 		});
 
-		Message message = mock(Message.class);
-		invokeFuture.complete(message);
+		ResponseMessage responseMessage = mock(ResponseMessage.class);
+		invokeFuture.complete(responseMessage);
 		invokeFuture.executeCallBack();
 		Assertions.assertTrue(callbackExecuted.get());
 		Assertions.assertEquals(1, callBackExecuteTimes.get());
@@ -143,15 +144,12 @@ public class InvokeFutureTest {
 		invokeFuture = spy(invokeFuture);
 
 		ExecutorService executorService = Executors.newCachedThreadPool();
-		MessageHandler messageHandler = mock(MessageHandler.class);
-		doReturn(executorService).when(messageHandler).executor(responseMessage);
-		testProtocol.setTestMessageHandler(messageHandler);
 
 		AtomicBoolean callbackExecuted = new AtomicBoolean(false);
 		AtomicInteger callBackExecuteTimes = new AtomicInteger(0);
 		InvokeCallBack callBack = new InvokeCallBack() {
 			@Override
-			public void complete(Message message) {
+			public void complete(ResponseMessage message) {
 				callbackExecuted.set(true);
 				callBackExecuteTimes.getAndIncrement();
 			}
@@ -165,15 +163,15 @@ public class InvokeFutureTest {
 			invokeFuture.addCallBack(tempCallBack);
 		});
 
-		Message message = mock(Message.class);
-		invokeFuture.complete(message);
-		invokeFuture.asyncExecuteCallBack();
+		ResponseMessage responseMessage = mock(ResponseMessage.class);
+		invokeFuture.complete(responseMessage);
+		invokeFuture.asyncExecuteCallBack(executorService);
 
 		InvokeCallBack finalCallBack = callBack;
 		Wait.untilIsTrue(() -> {
 			try {
 				verify(invokeFuture, atLeastOnce()).executeCallBack();
-				verify(finalCallBack, atLeastOnce()).complete(eq(message));
+				verify(finalCallBack, atLeastOnce()).complete(eq(responseMessage));
 				return true;
 			}
 			catch (Throwable t) {
@@ -183,9 +181,9 @@ public class InvokeFutureTest {
 
 		Assertions.assertTrue(callbackExecuted.get());
 		Assertions.assertEquals(1, callBackExecuteTimes.get());
-		verify(finalCallBack, times(1)).complete(eq(message));
+		verify(finalCallBack, times(1)).complete(eq(responseMessage));
 
-		invokeFuture.asyncExecuteCallBack();
+		invokeFuture.asyncExecuteCallBack(executorService);
 		Wait.untilIsTrue(() -> {
 			try {
 				verify(invokeFuture, times(2)).executeCallBack();

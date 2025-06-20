@@ -5,6 +5,7 @@ import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
+import io.github.xinfra.lab.remoting.message.ResponseMessage;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.Channel;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -56,13 +57,13 @@ public class ConnectionTest {
 		final int requestId1 = IDGenerator.nextRequestId();
 		Assertions.assertNull(connection.removeInvokeFuture(requestId1));
 
-		connection.addInvokeFuture(new InvokeFuture<>(requestId1, testProtocol));
+		connection.addInvokeFuture(new InvokeFuture<>(requestId1));
 		Assertions.assertThrows(IllegalArgumentException.class, () -> {
-			connection.addInvokeFuture(new InvokeFuture<>(requestId1, testProtocol));
+			connection.addInvokeFuture(new InvokeFuture<>(requestId1));
 		});
 
 		final int requestId2 = IDGenerator.nextRequestId();
-		InvokeFuture<?> invokeFuture = new InvokeFuture<>(requestId2, testProtocol);
+		InvokeFuture<?> invokeFuture = new InvokeFuture<>(requestId2);
 		connection.addInvokeFuture(invokeFuture);
 
 		Assertions.assertEquals(invokeFuture, connection.removeInvokeFuture(requestId2));
@@ -93,14 +94,13 @@ public class ConnectionTest {
 
 		ExecutorService executorService = Executors.newCachedThreadPool();
 		MessageHandler messageHandler = mock(MessageHandler.class);
-		doReturn(executorService).when(messageHandler).executor(responseMessage);
 		testProtocol.setTestMessageHandler(messageHandler);
 
 		int times = 10;
 		List<InvokeFuture<?>> invokeFutures = new ArrayList<>();
 		for (int i = 0; i < times; i++) {
 			Integer requestId = IDGenerator.nextRequestId();
-			InvokeFuture<Message> invokeFuture = new InvokeFuture<>(requestId, testProtocol);
+			InvokeFuture<ResponseMessage> invokeFuture = new InvokeFuture<>(requestId);
 			invokeFutures.add(invokeFuture);
 			connection.addInvokeFuture(invokeFuture);
 		}

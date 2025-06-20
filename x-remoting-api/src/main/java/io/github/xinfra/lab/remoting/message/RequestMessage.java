@@ -1,12 +1,11 @@
 package io.github.xinfra.lab.remoting.message;
 
-
 public interface RequestMessage extends Message {
 
-    String path();
+	String path();
 
-    default boolean isHeartbeat() {
-        return false;
-    }
+	default boolean isHeartbeat() {
+		return false;
+	}
 
 }

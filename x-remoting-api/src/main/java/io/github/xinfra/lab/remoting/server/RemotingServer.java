@@ -9,7 +9,6 @@ public interface RemotingServer extends LifeCycle {
 
 	SocketAddress localAddress();
 
-
 	Protocol protocol();
 
 }
