@@ -42,7 +42,6 @@ public class ConnectionTest {
 
 	@Test
 	public void testNewInstance() {
-
 		Assertions.assertNotNull(connection);
 		Assertions.assertEquals(connection.getChannel(), channel);
 		Assertions.assertEquals(connection.remoteAddress(), channel.remoteAddress());
@@ -53,7 +52,7 @@ public class ConnectionTest {
 
 	@Test
 	public void testConnectionWithInvokeFuture() {
-
+		// repeat add
 		final int requestId1 = IDGenerator.nextRequestId();
 		Assertions.assertNull(connection.removeInvokeFuture(requestId1));
 
@@ -62,6 +61,7 @@ public class ConnectionTest {
 			connection.addInvokeFuture(new InvokeFuture<>(requestId1));
 		});
 
+		// repeat remove
 		final int requestId2 = IDGenerator.nextRequestId();
 		InvokeFuture<?> invokeFuture = new InvokeFuture<>(requestId2);
 		connection.addInvokeFuture(invokeFuture);

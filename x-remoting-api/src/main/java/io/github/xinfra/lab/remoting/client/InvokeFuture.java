@@ -1,9 +1,7 @@
 package io.github.xinfra.lab.remoting.client;
 
 import io.github.xinfra.lab.remoting.annotation.AccessForTest;
-import io.github.xinfra.lab.remoting.message.MessageHandler;
 import io.github.xinfra.lab.remoting.message.ResponseMessage;
-import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.netty.util.Timeout;
 import lombok.Getter;
 
