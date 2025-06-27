@@ -12,7 +12,7 @@ import java.net.SocketAddress;
 public class RpcMessageFactory implements MessageFactory {
 
 	@Override
-	public RpcResponseMessage createSendFailResponseMessage(int id, Throwable cause, SocketAddress remoteAddress) {
+	public RpcResponseMessage createSendFailedResponseMessage(int id, Throwable cause, SocketAddress remoteAddress) {
 		RpcResponseMessage rpcResponseMessage = new RpcResponseMessage(id);
 		rpcResponseMessage.setStatus(ResponseStatus.CLIENT_SEND_ERROR.getCode());
 		rpcResponseMessage.setCause(new SendMessageException(cause));

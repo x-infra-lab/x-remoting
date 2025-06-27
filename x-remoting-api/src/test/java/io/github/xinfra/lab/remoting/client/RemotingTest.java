@@ -108,7 +108,7 @@ public class RemotingTest {
 	public void testSyncCallSendFailed1() throws InterruptedException, TimeoutException {
 
 		Message sendFailedMessage = mock(Message.class);
-		doReturn(sendFailedMessage).when(messageFactory).createSendFailResponseMessage(anyInt(), any(), any());
+		doReturn(sendFailedMessage).when(messageFactory).createSendFailedResponseMessage(anyInt(), any(), any());
 
 		RequestMessage requestMessage = mock(RequestMessage.class);
 		doReturn(requestId).when(requestMessage).id();
@@ -126,7 +126,7 @@ public class RemotingTest {
 	public void testSyncCallSendFailed2() throws InterruptedException, TimeoutException {
 
 		Message sendFailedMessage = mock(Message.class);
-		doReturn(sendFailedMessage).when(messageFactory).createSendFailResponseMessage(anyInt(), any(), any());
+		doReturn(sendFailedMessage).when(messageFactory).createSendFailedResponseMessage(anyInt(), any(), any());
 
 		RequestMessage requestMessage = mock(RequestMessage.class);
 		doReturn(requestId).when(requestMessage).id();
@@ -185,7 +185,7 @@ public class RemotingTest {
 	public void testAsyncCallSendFailed1() throws InterruptedException, TimeoutException {
 
 		Message sendFailedMessage = mock(Message.class);
-		doReturn(sendFailedMessage).when(messageFactory).createSendFailResponseMessage(anyInt(), any(), any());
+		doReturn(sendFailedMessage).when(messageFactory).createSendFailedResponseMessage(anyInt(), any(), any());
 
 		RequestMessage requestMessage = mock(RequestMessage.class);
 		doReturn(requestId).when(requestMessage).id();
@@ -203,7 +203,7 @@ public class RemotingTest {
 	public void testAsyncCallSendFailed2() throws InterruptedException, TimeoutException {
 
 		Message sendFailedMessage = mock(Message.class);
-		doReturn(sendFailedMessage).when(messageFactory).createSendFailResponseMessage(anyInt(), any(), any());
+		doReturn(sendFailedMessage).when(messageFactory).createSendFailedResponseMessage(anyInt(), any(), any());
 
 		RequestMessage requestMessage = mock(RequestMessage.class);
 		doReturn(requestId).when(requestMessage).id();
@@ -261,7 +261,7 @@ public class RemotingTest {
 	public void testAsyncCallWithCallbackSendFailed1() throws InterruptedException, TimeoutException {
 
 		Message sendFailedMessage = mock(Message.class);
-		doReturn(sendFailedMessage).when(messageFactory).createSendFailResponseMessage(anyInt(), any(), any());
+		doReturn(sendFailedMessage).when(messageFactory).createSendFailedResponseMessage(anyInt(), any(), any());
 
 		RequestMessage requestMessage = mock(RequestMessage.class);
 		doReturn(requestId).when(requestMessage).id();
@@ -290,7 +290,7 @@ public class RemotingTest {
 	public void testAsyncCallWithCallbackSendFailed2() throws InterruptedException, TimeoutException {
 
 		Message sendFailedMessage = mock(Message.class);
-		doReturn(sendFailedMessage).when(messageFactory).createSendFailResponseMessage(anyInt(), any(), any());
+		doReturn(sendFailedMessage).when(messageFactory).createSendFailedResponseMessage(anyInt(), any(), any());
 
 		RequestMessage requestMessage = mock(RequestMessage.class);
 		doReturn(requestId).when(requestMessage).id();

@@ -3,6 +3,7 @@ package io.github.xinfra.lab.remoting.connection;
 import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
 import io.github.xinfra.lab.remoting.message.ResponseMessage;
+import io.github.xinfra.lab.remoting.message.ResponseStatus;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -95,7 +96,7 @@ public class Connection {
 			if (invokeFuture != null) {
 				invokeFuture.cancelTimeout();
 				ResponseMessage responseMessage = protocol.messageFactory()
-					.createConnectionClosedMessage(requestId, remoteAddress());
+					.createResponse(requestId, ResponseStatus.ConnectionClosed);
 				invokeFuture.complete(responseMessage);
 				invokeFuture.asyncExecuteCallBack(protocol.messageHandler().executor(responseMessage));
 			}

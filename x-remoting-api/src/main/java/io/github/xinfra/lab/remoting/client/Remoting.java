@@ -4,6 +4,7 @@ import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.message.RequestMessage;
 import io.github.xinfra.lab.remoting.message.ResponseMessage;
+import io.github.xinfra.lab.remoting.message.ResponseStatus;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.netty.channel.ChannelFuture;
 import io.netty.util.Timeout;
@@ -37,8 +38,8 @@ public class Remoting {
 							connection.remoteAddress(), channelFuture.cause());
 					InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
 					if (future != null) {
-						future.complete(messageFactory.createSendFailResponseMessage(requestId, channelFuture.cause(),
-								connection.remoteAddress()));
+						future.complete(messageFactory.createResponse(requestId, ResponseStatus.SendFailed,
+								channelFuture.cause()));
 					}
 				}
 			});
@@ -48,7 +49,7 @@ public class Remoting {
 					connection.remoteAddress(), t);
 			InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
 			if (future != null) {
-				future.complete(messageFactory.createSendFailResponseMessage(requestId, t, connection.remoteAddress()));
+				future.complete(messageFactory.createResponse(requestId, ResponseStatus.SendFailed, t));
 			}
 		}
 		ResponseMessage responseMessage;
@@ -59,7 +60,7 @@ public class Remoting {
 			log.warn("Wait responseMessage timeout. requestId:{} remoteAddress:{}", requestId,
 					connection.remoteAddress());
 			connection.removeInvokeFuture(requestId);
-			responseMessage = messageFactory.createTimeoutResponseMessage(requestId, connection.remoteAddress());
+			responseMessage = messageFactory.createResponse(requestId, ResponseStatus.Timeout);
 		}
 		return responseMessage;
 	}
@@ -90,7 +91,7 @@ public class Remoting {
 					InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
 					if (future != null) {
 						future.cancelTimeout();
-						future.complete(messageFactory.createSendFailResponseMessage(requestId, channelFuture.cause(),
+						future.complete(messageFactory.createSendFailedResponseMessage(requestId, channelFuture.cause(),
 								connection.remoteAddress()));
 					}
 				}
@@ -102,7 +103,7 @@ public class Remoting {
 			InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
 			if (future != null) {
 				future.cancelTimeout();
-				future.complete(messageFactory.createSendFailResponseMessage(requestId, t, connection.remoteAddress()));
+				future.complete(messageFactory.createSendFailedResponseMessage(requestId, t, connection.remoteAddress()));
 			}
 		}
 
@@ -137,7 +138,7 @@ public class Remoting {
 					InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
 					if (future != null) {
 						future.cancelTimeout();
-						ResponseMessage responseMessage = messageFactory.createSendFailResponseMessage(requestId,
+						ResponseMessage responseMessage = messageFactory.createSendFailedResponseMessage(requestId,
 								channelFuture.cause(), connection.remoteAddress());
 						future.complete(responseMessage);
 						future
@@ -153,7 +154,7 @@ public class Remoting {
 			InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
 			if (future != null) {
 				future.cancelTimeout();
-				ResponseMessage responseMessage = messageFactory.createSendFailResponseMessage(requestId, t,
+				ResponseMessage responseMessage = messageFactory.createSendFailedResponseMessage(requestId, t,
 						connection.remoteAddress());
 				future.complete(responseMessage);
 				future.asyncExecuteCallBack(connection.getProtocol().messageHandler().executor(responseMessage));

@@ -11,9 +11,9 @@ public interface Message {
 
 	int id();
 
-	MessageType messageType();
-
 	SerializationType serializationType();
+
+	MessageType messageType();
 
 	MessageHeader header();
 

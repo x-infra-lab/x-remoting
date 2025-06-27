@@ -31,7 +31,7 @@ public class RpcMessageFactoryTest {
 		RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
 		InetSocketAddress remoteAddress = InetSocketAddress.createUnresolved("localhost", 8080);
 
-		RpcResponseMessage responseMessage = rpcMessageFactory.createSendFailResponseMessage(
+		RpcResponseMessage responseMessage = rpcMessageFactory.createSendFailedResponseMessage(
 				IDGenerator.nextRequestId(), new RuntimeException("testCreateSendFailResponseMessage"), remoteAddress);
 		Assertions.assertNotNull(responseMessage);
 		Assertions.assertEquals(responseMessage.getStatus(), ResponseStatus.CLIENT_SEND_ERROR.getCode());
