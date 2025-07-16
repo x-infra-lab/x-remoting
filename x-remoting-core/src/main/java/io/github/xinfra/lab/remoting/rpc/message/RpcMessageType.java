@@ -1,6 +1,8 @@
 package io.github.xinfra.lab.remoting.rpc.message;
 
-public enum RpcMessageType {
+import io.github.xinfra.lab.remoting.message.MessageType;
+
+public enum RpcMessageType implements MessageType {
 
 	request, response, onewayRequest, heartbeatRequest,;
 

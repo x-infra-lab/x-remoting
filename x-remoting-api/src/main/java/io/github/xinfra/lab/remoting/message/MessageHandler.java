@@ -1,17 +1,16 @@
 package io.github.xinfra.lab.remoting.message;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.util.Timer;
 
 import java.io.Closeable;
-import java.util.concurrent.ExecutorService;
 
 public interface MessageHandler extends Closeable {
 
-	ExecutorService executor(Message message);
+    void registerMessageTypeHandler(MessageTypeHandler messageTypeHandler);
 
-	void handleMessage(ChannelHandlerContext ctx, Message msg);
+    MessageTypeHandler messageTypeHandler(MessageType messageType);
 
-	Timer timer();
-
+    default void handleMessage(ChannelHandlerContext ctx, Message msg) {
+		messageTypeHandler(msg.messageType()).handleMessage(ctx, msg);
+    }
 }

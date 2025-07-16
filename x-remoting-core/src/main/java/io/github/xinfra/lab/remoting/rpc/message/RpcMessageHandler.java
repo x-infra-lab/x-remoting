@@ -38,7 +38,7 @@ public class RpcMessageHandler implements MessageHandler {
 			new ArrayBlockingQueue<Runnable>(1024), new NamedThreadFactory("Rpc-Message-Handler"));
 
 	public RpcMessageHandler() {
-		this.timer = new HashedWheelTimer(new NamedThreadFactory(getClass().getName() + "-Timer"));
+		this.timer = null;// todo deleted it
 
 		// request
 		RpcRequestMessageProcessor rpcRequestMessageProcessor = new RpcRequestMessageProcessor();

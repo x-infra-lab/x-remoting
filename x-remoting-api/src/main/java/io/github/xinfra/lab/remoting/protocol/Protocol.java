@@ -6,7 +6,7 @@ import io.github.xinfra.lab.remoting.message.MessageHandler;
 
 import java.io.Closeable;
 
-public interface Protocol extends Closeable {
+public interface Protocol {
 
 	ProtocolCode protocolCode();
 

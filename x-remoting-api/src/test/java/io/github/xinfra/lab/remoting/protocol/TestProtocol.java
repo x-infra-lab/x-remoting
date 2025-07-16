@@ -60,9 +60,4 @@ public class TestProtocol implements Protocol {
 		return testMessageFactory;
 	}
 
-	@Override
-	public void close() throws IOException {
-		// do nothing
-	}
-
 }

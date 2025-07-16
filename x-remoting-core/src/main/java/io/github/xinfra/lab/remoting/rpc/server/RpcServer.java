@@ -32,7 +32,7 @@ public class RpcServer extends BaseRemotingServer {
 	public void startup() {
 		super.startup();
 		protocol = new RpcProtocol();
-		rpcServerRemoting = new RpcRemoting(protocol, connectionManager);
+		rpcServerRemoting = new RpcRemoting(connectionManager);
 	}
 
 	@Override

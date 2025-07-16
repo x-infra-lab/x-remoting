@@ -10,13 +10,10 @@ import java.net.SocketAddress;
 @Slf4j
 public class DefaultHeartbeater implements Heartbeater {
 
-	private Protocol protocol;
-
 	private Remoting remoting;
 
-	public DefaultHeartbeater(Protocol protocol) {
-		this.protocol = protocol;
-		this.remoting = new Remoting(protocol);
+	public DefaultHeartbeater() {
+		this.remoting = new Remoting();
 	}
 
 	@Override

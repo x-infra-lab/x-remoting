@@ -17,8 +17,7 @@ public class RpcRemoting extends Remoting {
 
 	protected ConnectionManager connectionManager;
 
-	public RpcRemoting(Protocol protocol, ConnectionManager connectionManager) {
-		super(protocol);
+	public RpcRemoting(ConnectionManager connectionManager) {
 		this.connectionManager = connectionManager;
 	}
 

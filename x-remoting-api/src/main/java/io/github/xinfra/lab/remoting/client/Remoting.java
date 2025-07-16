@@ -1,29 +1,28 @@
 package io.github.xinfra.lab.remoting.client;
 
+import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.connection.Connection;
-import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.message.RequestMessage;
 import io.github.xinfra.lab.remoting.message.ResponseMessage;
 import io.github.xinfra.lab.remoting.message.ResponseStatus;
-import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.netty.channel.ChannelFuture;
+import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timeout;
 import io.netty.util.Timer;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 @Slf4j
-public class Remoting {
-
-	protected MessageFactory messageFactory;
+public  class Remoting implements Closeable {
 
 	private final Timer timer;
 
-	public Remoting(Protocol protocol) {
-		this.messageFactory = protocol.messageFactory();
-		this.timer = protocol.messageHandler().timer();
+	public Remoting() {
+		this.timer = new HashedWheelTimer(new NamedThreadFactory(getClass().getName() + "-Timer"));
 	}
 
 	public ResponseMessage syncCall(RequestMessage requestMessage, Connection connection, int timeoutMills)
@@ -183,4 +182,9 @@ public class Remoting {
 		}
 	}
 
+
+	@Override
+	public void close() throws IOException {
+		this.timer.stop();
+	}
 }
