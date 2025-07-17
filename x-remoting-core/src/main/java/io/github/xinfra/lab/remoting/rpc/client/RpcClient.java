@@ -46,7 +46,7 @@ public class RpcClient extends AbstractLifeCycle {
 			this.connectionManager = new ClientConnectionManager(protocol);
 		}
 
-		this.rpcClientRemoting = new RpcRemoting( connectionManager);
+		this.rpcClientRemoting = new RpcRemoting(connectionManager);
 	}
 
 	public RpcClient() {

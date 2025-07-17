@@ -25,6 +25,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
@@ -54,7 +55,7 @@ public class RemotingTest {
 
 		// set messageHandler
 		MessageHandler messageHandler = mock(MessageHandler.class);
-		testProtocol.setTestMessageHandler(messageHandler);
+		testProtocol.setMessageHandler(messageHandler);
 
 		// set messageTypeHandler
 		MessageTypeHandler messageTypeHandler = mock(MessageTypeHandler.class);
@@ -64,7 +65,7 @@ public class RemotingTest {
 
 		// set messageFactory
 		messageFactory = mock(MessageFactory.class);
-		testProtocol.setTestMessageFactory(messageFactory);
+		testProtocol.setMessageFactory(messageFactory);
 
 		requestId = IDGenerator.nextRequestId();
 		remoting = new Remoting();
@@ -109,6 +110,10 @@ public class RemotingTest {
 
 	@Test
 	public void testSyncCallSendFailed1() throws InterruptedException, TimeoutException {
+		ResponseMessage mockSendFailedresponseMessage = mock(ResponseMessage.class);
+		when(messageFactory.createResponse(anyInt(), eq(ResponseStatus.SendFailed), any()))
+			.thenReturn(mockSendFailedresponseMessage);
+
 		RequestMessage requestMessage = mock(RequestMessage.class);
 		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
@@ -118,7 +123,7 @@ public class RemotingTest {
 		doThrow(new RuntimeException("network error")).when(channel).writeAndFlush(any());
 
 		ResponseMessage responseMessage = remoting.syncCall(requestMessage, connection, 1000);
-		Assertions.assertTrue(responseMessage.status() == ResponseStatus.SendFailed);
+		Assertions.assertTrue(responseMessage == mockSendFailedresponseMessage);
 	}
 
 	@Test

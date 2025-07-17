@@ -27,7 +27,8 @@ public class RpcResponses {
 		}
 
 		if (rpcResponseMessage.getCause() != null) {
-			throw new RemotingException("rpc invoke fail. remote address:" + remoteAddress, rpcResponseMessage.getCause());
+			throw new RemotingException("rpc invoke fail. remote address:" + remoteAddress,
+					rpcResponseMessage.getCause());
 		}
 		else if (rpcResponseMessage.getContent() instanceof Throwable) {
 			throw new RemotingException("rpc invoke fail. remote address:" + remoteAddress,
@@ -39,7 +40,8 @@ public class RpcResponses {
 
 	}
 
-	public static void sendResponse(MessageHandlerContext messageHandlerContext, RpcResponseMessage rpcResponseMessage) {
+	public static void sendResponse(MessageHandlerContext messageHandlerContext,
+			RpcResponseMessage rpcResponseMessage) {
 		MessageFactory messageFactory = messageHandlerContext.getMessageFactory();
 		int id = rpcResponseMessage.id();
 		short status = rpcResponseMessage.getStatus();

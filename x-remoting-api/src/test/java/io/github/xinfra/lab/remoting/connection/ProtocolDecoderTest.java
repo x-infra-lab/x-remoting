@@ -37,7 +37,7 @@ public class ProtocolDecoderTest {
 				out.add(decodeMockMessage);
 			}
 		};
-		testProtocol.setTestMessageDecoder(messageDecoder);
+		testProtocol.setMessageDecoder(messageDecoder);
 
 		ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer(testProtocol.protocolCode().code().length);
 		byteBuf.writeBytes(testProtocol.protocolCode().code());
@@ -65,7 +65,7 @@ public class ProtocolDecoderTest {
 				out.add(decodeMockMessage);
 			}
 		};
-		testProtocol.setTestMessageDecoder(messageDecoder);
+		testProtocol.setMessageDecoder(messageDecoder);
 
 		// split data
 		byte[] bytes = testProtocol.protocolCode().code();

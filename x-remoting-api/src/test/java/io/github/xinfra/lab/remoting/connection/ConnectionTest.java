@@ -90,11 +90,11 @@ public class ConnectionTest {
 		MessageFactory messageFactory = mock(MessageFactory.class);
 		Message connectionClosedMessage = mock(Message.class);
 		doReturn(connectionClosedMessage).when(messageFactory).createResponse(anyInt(), any());
-		testProtocol.setTestMessageFactory(messageFactory);
+		testProtocol.setMessageFactory(messageFactory);
 
 		ExecutorService executorService = Executors.newCachedThreadPool();
 		MessageHandler messageHandler = mock(MessageHandler.class);
-		testProtocol.setTestMessageHandler(messageHandler);
+		testProtocol.setMessageHandler(messageHandler);
 
 		int times = 10;
 		List<InvokeFuture<?>> invokeFutures = new ArrayList<>();

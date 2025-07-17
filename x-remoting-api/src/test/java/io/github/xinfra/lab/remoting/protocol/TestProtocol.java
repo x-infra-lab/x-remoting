@@ -15,16 +15,16 @@ public class TestProtocol implements Protocol {
 	private byte[] protocolCode = "test-protocol".getBytes(StandardCharsets.UTF_8);
 
 	@Setter
-	private MessageEncoder testMessageEncoder;
+	private MessageEncoder messageEncoder;
 
 	@Setter
-	private MessageDecoder testMessageDecoder;
+	private MessageDecoder messageDecoder;
 
 	@Setter
-	private MessageHandler testMessageHandler;
+	private MessageHandler messageHandler;
 
 	@Setter
-	private MessageFactory testMessageFactory;
+	private MessageFactory messageFactory;
 
 	@Override
 	public ProtocolCode protocolCode() {
@@ -41,24 +41,24 @@ public class TestProtocol implements Protocol {
 		return new MessageCodec() {
 			@Override
 			public MessageEncoder encoder() {
-				return testMessageEncoder;
+				return messageEncoder;
 			}
 
 			@Override
 			public MessageDecoder decoder() {
-				return testMessageDecoder;
+				return messageDecoder;
 			}
 		};
 	}
 
 	@Override
 	public MessageHandler messageHandler() {
-		return testMessageHandler;
+		return messageHandler;
 	}
 
 	@Override
 	public MessageFactory messageFactory() {
-		return testMessageFactory;
+		return messageFactory;
 	}
 
 }

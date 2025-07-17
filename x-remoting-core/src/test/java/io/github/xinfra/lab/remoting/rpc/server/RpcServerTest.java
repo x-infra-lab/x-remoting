@@ -173,5 +173,4 @@ public class RpcServerTest {
 		verify(messageHandler, times(1)).registerUserProcessor(eq(userProcessor1));
 	}
 
-
 }

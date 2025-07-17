@@ -37,7 +37,6 @@ public class RpcProtocol implements Protocol {
 
 	private final RpcMessageFactory rpcMessageFactory;
 
-
 	public RpcProtocol() {
 		this.rpcMessageFactory = new RpcMessageFactory();
 		this.rpcMessageEncoder = new RpcMessageEncoder();

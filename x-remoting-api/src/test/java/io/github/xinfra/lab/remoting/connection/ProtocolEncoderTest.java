@@ -38,7 +38,7 @@ public class ProtocolEncoderTest {
 			}
 		};
 
-		testProtocol.setTestMessageEncoder(messageEncoder);
+		testProtocol.setMessageEncoder(messageEncoder);
 
 		channel.writeOutbound(message);
 		Assertions.assertTrue(channel.finish());
@@ -71,7 +71,7 @@ public class ProtocolEncoderTest {
 			}
 		};
 
-		testProtocol.setTestMessageEncoder(messageEncoder);
+		testProtocol.setMessageEncoder(messageEncoder);
 
 		EncoderException encoderException = Assertions.assertThrows(EncoderException.class, () -> {
 			channel.writeOutbound(message);

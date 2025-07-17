@@ -4,16 +4,12 @@ import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
 import io.github.xinfra.lab.remoting.message.MessageType;
 import io.github.xinfra.lab.remoting.message.MessageTypeHandler;
-import io.github.xinfra.lab.remoting.message.ResponseMessage;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
-import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
-import io.netty.util.Timer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
-import java.util.concurrent.ExecutorService;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -50,7 +46,7 @@ public class ProtocolHandlerTest {
 		};
 
 		MessageHandler spyMessageHandler = spy(messageHandler);
-		testProtocol.setTestMessageHandler(spyMessageHandler);
+		testProtocol.setMessageHandler(spyMessageHandler);
 		new Connection(testProtocol, channel);
 
 		Object object = new Object();

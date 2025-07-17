@@ -78,7 +78,6 @@ public class RpcServer extends BaseRemotingServer {
 		return protocol;
 	}
 
-
 	public void registerUserProcessor(UserProcessor<?> userProcessor) {
 		protocol().messageHandler().registerUserProcessor(userProcessor);
 	}
