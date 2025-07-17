@@ -89,7 +89,7 @@ public class ConnectionTest {
 
 		MessageFactory messageFactory = mock(MessageFactory.class);
 		Message connectionClosedMessage = mock(Message.class);
-		doReturn(connectionClosedMessage).when(messageFactory).createConnectionClosedMessage(anyInt(), any());
+		doReturn(connectionClosedMessage).when(messageFactory).createResponse(anyInt(), any());
 		testProtocol.setTestMessageFactory(messageFactory);
 
 		ExecutorService executorService = Executors.newCachedThreadPool();

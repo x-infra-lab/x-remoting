@@ -2,9 +2,12 @@ package io.github.xinfra.lab.remoting.client;
 
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.connection.Connection;
+import io.github.xinfra.lab.remoting.message.MessageFactory;
+import io.github.xinfra.lab.remoting.message.MessageHandler;
 import io.github.xinfra.lab.remoting.message.RequestMessage;
 import io.github.xinfra.lab.remoting.message.ResponseMessage;
 import io.github.xinfra.lab.remoting.message.ResponseStatus;
+import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.netty.channel.ChannelFuture;
 import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timeout;
@@ -17,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 @Slf4j
-public  class Remoting implements Closeable {
+public class Remoting implements Closeable {
 
 	private final Timer timer;
 
@@ -27,6 +30,9 @@ public  class Remoting implements Closeable {
 
 	public ResponseMessage syncCall(RequestMessage requestMessage, Connection connection, int timeoutMills)
 			throws InterruptedException {
+		Protocol protocol = connection.getProtocol();
+		MessageFactory messageFactory = protocol.messageFactory();
+
 		int requestId = requestMessage.id();
 		InvokeFuture<?> invokeFuture = new InvokeFuture<>(requestId);
 		try {
@@ -66,16 +72,17 @@ public  class Remoting implements Closeable {
 
 	public InvokeFuture<? extends ResponseMessage> asyncCall(RequestMessage requestMessage, Connection connection,
 			int timeoutMills) {
+		Protocol protocol = connection.getProtocol();
+		MessageFactory messageFactory = protocol.messageFactory();
+
 		int requestId = requestMessage.id();
 		InvokeFuture<?> invokeFuture = new InvokeFuture<>(requestId);
-
 		Timeout timeout = timer.newTimeout((t) -> {
 			log.warn("Wait responseMessage timeout. requestId:{} remoteAddress:{}", requestId,
 					connection.remoteAddress());
 			InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
 			if (future != null) {
-				ResponseMessage responseMessage = messageFactory.createTimeoutResponseMessage(requestId,
-						connection.remoteAddress());
+				ResponseMessage responseMessage = messageFactory.createResponse(requestId, ResponseStatus.Timeout);
 				future.complete(responseMessage);
 			}
 		}, timeoutMills, TimeUnit.MILLISECONDS);
@@ -90,8 +97,8 @@ public  class Remoting implements Closeable {
 					InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
 					if (future != null) {
 						future.cancelTimeout();
-						future.complete(messageFactory.createSendFailedResponseMessage(requestId, channelFuture.cause(),
-								connection.remoteAddress()));
+						future.complete(messageFactory.createResponse(requestId, ResponseStatus.SendFailed,
+								channelFuture.cause()));
 					}
 				}
 			});
@@ -102,7 +109,7 @@ public  class Remoting implements Closeable {
 			InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
 			if (future != null) {
 				future.cancelTimeout();
-				future.complete(messageFactory.createSendFailedResponseMessage(requestId, t, connection.remoteAddress()));
+				future.complete(messageFactory.createResponse(requestId, ResponseStatus.SendFailed, t));
 			}
 		}
 
@@ -111,18 +118,21 @@ public  class Remoting implements Closeable {
 
 	public void asyncCall(RequestMessage requestMessage, Connection connection, int timeoutMills,
 			InvokeCallBack invokeCallBack) {
+		Protocol protocol = connection.getProtocol();
+		MessageFactory messageFactory = protocol.messageFactory();
+		MessageHandler messageHandler = protocol.messageHandler();
+
 		int requestId = requestMessage.id();
 		InvokeFuture<?> invokeFuture = new InvokeFuture<>(requestId);
-
 		Timeout timeout = timer.newTimeout((t) -> {
 			log.warn("Wait responseMessage timeout. requestId:{} remoteAddress:{}", requestId,
 					connection.remoteAddress());
 			InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
 			if (future != null) {
-				ResponseMessage responseMessage = messageFactory.createTimeoutResponseMessage(requestId,
-						connection.remoteAddress());
+				ResponseMessage responseMessage = messageFactory.createResponse(requestId, ResponseStatus.Timeout);
 				future.complete(responseMessage);
-				future.asyncExecuteCallBack(connection.getProtocol().messageHandler().executor(responseMessage));
+				future
+					.asyncExecuteCallBack(messageHandler.messageTypeHandler(responseMessage.messageType()).executor());
 			}
 		}, timeoutMills, TimeUnit.MILLISECONDS);
 		invokeFuture.addTimeout(timeout);
@@ -137,11 +147,11 @@ public  class Remoting implements Closeable {
 					InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
 					if (future != null) {
 						future.cancelTimeout();
-						ResponseMessage responseMessage = messageFactory.createSendFailedResponseMessage(requestId,
-								channelFuture.cause(), connection.remoteAddress());
+						ResponseMessage responseMessage = messageFactory.createResponse(requestId,
+								ResponseStatus.SendFailed, channelFuture.cause());
 						future.complete(responseMessage);
-						future
-							.asyncExecuteCallBack(connection.getProtocol().messageHandler().executor(responseMessage));
+						future.asyncExecuteCallBack(
+								messageHandler.messageTypeHandler(responseMessage.messageType()).executor());
 					}
 
 				}
@@ -153,10 +163,11 @@ public  class Remoting implements Closeable {
 			InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
 			if (future != null) {
 				future.cancelTimeout();
-				ResponseMessage responseMessage = messageFactory.createSendFailedResponseMessage(requestId, t,
-						connection.remoteAddress());
+				ResponseMessage responseMessage = messageFactory.createResponse(requestId, ResponseStatus.SendFailed,
+						t);
 				future.complete(responseMessage);
-				future.asyncExecuteCallBack(connection.getProtocol().messageHandler().executor(responseMessage));
+				future
+					.asyncExecuteCallBack(messageHandler.messageTypeHandler(responseMessage.messageType()).executor());
 			}
 		}
 
@@ -182,9 +193,9 @@ public  class Remoting implements Closeable {
 		}
 	}
 
-
 	@Override
 	public void close() throws IOException {
 		this.timer.stop();
 	}
+
 }

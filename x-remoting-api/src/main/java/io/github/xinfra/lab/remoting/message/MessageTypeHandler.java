@@ -6,9 +6,10 @@ import java.util.concurrent.Executor;
 
 public interface MessageTypeHandler {
 
-    MessageType messageType();
+	MessageType messageType();
 
-    void handleMessage(ChannelHandlerContext ctx, Message msg);
+	void handleMessage(ChannelHandlerContext ctx, Message msg);
 
-    Executor executor();
+	Executor executor();
+
 }

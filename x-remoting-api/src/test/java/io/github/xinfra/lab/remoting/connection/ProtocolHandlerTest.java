@@ -2,6 +2,8 @@ package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
+import io.github.xinfra.lab.remoting.message.MessageType;
+import io.github.xinfra.lab.remoting.message.MessageTypeHandler;
 import io.github.xinfra.lab.remoting.message.ResponseMessage;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.ChannelHandlerContext;
@@ -31,25 +33,19 @@ public class ProtocolHandlerTest {
 		channel.pipeline().addLast(protocolHandler);
 
 		MessageHandler messageHandler = new MessageHandler() {
+			@Override
+			public void registerMessageTypeHandler(MessageTypeHandler messageTypeHandler) {
+
+			}
+
+			@Override
+			public MessageTypeHandler messageTypeHandler(MessageType messageType) {
+				return null;
+			}
 
 			@Override
 			public void close() throws IOException {
 
-			}
-
-			@Override
-			public ExecutorService executor(Message message) {
-				return null;
-			}
-
-			@Override
-			public void handleMessage(ChannelHandlerContext ctx, Message msg) {
-
-			}
-
-			@Override
-			public Timer timer() {
-				return null;
 			}
 		};
 

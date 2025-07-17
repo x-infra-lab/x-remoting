@@ -5,6 +5,7 @@ import io.github.xinfra.lab.remoting.message.RequestMessage;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.IOException;
 import java.net.SocketAddress;
 
 @Slf4j
@@ -26,6 +27,7 @@ public class DefaultHeartbeater implements Heartbeater {
 			return;
 		}
 
+		Protocol protocol = connection.getProtocol();
 		RequestMessage heartbeatRequestMessage = protocol.messageFactory().createHeartbeatRequestMessage();
 		remoting.asyncCall(heartbeatRequestMessage, connection, connection.getHeartbeatTimeoutMills(),
 				responseMessage -> {
@@ -62,6 +64,11 @@ public class DefaultHeartbeater implements Heartbeater {
 	@Override
 	public void enableHeartBeat(SocketAddress socketAddress) {
 		// todo
+	}
+
+	@Override
+	public void close() throws IOException {
+		remoting.close();
 	}
 
 }

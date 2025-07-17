@@ -23,6 +23,11 @@ public class HessionSerializer implements Serializer {
 	};
 
 	@Override
+	public SerializationType serializationType() {
+		return SerializationType.Hession;
+	}
+
+	@Override
 	public byte[] serialize(Object obj) throws SerializeException {
 		ByteArrayOutputStream baos = localOutputByteArray.get();
 		baos.reset();

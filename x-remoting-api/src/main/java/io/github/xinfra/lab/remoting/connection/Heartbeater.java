@@ -1,8 +1,9 @@
 package io.github.xinfra.lab.remoting.connection;
 
+import java.io.Closeable;
 import java.net.SocketAddress;
 
-public interface Heartbeater {
+public interface Heartbeater extends Closeable {
 
 	void triggerHeartBeat(Connection connection);
 

@@ -6,11 +6,12 @@ import java.io.Closeable;
 
 public interface MessageHandler extends Closeable {
 
-    void registerMessageTypeHandler(MessageTypeHandler messageTypeHandler);
+	void registerMessageTypeHandler(MessageTypeHandler messageTypeHandler);
 
-    MessageTypeHandler messageTypeHandler(MessageType messageType);
+	MessageTypeHandler messageTypeHandler(MessageType messageType);
 
-    default void handleMessage(ChannelHandlerContext ctx, Message msg) {
+	default void handleMessage(ChannelHandlerContext ctx, Message msg) {
 		messageTypeHandler(msg.messageType()).handleMessage(ctx, msg);
-    }
+	}
+
 }

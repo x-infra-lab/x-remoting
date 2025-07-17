@@ -20,28 +20,24 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 	protected Reconnector reconnector = new DefaultReconnector(this);
 
 	@AccessForTest
-	protected Heartbeater heartbeater;
+	protected Heartbeater heartbeater = new DefaultHeartbeater();
 
 	public ClientConnectionManager(Protocol protocol) {
-		this.heartbeater = new DefaultHeartbeater(protocol);
 		this.connectionFactory = new DefaultConnectionFactory(protocol, defaultChannelSuppliers());
 	}
 
 	public ClientConnectionManager(Protocol protocol, ConnectionConfig connectionConfig) {
-		this.heartbeater = new DefaultHeartbeater(protocol);
 		this.connectionFactory = new DefaultConnectionFactory(protocol, defaultChannelSuppliers(), connectionConfig);
 	}
 
 	public ClientConnectionManager(Protocol protocol, ConnectionManagerConfig connectionManagerConfig) {
 		super(connectionManagerConfig);
-		this.heartbeater = new DefaultHeartbeater(protocol);
 		this.connectionFactory = new DefaultConnectionFactory(protocol, defaultChannelSuppliers());
 	}
 
 	public ClientConnectionManager(Protocol protocol, ConnectionConfig connectionConfig,
 			ConnectionManagerConfig connectionManagerConfig) {
 		super(connectionManagerConfig);
-		this.heartbeater = new DefaultHeartbeater(protocol);
 		this.connectionFactory = new DefaultConnectionFactory(protocol, defaultChannelSuppliers(), connectionConfig);
 	}
 

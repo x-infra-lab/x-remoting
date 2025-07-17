@@ -37,14 +37,12 @@ public class RpcProtocol implements Protocol {
 
 	private final RpcMessageFactory rpcMessageFactory;
 
-	private final DefaultHeartbeater defaultHeartbeatTrigger;
 
 	public RpcProtocol() {
 		this.rpcMessageFactory = new RpcMessageFactory();
 		this.rpcMessageEncoder = new RpcMessageEncoder();
 		this.rpcMessageDecoder = new RpcMessageDecoder();
 		this.rpcMessageHandler = new RpcMessageHandler();
-		this.defaultHeartbeatTrigger = new DefaultHeartbeater();
 	}
 
 	@Override
@@ -70,16 +68,6 @@ public class RpcProtocol implements Protocol {
 	@Override
 	public RpcMessageFactory messageFactory() {
 		return this.rpcMessageFactory;
-	}
-
-	@Override
-	public DefaultHeartbeater heartbeatTrigger() {
-		return defaultHeartbeatTrigger;
-	}
-
-	@Override
-	public void close() throws IOException {
-		rpcMessageHandler.close();
 	}
 
 }

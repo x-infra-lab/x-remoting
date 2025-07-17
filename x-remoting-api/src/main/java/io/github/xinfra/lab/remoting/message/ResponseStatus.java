@@ -2,15 +2,16 @@ package io.github.xinfra.lab.remoting.message;
 
 public interface ResponseStatus {
 
-    short status();
+	short status();
 
-    ResponseStatus OK = () -> (short) 0;
+	ResponseStatus OK = () -> (short) 0;
 
-    ResponseStatus UnkonwnError = () -> (short) 1;
+	ResponseStatus UnkonwnError = () -> (short) 1;
 
-    ResponseStatus SendFailed = () -> (short) 2;
+	ResponseStatus SendFailed = () -> (short) 2;
 
-    ResponseStatus Timeout = () -> (short) 3;
+	ResponseStatus Timeout = () -> (short) 3;
 
-    ResponseStatus ConnectionClosed = () -> (short) 4;
+	ResponseStatus ConnectionClosed = () -> (short) 4;
+
 }
