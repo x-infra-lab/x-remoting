@@ -6,7 +6,7 @@ public interface ResponseStatus {
 
 	ResponseStatus OK = () -> (short) 0;
 
-	ResponseStatus UnkonwnError = () -> (short) 1;
+	ResponseStatus Error = () -> (short) 1;
 
 	ResponseStatus SendFailed = () -> (short) 2;
 

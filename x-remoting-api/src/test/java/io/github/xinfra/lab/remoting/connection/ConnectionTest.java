@@ -5,7 +5,9 @@ import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
+import io.github.xinfra.lab.remoting.message.MessageTypeHandler;
 import io.github.xinfra.lab.remoting.message.ResponseMessage;
+import io.github.xinfra.lab.remoting.message.ResponseStatus;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.Channel;
 import io.netty.channel.embedded.EmbeddedChannel;
@@ -21,9 +23,11 @@ import java.util.concurrent.Executors;
 import static io.github.xinfra.lab.remoting.connection.Connection.CONNECTION;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.when;
 
 public class ConnectionTest {
 
@@ -86,14 +90,17 @@ public class ConnectionTest {
 
 	@Test
 	public void testOnCloseConnection() {
-
 		MessageFactory messageFactory = mock(MessageFactory.class);
-		Message connectionClosedMessage = mock(Message.class);
-		doReturn(connectionClosedMessage).when(messageFactory).createResponse(anyInt(), any());
+		ResponseMessage connectionClosedMessage = mock(ResponseMessage.class);
+		when(messageFactory.createResponse(anyInt(), eq(ResponseStatus.ConnectionClosed)))
+			.thenReturn(connectionClosedMessage);
 		testProtocol.setMessageFactory(messageFactory);
 
-		ExecutorService executorService = Executors.newCachedThreadPool();
+		ExecutorService executor = Executors.newCachedThreadPool();
 		MessageHandler messageHandler = mock(MessageHandler.class);
+		MessageTypeHandler messageTypeHandler = mock(MessageTypeHandler.class);
+		when(messageHandler.messageTypeHandler(any())).thenReturn(messageTypeHandler);
+		when(messageTypeHandler.executor()).thenReturn(executor);
 		testProtocol.setMessageHandler(messageHandler);
 
 		int times = 10;
@@ -113,7 +120,7 @@ public class ConnectionTest {
 			Assertions.assertTrue(invokeFuture.isDone());
 		}
 
-		executorService.shutdownNow();
+		executor.shutdownNow();
 	}
 
 }

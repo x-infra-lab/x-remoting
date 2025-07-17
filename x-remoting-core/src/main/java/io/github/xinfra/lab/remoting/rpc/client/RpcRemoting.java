@@ -6,7 +6,8 @@ import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.connection.ConnectionManager;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
-import io.github.xinfra.lab.remoting.protocol.Protocol;
+import io.github.xinfra.lab.remoting.message.MessageFactory;
+import io.github.xinfra.lab.remoting.message.RequestMessage;
 import io.github.xinfra.lab.remoting.rpc.message.RpcRequestMessage;
 import io.github.xinfra.lab.remoting.rpc.message.RpcResponseMessage;
 import io.github.xinfra.lab.remoting.rpc.message.RpcResponses;
@@ -26,8 +27,8 @@ public class RpcRemoting extends Remoting {
 
 		Connection connection = connectionManager.get(socketAddress);
 		connectionManager.check(connection);
-
-		RpcRequestMessage requestMessage = buildRequestMessage(request);
+		MessageFactory messageFactory = connection.getProtocol().messageFactory();
+		RequestMessage requestMessage = buildRequestMessage(messageFactory, request);
 
 		RpcResponseMessage responseMessage = (RpcResponseMessage) super.syncCall(requestMessage, connection,
 				timeoutMills);
@@ -40,7 +41,8 @@ public class RpcRemoting extends Remoting {
 		Connection connection = connectionManager.get(socketAddress);
 		connectionManager.check(connection);
 
-		RpcRequestMessage requestMessage = buildRequestMessage(request);
+		MessageFactory messageFactory = connection.getProtocol().messageFactory();
+		RequestMessage requestMessage = buildRequestMessage(messageFactory, request);
 
 		InvokeFuture<?> invokeFuture = super.asyncCall(requestMessage, connection, timeoutMills);
 		return new RpcInvokeFuture<R>(invokeFuture);
@@ -52,7 +54,8 @@ public class RpcRemoting extends Remoting {
 		Connection connection = connectionManager.get(socketAddress);
 		connectionManager.check(connection);
 
-		RpcRequestMessage requestMessage = buildRequestMessage(request);
+		MessageFactory messageFactory = connection.getProtocol().messageFactory();
+		RequestMessage requestMessage = buildRequestMessage(messageFactory, request);
 
 		super.asyncCall(requestMessage, connection, timeoutMills, rpcInvokeCallBack);
 	}
@@ -62,13 +65,15 @@ public class RpcRemoting extends Remoting {
 		Connection connection = connectionManager.get(socketAddress);
 		connectionManager.check(connection);
 
-		RpcRequestMessage requestMessage = buildRequestMessage(request);
+		MessageFactory messageFactory = connection.getProtocol().messageFactory();
+		RequestMessage requestMessage = buildRequestMessage(messageFactory, request);
 
 		super.oneway(requestMessage, connection);
 	}
 
-	private RpcRequestMessage buildRequestMessage(Object request) throws SerializeException {
+	private RequestMessage buildRequestMessage(MessageFactory messageFactory, Object request) throws SerializeException {
 		RpcRequestMessage requestMessage = messageFactory.createRequestMessage();
+		// todo
 		requestMessage.setContent(request);
 		requestMessage.setContentType(request.getClass().getName());
 

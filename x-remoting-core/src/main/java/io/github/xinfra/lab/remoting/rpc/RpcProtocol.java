@@ -1,14 +1,9 @@
 package io.github.xinfra.lab.remoting.rpc;
 
-import io.github.xinfra.lab.remoting.connection.DefaultHeartbeater;
-import io.github.xinfra.lab.remoting.rpc.message.RpcMessageFactory;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
-import io.github.xinfra.lab.remoting.rpc.codec.RpcMessageDecoder;
-import io.github.xinfra.lab.remoting.rpc.codec.RpcMessageEncoder;
+import io.github.xinfra.lab.remoting.rpc.codec.RpcMessageCodec;
+import io.github.xinfra.lab.remoting.rpc.message.RpcMessageFactory;
 import io.github.xinfra.lab.remoting.rpc.message.RpcMessageHandler;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 /**
  * x-rpc protocol definition:
@@ -23,50 +18,38 @@ import java.nio.charset.StandardCharsets;
  */
 public class RpcProtocol implements Protocol {
 
-	public static int RESPONSE_HEADER_LEN = 21;
+    public static int RESPONSE_HEADER_LEN = 21;
 
-	public static int REQUEST_HEADER_LEN = 19;
+    public static int REQUEST_HEADER_LEN = 19;
 
-	public static final byte[] PROTOCOL_CODE = "x-rpc".getBytes(StandardCharsets.UTF_8);
+    private final RpcMessageCodec rpcMessageCodec;
+    private final RpcMessageHandler rpcMessageHandler;
+    private final RpcMessageFactory rpcMessageFactory;
 
-	private final RpcMessageEncoder rpcMessageEncoder;
+    public RpcProtocol() {
+        this.rpcMessageCodec = new RpcMessageCodec();
+        this.rpcMessageHandler = new RpcMessageHandler();
+        this.rpcMessageFactory = new RpcMessageFactory();
+    }
 
-	private final RpcMessageDecoder rpcMessageDecoder;
+    @Override
+    public RpcProtocolCode protocolCode() {
+        return RpcProtocolCode.INSTANCE;
+    }
 
-	private final RpcMessageHandler rpcMessageHandler;
+    @Override
+    public RpcMessageCodec messageCodec() {
+        return rpcMessageCodec;
+    }
 
-	private final RpcMessageFactory rpcMessageFactory;
+    @Override
+    public RpcMessageHandler messageHandler() {
+        return this.rpcMessageHandler;
+    }
 
-	public RpcProtocol() {
-		this.rpcMessageFactory = new RpcMessageFactory();
-		this.rpcMessageEncoder = new RpcMessageEncoder();
-		this.rpcMessageDecoder = new RpcMessageDecoder();
-		this.rpcMessageHandler = new RpcMessageHandler();
-	}
-
-	@Override
-	public byte[] protocolCode() {
-		return PROTOCOL_CODE;
-	}
-
-	@Override
-	public RpcMessageEncoder encoder() {
-		return this.rpcMessageEncoder;
-	}
-
-	@Override
-	public RpcMessageDecoder decoder() {
-		return this.rpcMessageDecoder;
-	}
-
-	@Override
-	public RpcMessageHandler messageHandler() {
-		return this.rpcMessageHandler;
-	}
-
-	@Override
-	public RpcMessageFactory messageFactory() {
-		return this.rpcMessageFactory;
-	}
+    @Override
+    public RpcMessageFactory messageFactory() {
+        return this.rpcMessageFactory;
+    }
 
 }

@@ -15,7 +15,6 @@ import java.nio.charset.StandardCharsets;
 
 public abstract class RpcMessage implements Message {
 
-	private byte[] protocolCode;
 
 	private int id;
 
@@ -60,7 +59,6 @@ public abstract class RpcMessage implements Message {
 	public RpcMessage(int id, RpcMessageType rpcMessageType, SerializationType serializationType) {
 		this.id = id;
 		this.rpcMessageType = rpcMessageType;
-		this.protocolCode = RpcProtocol.PROTOCOL_CODE;
 		this.serializationType = serializationType;
 	}
 

@@ -8,6 +8,7 @@ import io.github.xinfra.lab.remoting.rpc.message.RpcMessage;
 import io.github.xinfra.lab.remoting.rpc.message.RpcRequestMessage;
 import io.github.xinfra.lab.remoting.rpc.message.RpcResponseMessage;
 import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
+import io.github.xinfra.lab.remoting.serialization.SerializationManager;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -43,7 +44,7 @@ public class RpcMessageDecoder implements MessageDecoder {
 
 			int requestId = in.readInt();
 			byte serializationTypeCode = in.readByte();
-			SerializationType serializationType = SerializationType.valueOf(serializationTypeCode);
+			SerializationType serializationType = SerializationManager.valueOf(serializationTypeCode);
 
 			short status = 0;
 			if (rpcMessageType == RpcMessageType.response) {

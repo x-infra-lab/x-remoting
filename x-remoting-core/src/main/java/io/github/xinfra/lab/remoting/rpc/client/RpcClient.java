@@ -9,6 +9,8 @@ import io.github.xinfra.lab.remoting.rpc.processor.UserProcessor;
 import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.SocketAddress;
@@ -16,6 +18,7 @@ import java.net.SocketAddress;
 @Slf4j
 public class RpcClient extends AbstractLifeCycle {
 
+	private static final Logger log = LoggerFactory.getLogger(RpcClient.class);
 	@Getter
 	private RpcClientConfig config;
 
@@ -26,6 +29,10 @@ public class RpcClient extends AbstractLifeCycle {
 
 	@Getter
 	private ClientConnectionManager connectionManager;
+
+	public RpcClient() {
+		this(new RpcClientConfig());
+	}
 
 	public RpcClient(RpcClientConfig config) {
 		this.config = config;
@@ -49,9 +56,6 @@ public class RpcClient extends AbstractLifeCycle {
 		this.rpcClientRemoting = new RpcRemoting(connectionManager);
 	}
 
-	public RpcClient() {
-		this(new RpcClientConfig());
-	}
 
 	@Override
 	public void startup() {
@@ -63,13 +67,12 @@ public class RpcClient extends AbstractLifeCycle {
 	public void shutdown() {
 		super.shutdown();
 		connectionManager.shutdown();
-		try {
-			protocol.close();
-		}
-		catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
+        try {
+            rpcClientRemoting.close();
+        } catch (IOException e) {
+            log.warn("rpcClientRemoting close ex", e);
+        }
+    }
 
 	public <R> R syncCall(Object request, SocketAddress socketAddress, int timeoutMills)
 			throws RemotingException, InterruptedException {

@@ -109,7 +109,7 @@ public class RemotingTest {
 	}
 
 	@Test
-	public void testSyncCallSendFailed1() throws InterruptedException, TimeoutException {
+	public void testSyncCallSendFailed1() throws InterruptedException {
 		ResponseMessage mockSendFailedresponseMessage = mock(ResponseMessage.class);
 		when(messageFactory.createResponse(anyInt(), eq(ResponseStatus.SendFailed), any()))
 			.thenReturn(mockSendFailedresponseMessage);
@@ -127,7 +127,11 @@ public class RemotingTest {
 	}
 
 	@Test
-	public void testSyncCallSendFailed2() throws InterruptedException, TimeoutException {
+	public void testSyncCallSendFailed2() throws InterruptedException {
+		ResponseMessage mockSendFailedresponseMessage = mock(ResponseMessage.class);
+		when(messageFactory.createResponse(anyInt(), eq(ResponseStatus.SendFailed), any()))
+			.thenReturn(mockSendFailedresponseMessage);
+
 		RequestMessage requestMessage = mock(RequestMessage.class);
 		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
@@ -137,17 +141,21 @@ public class RemotingTest {
 		doReturn(channel.newFailedFuture(new RuntimeException("network error"))).when(channel).writeAndFlush(any());
 
 		ResponseMessage responseMessage = remoting.syncCall(requestMessage, connection, 1000);
-		Assertions.assertTrue(responseMessage.status() == ResponseStatus.SendFailed);
+		Assertions.assertTrue(responseMessage == mockSendFailedresponseMessage);
 	}
 
 	@Test
-	public void testSyncCallTimeout() throws InterruptedException, TimeoutException {
+	public void testSyncCallTimeout() throws InterruptedException {
+		ResponseMessage mockTimeoutresponseMessage = mock(ResponseMessage.class);
+		when(messageFactory.createResponse(anyInt(), eq(ResponseStatus.Timeout)))
+			.thenReturn(mockTimeoutresponseMessage);
+
 		RequestMessage requestMessage = mock(RequestMessage.class);
 		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 		Connection connection = new Connection(testProtocol, channel);
-		ResponseMessage responseMessage = remoting.syncCall(requestMessage, connection, 1000);
-		Assertions.assertTrue(responseMessage.status() == ResponseStatus.Timeout);
+		ResponseMessage responseMessage = remoting.syncCall(requestMessage, connection, 100);
+		Assertions.assertTrue(responseMessage == mockTimeoutresponseMessage);
 	}
 
 	@Test
@@ -175,7 +183,11 @@ public class RemotingTest {
 	}
 
 	@Test
-	public void testAsyncCallSendFailed1() throws InterruptedException, TimeoutException {
+	public void testAsyncCallSendFailed1() throws InterruptedException {
+		ResponseMessage mockSendFailedresponseMessage = mock(ResponseMessage.class);
+		when(messageFactory.createResponse(anyInt(), eq(ResponseStatus.SendFailed), any()))
+			.thenReturn(mockSendFailedresponseMessage);
+
 		RequestMessage requestMessage = mock(RequestMessage.class);
 		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
@@ -184,11 +196,15 @@ public class RemotingTest {
 		doThrow(new RuntimeException("network error")).when(channel).writeAndFlush(any());
 
 		InvokeFuture invokeFuture = remoting.asyncCall(requestMessage, connection, 1000);
-		Assertions.assertTrue(invokeFuture.get().status() == ResponseStatus.SendFailed);
+		Assertions.assertTrue(invokeFuture.get() == mockSendFailedresponseMessage);
 	}
 
 	@Test
-	public void testAsyncCallSendFailed2() throws InterruptedException, TimeoutException {
+	public void testAsyncCallSendFailed2() throws InterruptedException {
+		ResponseMessage mockSendFailedresponseMessage = mock(ResponseMessage.class);
+		when(messageFactory.createResponse(anyInt(), eq(ResponseStatus.SendFailed), any()))
+			.thenReturn(mockSendFailedresponseMessage);
+
 		RequestMessage requestMessage = mock(RequestMessage.class);
 		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
@@ -197,23 +213,26 @@ public class RemotingTest {
 		doReturn(channel.newFailedFuture(new RuntimeException("network error"))).when(channel).writeAndFlush(any());
 
 		InvokeFuture invokeFuture = remoting.asyncCall(requestMessage, connection, 1000);
-		Assertions.assertTrue(invokeFuture.get().status() == ResponseStatus.SendFailed);
+		Assertions.assertTrue(invokeFuture.get() == mockSendFailedresponseMessage);
 	}
 
 	@Test
-	public void testAsyncCallTimeout() throws InterruptedException, TimeoutException {
+	public void testAsyncCallTimeout() throws InterruptedException {
+		ResponseMessage mockTimeoutresponseMessage = mock(ResponseMessage.class);
+		when(messageFactory.createResponse(anyInt(), eq(ResponseStatus.Timeout)))
+			.thenReturn(mockTimeoutresponseMessage);
+
 		RequestMessage requestMessage = mock(RequestMessage.class);
 		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 
 		Connection connection = new Connection(testProtocol, channel);
-		InvokeFuture invokeFuture = remoting.asyncCall(requestMessage, connection, 1000);
-		Assertions.assertTrue(invokeFuture.get().status() == ResponseStatus.Timeout);
+		InvokeFuture invokeFuture = remoting.asyncCall(requestMessage, connection, 100);
+		Assertions.assertTrue(invokeFuture.get() == mockTimeoutresponseMessage);
 	}
 
 	@Test
 	public void testAsyncCallWithCallback() throws InterruptedException, TimeoutException {
-
 		ResponseMessage responseMessage = mock(ResponseMessage.class);
 		RequestMessage requestMessage = mock(RequestMessage.class);
 		doReturn(requestId).when(requestMessage).id();
@@ -251,6 +270,10 @@ public class RemotingTest {
 
 	@Test
 	public void testAsyncCallWithCallbackSendFailed1() throws InterruptedException, TimeoutException {
+		ResponseMessage mockSendFailedresponseMessage = mock(ResponseMessage.class);
+		when(messageFactory.createResponse(anyInt(), eq(ResponseStatus.SendFailed), any()))
+			.thenReturn(mockSendFailedresponseMessage);
+
 		RequestMessage requestMessage = mock(RequestMessage.class);
 		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
@@ -271,11 +294,15 @@ public class RemotingTest {
 			return false;
 		}, 30, 100);
 
-		Assertions.assertTrue(callbackMessage.get().status() == ResponseStatus.SendFailed);
+		Assertions.assertTrue(callbackMessage.get() == mockSendFailedresponseMessage);
 	}
 
 	@Test
 	public void testAsyncCallWithCallbackSendFailed2() throws InterruptedException, TimeoutException {
+		ResponseMessage mockSendFailedresponseMessage = mock(ResponseMessage.class);
+		when(messageFactory.createResponse(anyInt(), eq(ResponseStatus.SendFailed), any()))
+			.thenReturn(mockSendFailedresponseMessage);
+
 		RequestMessage requestMessage = mock(RequestMessage.class);
 		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
@@ -296,18 +323,22 @@ public class RemotingTest {
 			return false;
 		}, 30, 100);
 
-		Assertions.assertTrue(callbackMessage.get().status() == ResponseStatus.SendFailed);
+		Assertions.assertTrue(callbackMessage.get() == mockSendFailedresponseMessage);
 	}
 
 	@Test
 	public void testAsyncCallWithCallbackTimeout() throws InterruptedException, TimeoutException {
+		ResponseMessage mockTimeoutresponseMessage = mock(ResponseMessage.class);
+		when(messageFactory.createResponse(anyInt(), eq(ResponseStatus.Timeout)))
+			.thenReturn(mockTimeoutresponseMessage);
+
 		RequestMessage requestMessage = mock(RequestMessage.class);
 		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 		Connection connection = new Connection(testProtocol, channel);
 
 		AtomicReference<ResponseMessage> callbackMessage = new AtomicReference<>();
-		remoting.asyncCall(requestMessage, connection, 1000, (msg) -> {
+		remoting.asyncCall(requestMessage, connection, 100, (msg) -> {
 			callbackMessage.set(msg);
 		});
 
@@ -318,7 +349,7 @@ public class RemotingTest {
 			return false;
 		}, 30, 100);
 
-		Assertions.assertTrue(callbackMessage.get().status() == ResponseStatus.Timeout);
+		Assertions.assertTrue(callbackMessage.get() == mockTimeoutresponseMessage);
 	}
 
 	@Test

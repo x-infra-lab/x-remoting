@@ -1,14 +1,13 @@
 package io.github.xinfra.lab.remoting.message;
 
-import io.netty.channel.ChannelHandlerContext;
-
+import io.github.xinfra.lab.remoting.connection.Connection;
 import java.util.concurrent.Executor;
 
 public interface MessageTypeHandler {
 
 	MessageType messageType();
 
-	void handleMessage(ChannelHandlerContext ctx, Message msg);
+	void handleMessage(Connection connection, Message msg);
 
 	Executor executor();
 

@@ -2,18 +2,13 @@ package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
-import io.github.xinfra.lab.remoting.message.MessageType;
-import io.github.xinfra.lab.remoting.message.MessageTypeHandler;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.io.IOException;
-
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
@@ -28,36 +23,20 @@ public class ProtocolHandlerTest {
 		EmbeddedChannel channel = new EmbeddedChannel();
 		channel.pipeline().addLast(protocolHandler);
 
-		MessageHandler messageHandler = new MessageHandler() {
-			@Override
-			public void registerMessageTypeHandler(MessageTypeHandler messageTypeHandler) {
+		MessageHandler messageHandler = mock(MessageHandler.class);
 
-			}
-
-			@Override
-			public MessageTypeHandler messageTypeHandler(MessageType messageType) {
-				return null;
-			}
-
-			@Override
-			public void close() throws IOException {
-
-			}
-		};
-
-		MessageHandler spyMessageHandler = spy(messageHandler);
-		testProtocol.setMessageHandler(spyMessageHandler);
+		testProtocol.setMessageHandler(messageHandler);
 		new Connection(testProtocol, channel);
 
 		Object object = new Object();
 		channel.writeInbound(object);
-		verify(spyMessageHandler, times(0)).handleMessage(any(), any());
+		verify(messageHandler, times(0)).handleMessage(any(), any());
 		Object inboundMessage = channel.inboundMessages().poll();
 		Assertions.assertTrue(object == inboundMessage);
 
 		Message message = mock(Message.class);
 		channel.writeInbound(message);
-		verify(spyMessageHandler, times(1)).handleMessage(any(), any());
+		verify(messageHandler, times(1)).handleMessage(any(), any());
 	}
 
 }
