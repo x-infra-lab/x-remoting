@@ -4,6 +4,6 @@ public interface SerializationType {
 
 	byte data();
 
-	SerializationType Hession = () -> (byte) 0;
+	SerializationType Hession = () -> (byte) -1;
 
 }

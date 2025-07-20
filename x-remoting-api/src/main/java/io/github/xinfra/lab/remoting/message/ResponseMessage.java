@@ -4,6 +4,4 @@ public interface ResponseMessage extends Message {
 
 	ResponseStatus status();
 
-	boolean isOk();
-
 }

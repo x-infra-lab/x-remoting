@@ -3,18 +3,17 @@ package io.github.xinfra.lab.remoting.rpc.message;
 import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
 import io.github.xinfra.lab.remoting.message.Message;
-import io.github.xinfra.lab.remoting.rpc.RpcProtocol;
+import io.github.xinfra.lab.remoting.message.MessageHeader;
+import io.github.xinfra.lab.remoting.message.MessagePayload;
+import io.github.xinfra.lab.remoting.protocol.ProtocolCode;
+import io.github.xinfra.lab.remoting.rpc.RpcProtocolCode;
 import io.github.xinfra.lab.remoting.serialization.SerializationManager;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
 import io.github.xinfra.lab.remoting.serialization.Serializer;
-import lombok.Getter;
-import lombok.Setter;
 
-import java.net.SocketAddress;
 import java.nio.charset.StandardCharsets;
 
 public abstract class RpcMessage implements Message {
-
 
 	private int id;
 
@@ -22,39 +21,8 @@ public abstract class RpcMessage implements Message {
 
 	private SerializationType serializationType;
 
-	@Setter
-	@Getter
-	private String contentType;
-
-	@Setter
-	@Getter
 	private RpcMessageHeader header;
 
-	@Setter
-	@Getter
-	private Object content;
-
-	@Getter
-	private byte[] contentTypeData;
-
-	@Getter
-	private short contentTypeLength;
-
-	@Getter
-	private byte[] headerData;
-
-	@Getter
-	private short headerLength;
-
-	@Getter
-	private byte[] contentData;
-
-	@Getter
-	private int contentLength;
-
-	@Getter
-	@Setter
-	private SocketAddress remoteAddress;
 
 	public RpcMessage(int id, RpcMessageType rpcMessageType, SerializationType serializationType) {
 		this.id = id;
@@ -63,8 +31,8 @@ public abstract class RpcMessage implements Message {
 	}
 
 	@Override
-	public byte[] protocolCode() {
-		return this.protocolCode;
+	public ProtocolCode protocolCode() {
+		return RpcProtocolCode.INSTANCE;
 	}
 
 	@Override
@@ -72,12 +40,24 @@ public abstract class RpcMessage implements Message {
 		return id;
 	}
 
+	public SerializationType serializationType() {
+		return serializationType;
+	}
+
 	public RpcMessageType messageType() {
 		return rpcMessageType;
 	}
 
-	public SerializationType serializationType() {
-		return serializationType;
+	@Override
+	public MessageHeader header() {
+		// todo
+		return null;
+	}
+
+	@Override
+	public MessagePayload payload() {
+		// todo
+		return null;
 	}
 
 	@Override

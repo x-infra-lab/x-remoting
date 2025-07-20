@@ -1,5 +1,8 @@
 package io.github.xinfra.lab.remoting.rpc.message;
 
+import io.github.xinfra.lab.remoting.exception.DeserializeException;
+import io.github.xinfra.lab.remoting.exception.SerializeException;
+import io.github.xinfra.lab.remoting.message.MessageHeader;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,12 +16,22 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @EqualsAndHashCode
-public class RpcMessageHeader implements Serializable {
+public class RpcMessageHeader implements Serializable, MessageHeader {
 
 	private List<Item> items = new ArrayList<>();
 
 	public void addItem(Item item) {
 		items.add(item);
+	}
+
+	@Override
+	public void serialize() throws SerializeException {
+		// todo
+	}
+
+	@Override
+	public void deserialize() throws DeserializeException {
+		// todo
 	}
 
 	@Setter
