@@ -52,7 +52,8 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 		@Override
 		public ExecutorService get() {
 			if (defaultExecutor == null) {
-				defaultExecutor = Executors.newCachedThreadPool(new NamedThreadFactory("Remoting-Server-Default-Executor"));
+				defaultExecutor = Executors
+					.newCachedThreadPool(new NamedThreadFactory("Remoting-Server-Default-Executor"));
 			}
 			return defaultExecutor;
 		}

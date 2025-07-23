@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.concurrent.Executor;
 
 import static org.mockito.Mockito.mock;
 
@@ -25,7 +26,7 @@ public class ProtocolDecoderTest {
 		ProtocolDecoder protocolDecoder = new ProtocolDecoder();
 		EmbeddedChannel channel = new EmbeddedChannel();
 		channel.pipeline().addLast(protocolDecoder);
-		new Connection(testProtocol, channel);
+		new Connection(testProtocol, channel, mock(Executor.class));
 
 		Message decodeMockMessage = mock(Message.class);
 		MessageDecoder messageDecoder = new MessageDecoder() {
@@ -53,7 +54,7 @@ public class ProtocolDecoderTest {
 		ProtocolDecoder protocolDecoder = new ProtocolDecoder();
 		EmbeddedChannel channel = new EmbeddedChannel();
 		channel.pipeline().addLast(protocolDecoder);
-		new Connection(testProtocol, channel);
+		new Connection(testProtocol, channel, mock(Executor.class));
 
 		Message decodeMockMessage = mock(Message.class);
 		MessageDecoder messageDecoder = new MessageDecoder() {
@@ -102,7 +103,7 @@ public class ProtocolDecoderTest {
 		ProtocolDecoder protocolDecoder = new ProtocolDecoder();
 		EmbeddedChannel channel = new EmbeddedChannel();
 		channel.pipeline().addLast(protocolDecoder);
-		new Connection(testProtocol, channel);
+		new Connection(testProtocol, channel, mock(Executor.class));
 
 		ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer(testProtocol.protocolCode().code().length);
 		byteBuf.writeBytes(testProtocol.protocolCode().code());

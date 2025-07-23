@@ -53,16 +53,6 @@ public class RemotingTest {
 		testProtocol = new TestProtocol();
 		executor = Executors.newCachedThreadPool();
 
-		// set messageHandler
-		MessageHandler messageHandler = mock(MessageHandler.class);
-		testProtocol.setMessageHandler(messageHandler);
-
-		// set messageTypeHandler
-		MessageTypeHandler messageTypeHandler = mock(MessageTypeHandler.class);
-		when(messageHandler.messageTypeHandler(any())).thenReturn(messageTypeHandler);
-		// set messageTypeHandler executor
-		when(messageTypeHandler.executor()).thenReturn(executor);
-
 		// set messageFactory
 		messageFactory = mock(MessageFactory.class);
 		testProtocol.setMessageFactory(messageFactory);
@@ -83,7 +73,7 @@ public class RemotingTest {
 		doReturn(requestId).when(requestMessage).id();
 
 		Channel channel = new EmbeddedChannel();
-		Connection connection = new Connection(testProtocol, channel);
+		Connection connection = new Connection(testProtocol, channel, executor);
 
 		ResponseMessage mockResponseMessage = mock(ResponseMessage.class);
 		// complete invokeFuture
@@ -118,7 +108,7 @@ public class RemotingTest {
 		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
-		Connection connection = new Connection(testProtocol, channel);
+		Connection connection = new Connection(testProtocol, channel, executor);
 
 		doThrow(new RuntimeException("network error")).when(channel).writeAndFlush(any());
 
@@ -136,7 +126,7 @@ public class RemotingTest {
 		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
-		Connection connection = new Connection(testProtocol, channel);
+		Connection connection = new Connection(testProtocol, channel, executor);
 
 		doReturn(channel.newFailedFuture(new RuntimeException("network error"))).when(channel).writeAndFlush(any());
 
@@ -153,7 +143,7 @@ public class RemotingTest {
 		RequestMessage requestMessage = mock(RequestMessage.class);
 		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
-		Connection connection = new Connection(testProtocol, channel);
+		Connection connection = new Connection(testProtocol, channel, executor);
 		ResponseMessage responseMessage = remoting.syncCall(requestMessage, connection, 100);
 		Assertions.assertTrue(responseMessage == mockTimeoutresponseMessage);
 	}
@@ -164,7 +154,7 @@ public class RemotingTest {
 		RequestMessage requestMessage = mock(RequestMessage.class);
 		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
-		Connection connection = new Connection(testProtocol, channel);
+		Connection connection = new Connection(testProtocol, channel, executor);
 		InvokeFuture invokeFuture = remoting.asyncCall(requestMessage, connection, 1000);
 
 		// complete invokeFuture
@@ -192,7 +182,7 @@ public class RemotingTest {
 		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
-		Connection connection = new Connection(testProtocol, channel);
+		Connection connection = new Connection(testProtocol, channel, executor);
 		doThrow(new RuntimeException("network error")).when(channel).writeAndFlush(any());
 
 		InvokeFuture invokeFuture = remoting.asyncCall(requestMessage, connection, 1000);
@@ -209,7 +199,7 @@ public class RemotingTest {
 		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
-		Connection connection = new Connection(testProtocol, channel);
+		Connection connection = new Connection(testProtocol, channel, executor);
 		doReturn(channel.newFailedFuture(new RuntimeException("network error"))).when(channel).writeAndFlush(any());
 
 		InvokeFuture invokeFuture = remoting.asyncCall(requestMessage, connection, 1000);
@@ -226,7 +216,7 @@ public class RemotingTest {
 		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 
-		Connection connection = new Connection(testProtocol, channel);
+		Connection connection = new Connection(testProtocol, channel, executor);
 		InvokeFuture invokeFuture = remoting.asyncCall(requestMessage, connection, 100);
 		Assertions.assertTrue(invokeFuture.get() == mockTimeoutresponseMessage);
 	}
@@ -237,7 +227,7 @@ public class RemotingTest {
 		RequestMessage requestMessage = mock(RequestMessage.class);
 		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
-		Connection connection = new Connection(testProtocol, channel);
+		Connection connection = new Connection(testProtocol, channel, executor);
 
 		AtomicReference<Message> callbackMessage = new AtomicReference<>();
 		remoting.asyncCall(requestMessage, connection, 1000, (msg) -> {
@@ -250,8 +240,7 @@ public class RemotingTest {
 			if (future != null) {
 				future.cancelTimeout();
 				future.complete(responseMessage);
-				future.asyncExecuteCallBack(
-						testProtocol.messageHandler().messageTypeHandler(responseMessage.messageType()).executor());
+				future.asyncExecuteCallBack(connection.getExecutor());
 				return true;
 			}
 			return false;
@@ -278,7 +267,7 @@ public class RemotingTest {
 		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
-		Connection connection = new Connection(testProtocol, channel);
+		Connection connection = new Connection(testProtocol, channel, executor);
 
 		doThrow(new RuntimeException("network error")).when(channel).writeAndFlush(any());
 
@@ -307,7 +296,7 @@ public class RemotingTest {
 		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
-		Connection connection = new Connection(testProtocol, channel);
+		Connection connection = new Connection(testProtocol, channel, executor);
 
 		doReturn(channel.newFailedFuture(new RuntimeException("network error"))).when(channel).writeAndFlush(any());
 
@@ -335,7 +324,7 @@ public class RemotingTest {
 		RequestMessage requestMessage = mock(RequestMessage.class);
 		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
-		Connection connection = new Connection(testProtocol, channel);
+		Connection connection = new Connection(testProtocol, channel, executor);
 
 		AtomicReference<ResponseMessage> callbackMessage = new AtomicReference<>();
 		remoting.asyncCall(requestMessage, connection, 100, (msg) -> {
@@ -358,7 +347,7 @@ public class RemotingTest {
 		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
-		Connection connection = new Connection(testProtocol, channel);
+		Connection connection = new Connection(testProtocol, channel, executor);
 		remoting.oneway(requestMessage, connection);
 
 		// complete invokeFuture
@@ -383,7 +372,7 @@ public class RemotingTest {
 		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
-		Connection connection = new Connection(testProtocol, channel);
+		Connection connection = new Connection(testProtocol, channel, executor);
 
 		doThrow(new RuntimeException("network error")).when(channel).writeAndFlush(any());
 
@@ -411,7 +400,7 @@ public class RemotingTest {
 		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
-		Connection connection = new Connection(testProtocol, channel);
+		Connection connection = new Connection(testProtocol, channel, executor);
 
 		doReturn(channel.newFailedFuture(new RuntimeException("network error"))).when(channel).writeAndFlush(any());
 

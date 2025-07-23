@@ -18,38 +18,40 @@ import io.github.xinfra.lab.remoting.rpc.message.RpcMessageHandler;
  */
 public class RpcProtocol implements Protocol {
 
-    public static int RESPONSE_HEADER_LEN = 21;
+	public static int RESPONSE_HEADER_LEN = 21;
 
-    public static int REQUEST_HEADER_LEN = 19;
+	public static int REQUEST_HEADER_LEN = 19;
 
-    private final RpcMessageCodec rpcMessageCodec;
-    private final RpcMessageHandler rpcMessageHandler;
-    private final RpcMessageFactory rpcMessageFactory;
+	private final RpcMessageCodec rpcMessageCodec;
 
-    public RpcProtocol() {
-        this.rpcMessageCodec = new RpcMessageCodec();
-        this.rpcMessageHandler = new RpcMessageHandler();
-        this.rpcMessageFactory = new RpcMessageFactory();
-    }
+	private final RpcMessageHandler rpcMessageHandler;
 
-    @Override
-    public RpcProtocolCode protocolCode() {
-        return RpcProtocolCode.INSTANCE;
-    }
+	private final RpcMessageFactory rpcMessageFactory;
 
-    @Override
-    public RpcMessageCodec messageCodec() {
-        return rpcMessageCodec;
-    }
+	public RpcProtocol() {
+		this.rpcMessageCodec = new RpcMessageCodec();
+		this.rpcMessageHandler = new RpcMessageHandler();
+		this.rpcMessageFactory = new RpcMessageFactory();
+	}
 
-    @Override
-    public RpcMessageHandler messageHandler() {
-        return this.rpcMessageHandler;
-    }
+	@Override
+	public RpcProtocolCode protocolCode() {
+		return RpcProtocolCode.INSTANCE;
+	}
 
-    @Override
-    public RpcMessageFactory messageFactory() {
-        return this.rpcMessageFactory;
-    }
+	@Override
+	public RpcMessageCodec messageCodec() {
+		return rpcMessageCodec;
+	}
+
+	@Override
+	public RpcMessageHandler messageHandler() {
+		return this.rpcMessageHandler;
+	}
+
+	@Override
+	public RpcMessageFactory messageFactory() {
+		return this.rpcMessageFactory;
+	}
 
 }

@@ -71,7 +71,8 @@ public class RpcRemoting extends Remoting {
 		super.oneway(requestMessage, connection);
 	}
 
-	private RequestMessage buildRequestMessage(MessageFactory messageFactory, Object request) throws SerializeException {
+	private RequestMessage buildRequestMessage(MessageFactory messageFactory, Object request)
+			throws SerializeException {
 		RpcRequestMessage requestMessage = messageFactory.createRequestMessage();
 		// todo
 		requestMessage.setContent(request);

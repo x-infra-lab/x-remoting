@@ -13,6 +13,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.Executor;
 
 import static org.mockito.Mockito.mock;
 
@@ -25,7 +26,7 @@ public class ProtocolEncoderTest {
 		ProtocolEncoder protocolEncoder = new ProtocolEncoder();
 		EmbeddedChannel channel = new EmbeddedChannel();
 		channel.pipeline().addLast(protocolEncoder);
-		new Connection(testProtocol, channel);
+		new Connection(testProtocol, channel, mock(Executor.class));
 
 		Message message = mock(Message.class);
 		byte[] data = "testEncode".getBytes(StandardCharsets.UTF_8);
@@ -60,7 +61,7 @@ public class ProtocolEncoderTest {
 		ProtocolEncoder protocolEncoder = new ProtocolEncoder();
 		EmbeddedChannel channel = new EmbeddedChannel();
 		channel.pipeline().addLast(protocolEncoder);
-		new Connection(testProtocol, channel);
+		new Connection(testProtocol, channel, mock(Executor.class));
 
 		Message message = mock(Message.class);
 

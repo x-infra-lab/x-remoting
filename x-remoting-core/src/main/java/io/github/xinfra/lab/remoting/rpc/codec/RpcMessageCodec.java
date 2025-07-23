@@ -4,22 +4,23 @@ import io.github.xinfra.lab.remoting.codec.MessageCodec;
 
 public class RpcMessageCodec implements MessageCodec {
 
-    private final RpcMessageEncoder rpcMessageEncoder;
+	private final RpcMessageEncoder rpcMessageEncoder;
 
-    private final RpcMessageDecoder rpcMessageDecoder;
+	private final RpcMessageDecoder rpcMessageDecoder;
 
-    public RpcMessageCodec() {
-        this.rpcMessageEncoder = new RpcMessageEncoder();
-        this.rpcMessageDecoder = new RpcMessageDecoder();
-    }
+	public RpcMessageCodec() {
+		this.rpcMessageEncoder = new RpcMessageEncoder();
+		this.rpcMessageDecoder = new RpcMessageDecoder();
+	}
 
-    @Override
-    public RpcMessageEncoder encoder() {
-        return rpcMessageEncoder;
-    }
+	@Override
+	public RpcMessageEncoder encoder() {
+		return rpcMessageEncoder;
+	}
 
-    @Override
-    public RpcMessageDecoder decoder() {
-        return rpcMessageDecoder;
-    }
+	@Override
+	public RpcMessageDecoder decoder() {
+		return rpcMessageDecoder;
+	}
+
 }

@@ -6,6 +6,7 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
 import static io.netty.handler.timeout.IdleStateEvent.ALL_IDLE_STATE_EVENT;
@@ -26,7 +27,7 @@ public class ProtocolHeartBeatHandlerTest {
 		EmbeddedChannel channel = new EmbeddedChannel();
 		channel.pipeline().addLast(new IdleStateHandler(5, 5, 5, TimeUnit.MILLISECONDS));
 		channel.pipeline().addLast(protocolHeartBeatHandler);
-		new Connection(testProtocol, channel);
+		new Connection(testProtocol, channel, mock(Executor.class));
 
 		// simulate IdleStateHandler#fireUserEventTriggered
 		channel.pipeline().firstContext().fireUserEventTriggered(ALL_IDLE_STATE_EVENT);

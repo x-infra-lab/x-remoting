@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -41,7 +42,7 @@ public class ConnectionTest {
 	public void before() {
 		testProtocol = new TestProtocol();
 		channel = new EmbeddedChannel();
-		connection = new Connection(testProtocol, channel);
+		connection = new Connection(testProtocol, channel, mock(Executor.class));
 	}
 
 	@Test
@@ -97,11 +98,8 @@ public class ConnectionTest {
 		testProtocol.setMessageFactory(messageFactory);
 
 		ExecutorService executor = Executors.newCachedThreadPool();
-		MessageHandler messageHandler = mock(MessageHandler.class);
-		MessageTypeHandler messageTypeHandler = mock(MessageTypeHandler.class);
-		when(messageHandler.messageTypeHandler(any())).thenReturn(messageTypeHandler);
-		when(messageTypeHandler.executor()).thenReturn(executor);
-		testProtocol.setMessageHandler(messageHandler);
+		connection = spy(connection);
+		when(connection.getExecutor()).thenReturn(executor);
 
 		int times = 10;
 		List<InvokeFuture<?>> invokeFutures = new ArrayList<>();

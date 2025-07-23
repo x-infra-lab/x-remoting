@@ -23,7 +23,6 @@ public abstract class RpcMessage implements Message {
 
 	private RpcMessageHeader header;
 
-
 	public RpcMessage(int id, RpcMessageType rpcMessageType, SerializationType serializationType) {
 		this.id = id;
 		this.rpcMessageType = rpcMessageType;

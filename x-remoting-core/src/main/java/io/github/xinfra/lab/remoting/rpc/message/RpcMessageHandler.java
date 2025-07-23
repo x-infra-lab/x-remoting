@@ -23,7 +23,6 @@ import static io.github.xinfra.lab.remoting.rpc.message.RpcMessageType.request;
 @Slf4j
 public class RpcMessageHandler implements MessageHandler {
 
-
 	private ConcurrentHashMap<RpcMessageType, MessageProcessor<RpcMessage>> messageProcessors = new ConcurrentHashMap<>();
 
 	private ConcurrentHashMap<String, UserProcessor<?>> userProcessors = new ConcurrentHashMap<>();
@@ -39,7 +38,6 @@ public class RpcMessageHandler implements MessageHandler {
 		// heartbeat
 		this.registerMessageProcessor(RpcMessageType.heartbeatRequest, new RpcHeartbeatMessageProcessor());
 	}
-
 
 	@Override
 	public void registerMessageTypeHandler(MessageTypeHandler messageTypeHandler) {
@@ -86,7 +84,6 @@ public class RpcMessageHandler implements MessageHandler {
 	public UserProcessor<?> userProcessor(String contentType) {
 		return userProcessors.get(contentType);
 	}
-
 
 	private void exceptionForMessage(MessageHandlerContext messageHandlerContext, RpcMessage rpcMessage, Throwable t) {
 		RpcMessageType rpcMessageType = rpcMessage.messageType();

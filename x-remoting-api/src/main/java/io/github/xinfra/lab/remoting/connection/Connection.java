@@ -2,7 +2,6 @@ package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
-import io.github.xinfra.lab.remoting.message.MessageHandler;
 import io.github.xinfra.lab.remoting.message.ResponseMessage;
 import io.github.xinfra.lab.remoting.message.ResponseStatus;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
@@ -98,7 +97,6 @@ public class Connection {
 	}
 
 	public void onClose() {
-		MessageHandler messageHandler = protocol.messageHandler();
 		for (int requestId : invokeMap.keySet()) {
 			InvokeFuture<?> invokeFuture = removeInvokeFuture(requestId);
 			if (invokeFuture != null) {
@@ -106,7 +104,7 @@ public class Connection {
 				ResponseMessage responseMessage = protocol.messageFactory()
 					.createResponse(requestId, ResponseStatus.ConnectionClosed);
 				invokeFuture.complete(responseMessage);
-				invokeFuture.asyncExecuteCallBack(executor);
+				invokeFuture.asyncExecuteCallBack(getExecutor());
 			}
 		}
 	}

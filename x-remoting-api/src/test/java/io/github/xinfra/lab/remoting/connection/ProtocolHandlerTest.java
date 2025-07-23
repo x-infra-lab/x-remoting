@@ -7,6 +7,8 @@ import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.Executor;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -26,7 +28,7 @@ public class ProtocolHandlerTest {
 		MessageHandler messageHandler = mock(MessageHandler.class);
 
 		testProtocol.setMessageHandler(messageHandler);
-		new Connection(testProtocol, channel);
+		new Connection(testProtocol, channel, mock(Executor.class));
 
 		Object object = new Object();
 		channel.writeInbound(object);

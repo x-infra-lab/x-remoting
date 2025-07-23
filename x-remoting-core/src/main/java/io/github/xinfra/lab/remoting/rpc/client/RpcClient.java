@@ -19,6 +19,7 @@ import java.net.SocketAddress;
 public class RpcClient extends AbstractLifeCycle {
 
 	private static final Logger log = LoggerFactory.getLogger(RpcClient.class);
+
 	@Getter
 	private RpcClientConfig config;
 
@@ -56,7 +57,6 @@ public class RpcClient extends AbstractLifeCycle {
 		this.rpcClientRemoting = new RpcRemoting(connectionManager);
 	}
 
-
 	@Override
 	public void startup() {
 		super.startup();
@@ -67,12 +67,13 @@ public class RpcClient extends AbstractLifeCycle {
 	public void shutdown() {
 		super.shutdown();
 		connectionManager.shutdown();
-        try {
-            rpcClientRemoting.close();
-        } catch (IOException e) {
-            log.warn("rpcClientRemoting close ex", e);
-        }
-    }
+		try {
+			rpcClientRemoting.close();
+		}
+		catch (IOException e) {
+			log.warn("rpcClientRemoting close ex", e);
+		}
+	}
 
 	public <R> R syncCall(Object request, SocketAddress socketAddress, int timeoutMills)
 			throws RemotingException, InterruptedException {
