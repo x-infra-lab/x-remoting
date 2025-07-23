@@ -24,7 +24,7 @@ public class DefaultReconnector extends AbstractLifeCycle implements Reconnector
 	@AccessForTest
 	protected ConnectionManager connectionManager;
 
-	private final Thread reconeectThread = new NamedThreadFactory("reconnect-thread").newThread(new ReconnectTask());
+	private final Thread reconeectThread = new NamedThreadFactory("Remoting-Reconnect").newThread(new ReconnectTask());
 
 	public DefaultReconnector(ConnectionManager connectionManager) {
 		this.connectionManager = connectionManager;

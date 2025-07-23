@@ -4,19 +4,16 @@ import io.github.xinfra.lab.remoting.connection.Connection;
 
 import java.util.concurrent.Executor;
 
-public class HeartbeatMessageTypeHandler implements MessageTypeHandler{
-    @Override
-    public MessageType messageType() {
-        return MessageType.heartbeat;
-    }
+public class HeartbeatMessageTypeHandler implements MessageTypeHandler {
 
-    @Override
-    public void handleMessage(Connection connection, Message msg) {
+	@Override
+	public MessageType messageType() {
+		return MessageType.heartbeat;
+	}
 
-    }
+	@Override
+	public void handleMessage(Connection connection, Message msg) {
+		// todo
+	}
 
-    @Override
-    public Executor executor() {
-        return null;
-    }
 }

@@ -33,9 +33,7 @@ public class DefaultHeartbeater implements Heartbeater {
 
 		Protocol protocol = connection.getProtocol();
 		RequestMessage heartbeatRequestMessage = protocol.messageFactory()
-				.createRequestMessage(IDGenerator.nextRequestId(),
-						MessageType.heartbeat,
-						SerializationType.Hession);
+			.createRequest(IDGenerator.nextRequestId(), MessageType.heartbeat, SerializationType.Hession);
 		remoting.asyncCall(heartbeatRequestMessage, connection, connection.getHeartbeatTimeoutMills(),
 				responseMessage -> {
 

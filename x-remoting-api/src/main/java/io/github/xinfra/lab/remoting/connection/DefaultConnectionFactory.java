@@ -1,6 +1,7 @@
 package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
+import io.github.xinfra.lab.remoting.common.Resource;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.netty.bootstrap.Bootstrap;
@@ -24,6 +25,8 @@ import org.apache.commons.lang3.Validate;
 import java.io.IOException;
 import java.net.SocketAddress;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
@@ -39,9 +42,32 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 	// todo EpollUtils
 	private final EventLoopGroup workerGroup = Epoll.isAvailable()
 			? new EpollEventLoopGroup(Runtime.getRuntime().availableProcessors(),
-					new NamedThreadFactory("Remoting-Client-Worker"))
+					new NamedThreadFactory("Remoting-Client-IO-Worker"))
 			: new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(),
-					new NamedThreadFactory("Remoting-Client-Worker"));
+					new NamedThreadFactory("Remoting-Client-IO-Worker"));
+
+	private Resource<ExecutorService> defaultExecutorResource = new Resource<ExecutorService>() {
+
+		ExecutorService defaultExecutor;
+
+		@Override
+		public ExecutorService get() {
+			if (defaultExecutor == null) {
+				defaultExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(),
+						new NamedThreadFactory("Remoting-Client-Default-Executor"));
+			}
+			return defaultExecutor;
+		}
+
+		@Override
+		public void close() {
+			if (defaultExecutor != null) {
+				defaultExecutor.shutdown();
+			}
+		}
+	};
+
+	private ExecutorService executor;
 
 	private static final Class<? extends SocketChannel> channelClass = Epoll.isAvailable() ? EpollSocketChannel.class
 			: NioSocketChannel.class;
@@ -60,6 +86,12 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 		Validate.notNull(connectionConfig, "connectionConfig can not be null");
 		this.protocol = protocol;
 		this.connectionConfig = connectionConfig;
+		if (connectionConfig.getExecutor() != null) {
+			this.executor = connectionConfig.getExecutor();
+		}
+		else {
+			this.executor = defaultExecutorResource.get();
+		}
 
 		bootstrap = new Bootstrap();
 		bootstrap.option(ChannelOption.SO_KEEPALIVE, true)
@@ -108,12 +140,13 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 			throw new RemotingException(errMsg, future.cause());
 		}
 		Channel channel = future.channel();
-		return new Connection(protocol, channel);
+		return new Connection(protocol, channel, executor);
 	}
 
 	@Override
 	public void close() throws IOException {
 		workerGroup.shutdownGracefully();
+		defaultExecutorResource.close();
 	}
 
 }

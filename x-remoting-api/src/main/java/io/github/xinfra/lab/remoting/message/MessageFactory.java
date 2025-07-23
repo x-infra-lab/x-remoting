@@ -4,8 +4,7 @@ import io.github.xinfra.lab.remoting.serialization.SerializationType;
 
 public interface MessageFactory {
 
-	<T extends RequestMessage> T createRequest(int id, MessageType messageType,
-													  SerializationType serializationType);
+	<T extends RequestMessage> T createRequest(int id, MessageType messageType, SerializationType serializationType);
 
 	<T extends ResponseMessage> T createResponse(int id, ResponseStatus status);
 

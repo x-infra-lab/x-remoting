@@ -13,7 +13,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 @Slf4j
 public class DefaultConnectionEventProcessor extends AbstractLifeCycle implements ConnectionEventProcessor {
 
-	private final Thread connectionEventThread = new NamedThreadFactory("connection-event-thread")
+	private final Thread connectionEventThread = new NamedThreadFactory("Remoting-Connection-Event")
 		.newThread(new EventTask());
 
 	protected LinkedBlockingQueue<Event> eventQueue = new LinkedBlockingQueue<>();

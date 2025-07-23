@@ -17,6 +17,7 @@ import org.apache.commons.lang3.Validate;
 
 import java.net.SocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
@@ -34,6 +35,9 @@ public class Connection {
 	private final Protocol protocol;
 
 	@Getter
+	private final Executor executor;
+
+	@Getter
 	@Setter
 	private int heartbeatFailCnt = 0;
 
@@ -47,11 +51,13 @@ public class Connection {
 
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 
-	public Connection(Protocol protocol, Channel channel) {
+	public Connection(Protocol protocol, Channel channel, Executor executor) {
 		Validate.notNull(protocol, "protocol can not be null");
 		Validate.notNull(channel, "channel can not be null");
+		Validate.notNull(executor, "executor can not be null");
 		this.protocol = protocol;
 		this.channel = channel;
+		this.executor = executor;
 		this.channel.attr(CONNECTION).set(this);
 		this.channel.pipeline().fireUserEventTriggered(ConnectionEvent.CONNECT);
 	}
@@ -100,8 +106,7 @@ public class Connection {
 				ResponseMessage responseMessage = protocol.messageFactory()
 					.createResponse(requestId, ResponseStatus.ConnectionClosed);
 				invokeFuture.complete(responseMessage);
-				invokeFuture
-					.asyncExecuteCallBack(messageHandler.messageTypeHandler(responseMessage.messageType()).executor());
+				invokeFuture.asyncExecuteCallBack(executor);
 			}
 		}
 	}

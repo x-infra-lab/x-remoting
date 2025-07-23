@@ -9,6 +9,4 @@ public interface MessageTypeHandler {
 
 	void handleMessage(Connection connection, Message msg);
 
-	Executor executor();
-
 }

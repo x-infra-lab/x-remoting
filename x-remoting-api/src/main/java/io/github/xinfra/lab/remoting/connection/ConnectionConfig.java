@@ -2,6 +2,9 @@ package io.github.xinfra.lab.remoting.connection;
 
 import lombok.Getter;
 
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+
 @Getter
 public class ConnectionConfig {
 
@@ -14,5 +17,7 @@ public class ConnectionConfig {
 	private long idleAllTimeout = 15000L;
 
 	private int connectTimeout = 1000;
+
+	ExecutorService executor;
 
 }

@@ -3,6 +3,7 @@ package io.github.xinfra.lab.remoting.server;
 import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
+import io.github.xinfra.lab.remoting.common.Resource;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.connection.ConnectionEventHandler;
 import io.github.xinfra.lab.remoting.connection.ConnectionEventProcessor;
@@ -32,6 +33,9 @@ import org.apache.commons.lang3.Validate;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -39,17 +43,39 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 
 	protected SocketAddress localAddress;
 
+	private Executor executor;
+
+	private Resource<ExecutorService> defaultExecutorResource = new Resource<ExecutorService>() {
+
+		ExecutorService defaultExecutor;
+
+		@Override
+		public ExecutorService get() {
+			if (defaultExecutor == null) {
+				defaultExecutor = Executors.newCachedThreadPool(new NamedThreadFactory("Remoting-Server-Default-Executor"));
+			}
+			return defaultExecutor;
+		}
+
+		@Override
+		public void close() {
+			if (defaultExecutor != null) {
+				defaultExecutor.shutdown();
+			}
+		}
+	};
+
 	private ServerBootstrap serverBootstrap;
 
 	private final EventLoopGroup bossGroup = Epoll.isAvailable()
-			? new EpollEventLoopGroup(1, new NamedThreadFactory("Remoting-Server-Boss"))
-			: new NioEventLoopGroup(1, new NamedThreadFactory("Remoting-Server-Boss"));
+			? new EpollEventLoopGroup(1, new NamedThreadFactory("Remoting-Server-IO-Boss"))
+			: new NioEventLoopGroup(1, new NamedThreadFactory("Remoting-Server-IO-Boss"));
 
 	private final EventLoopGroup workerGroup = Epoll.isAvailable()
 			? new EpollEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2,
-					new NamedThreadFactory("Remoting-Server-Worker"))
+					new NamedThreadFactory("Remoting-Server-IO-Worker"))
 			: new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2,
-					new NamedThreadFactory("Remoting-Server-Worker"));
+					new NamedThreadFactory("Remoting-Server-IO-Worker"));
 
 	private static final Class<? extends ServerChannel> serverChannelClass = Epoll.isAvailable()
 			? EpollServerSocketChannel.class : NioServerSocketChannel.class;
@@ -71,8 +97,14 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 		Validate.inclusiveBetween(0, 0xFFFF, config.getPort(), "port out of range: " + config.getPort());
 
 		this.config = config;
-		this.handler = new ProtocolHandler();
+		if (config.getExecutor() != null) {
+			this.executor = config.getExecutor();
+		}
+		else {
+			this.executor = defaultExecutorResource.get();
+		}
 
+		this.handler = new ProtocolHandler();
 		if (this.config.isManageConnection()) {
 			this.connectionManager = new ServerConnectionManager();
 			this.connectionEventHandler = new ConnectionEventHandler(this.connectionManager);
@@ -134,7 +166,7 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 
 	@AccessForTest
 	protected void createConnection(SocketChannel channel) {
-		Connection connection = new Connection(protocol(), channel);
+		Connection connection = new Connection(protocol(), channel, executor);
 		if (config.isManageConnection()) {
 			connectionManager.add(connection);
 		}
@@ -151,6 +183,7 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 		if (this.connectionEventProcessor != null) {
 			this.connectionEventProcessor.shutdown();
 		}
+		defaultExecutorResource.close();
 	}
 
 	@Override

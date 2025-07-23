@@ -2,6 +2,8 @@ package io.github.xinfra.lab.remoting.server;
 
 import lombok.Data;
 
+import java.util.concurrent.Executor;
+
 @Data
 public class RemotingServerConfig {
 
@@ -16,5 +18,7 @@ public class RemotingServerConfig {
 	private long idleWriterTimeout = 0L;
 
 	private long idleAllTimeout = 90000L;
+
+	Executor executor;
 
 }

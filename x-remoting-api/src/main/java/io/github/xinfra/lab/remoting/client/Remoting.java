@@ -25,7 +25,7 @@ public class Remoting implements Closeable {
 	private final Timer timer;
 
 	public Remoting() {
-		this.timer = new HashedWheelTimer(new NamedThreadFactory(getClass().getName() + "-Timer"));
+		this.timer = new HashedWheelTimer(new NamedThreadFactory("Remoting-Timer"));
 	}
 
 	public ResponseMessage syncCall(RequestMessage requestMessage, Connection connection, int timeoutMills)
@@ -131,8 +131,7 @@ public class Remoting implements Closeable {
 			if (future != null) {
 				ResponseMessage responseMessage = messageFactory.createResponse(requestId, ResponseStatus.Timeout);
 				future.complete(responseMessage);
-				future
-					.asyncExecuteCallBack(messageHandler.messageTypeHandler(responseMessage.messageType()).executor());
+				future.asyncExecuteCallBack(connection.getExecutor());
 			}
 		}, timeoutMills, TimeUnit.MILLISECONDS);
 		invokeFuture.addTimeout(timeout);
@@ -150,8 +149,7 @@ public class Remoting implements Closeable {
 						ResponseMessage responseMessage = messageFactory.createResponse(requestId,
 								ResponseStatus.SendFailed, channelFuture.cause());
 						future.complete(responseMessage);
-						future.asyncExecuteCallBack(
-								messageHandler.messageTypeHandler(responseMessage.messageType()).executor());
+						future.asyncExecuteCallBack(connection.getExecutor());
 					}
 
 				}
@@ -166,8 +164,7 @@ public class Remoting implements Closeable {
 				ResponseMessage responseMessage = messageFactory.createResponse(requestId, ResponseStatus.SendFailed,
 						t);
 				future.complete(responseMessage);
-				future
-					.asyncExecuteCallBack(messageHandler.messageTypeHandler(responseMessage.messageType()).executor());
+				future.asyncExecuteCallBack(connection.getExecutor());
 			}
 		}
 
