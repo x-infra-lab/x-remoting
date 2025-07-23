@@ -18,6 +18,9 @@ public class ConnectionConfig {
 
 	private int connectTimeout = 1000;
 
+	/**
+	 * The executor is not managed by x-remoting. It must be shutdown externally.
+	 */
 	ExecutorService executor;
 
 }

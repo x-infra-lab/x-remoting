@@ -19,6 +19,9 @@ public class RemotingServerConfig {
 
 	private long idleAllTimeout = 90000L;
 
+	/**
+	 * The executor is not managed by x-remoting. It must be shutdown externally.
+	 */
 	Executor executor;
 
 }
