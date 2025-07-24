@@ -27,8 +27,8 @@ public class TestProtocol implements Protocol {
 	private MessageFactory messageFactory;
 
 	@Override
-	public ProtocolCode protocolCode() {
-		return new ProtocolCode() {
+	public ProtocolIdentifier protocolCode() {
+		return new ProtocolIdentifier() {
 			@Override
 			public byte[] code() {
 				return protocolCode;

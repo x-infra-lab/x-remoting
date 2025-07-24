@@ -16,7 +16,8 @@ public class RpcMessageEncoder implements MessageEncoder {
 	public void encode(ChannelHandlerContext ctx, Message msg, ByteBuf out) throws Exception {
 		if (msg instanceof RpcMessage) {
 			RpcMessage rpcMessage = (RpcMessage) msg;
-			out.writeBytes(rpcMessage.protocolCode());
+			out.writeBytes(rpcMessage.protocolIdentifier().code());
+			out.writeByte(rpcMessage.protocolIdentifier().version());
 			out.writeByte(rpcMessage.messageType().data());
 			out.writeInt(rpcMessage.id());
 			out.writeByte(rpcMessage.serializationType().data());

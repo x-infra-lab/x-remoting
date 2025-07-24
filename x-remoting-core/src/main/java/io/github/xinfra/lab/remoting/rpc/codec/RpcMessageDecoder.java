@@ -23,7 +23,7 @@ public class RpcMessageDecoder implements MessageDecoder {
 
 	private int protocolCodeLength = RpcProtocol.PROTOCOL_CODE.length;
 
-	private int minLength = Math.min(RpcProtocol.RESPONSE_HEADER_LEN, RpcProtocol.REQUEST_HEADER_LEN);
+	private int minLength = Math.min(RpcProtocol.RESPONSE_HEADER_BYTES, RpcProtocol.REQUEST_HEADER_BYTES);
 
 	@Override
 	public void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
@@ -37,7 +37,7 @@ public class RpcMessageDecoder implements MessageDecoder {
 			// check for response
 			int alreadyRead = protocolCodeLength + 1;
 			if (rpcMessageType == RpcMessageType.response
-					&& in.readableBytes() < RpcProtocol.RESPONSE_HEADER_LEN - alreadyRead) {
+					&& in.readableBytes() < RpcProtocol.RESPONSE_HEADER_BYTES - alreadyRead) {
 				in.resetReaderIndex();
 				return;
 			}

@@ -10,6 +10,8 @@ public interface MessageType {
 
 	MessageType response = () -> (byte) 1;
 
+	MessageType oneway = () -> (byte) 2;
+
 	static MessageType valueOf(byte data) {
 		// todo
 		return null;

@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.github.xinfra.lab.remoting.rpc.RpcProtocol.RESPONSE_HEADER_LEN;
+import static io.github.xinfra.lab.remoting.rpc.RpcProtocol.RESPONSE_HEADER_BYTES;
 import static org.mockito.Mockito.mock;
 
 public class RpcMessageDecoderTest {
@@ -178,7 +178,7 @@ public class RpcMessageDecoderTest {
 
 		// less than response data header length
 		int readerIndex = byteBuf.readerIndex();
-		byteBuf.setIndex(readerIndex, RESPONSE_HEADER_LEN - 1);
+		byteBuf.setIndex(readerIndex, RESPONSE_HEADER_BYTES - 1);
 
 		RpcMessageDecoder decoder = new RpcMessageDecoder();
 		List<Object> out = new ArrayList<>();

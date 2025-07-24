@@ -10,17 +10,17 @@ import io.github.xinfra.lab.remoting.rpc.message.RpcMessageHandler;
  * <p>
  * request definition:
  * <p>
- * ｜protocol:bytes|message-type:byte|request-id:int|serialization-type:byte|content-type-length:short|header-length:short|content-length:int|content-type|header|content|
+ * ｜protocol:bytes|protocol-version:byte|message-type:byte|request-id:int|serialization-type:byte|header-length:short|body-length:int|header|content|
  * <p>
  * response definition:
  * <p>
- * ｜protocol:bytes|message-type:byte|request-id:int|serialization-type:byte|status:short|content-type-length:short|header-length:short]content-length:int|content-type|header|content|
+ * ｜protocol:bytes|protocol-version:byte|message-type:byte|request-id:int|serialization-type:byte|status:short|header-length:short|body-length:int|header|content|
  */
 public class RpcProtocol implements Protocol {
 
-	public static int RESPONSE_HEADER_LEN = 21;
+	public static int RESPONSE_HEADER_BYTES = 18;
 
-	public static int REQUEST_HEADER_LEN = 19;
+	public static int REQUEST_HEADER_BYTES = 16;
 
 	private final RpcMessageCodec rpcMessageCodec;
 
@@ -35,8 +35,8 @@ public class RpcProtocol implements Protocol {
 	}
 
 	@Override
-	public RpcProtocolCode protocolCode() {
-		return RpcProtocolCode.INSTANCE;
+	public RpcProtocolIdentifier protocolCode() {
+		return RpcProtocolIdentifier.INSTANCE;
 	}
 
 	@Override

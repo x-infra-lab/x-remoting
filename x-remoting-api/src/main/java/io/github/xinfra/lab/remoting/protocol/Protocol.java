@@ -4,16 +4,18 @@ import io.github.xinfra.lab.remoting.codec.MessageCodec;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
 
-import java.io.Closeable;
-
 public interface Protocol {
 
-	ProtocolCode protocolCode();
+    ProtocolIdentifier protocolCode();
 
-	MessageCodec messageCodec();
+    default byte version() {
+        return 0x01;
+    }
 
-	MessageHandler messageHandler();
+    MessageCodec messageCodec();
 
-	MessageFactory messageFactory();
+    MessageHandler messageHandler();
+
+    MessageFactory messageFactory();
 
 }

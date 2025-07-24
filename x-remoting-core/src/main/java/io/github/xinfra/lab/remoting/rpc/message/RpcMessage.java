@@ -3,163 +3,95 @@ package io.github.xinfra.lab.remoting.rpc.message;
 import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
 import io.github.xinfra.lab.remoting.message.Message;
-import io.github.xinfra.lab.remoting.message.MessageHeader;
-import io.github.xinfra.lab.remoting.message.MessagePayload;
-import io.github.xinfra.lab.remoting.protocol.ProtocolCode;
-import io.github.xinfra.lab.remoting.rpc.RpcProtocolCode;
+import io.github.xinfra.lab.remoting.message.MessageType;
+import io.github.xinfra.lab.remoting.protocol.ProtocolIdentifier;
+import io.github.xinfra.lab.remoting.rpc.RpcProtocolIdentifier;
 import io.github.xinfra.lab.remoting.serialization.SerializationManager;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
 import io.github.xinfra.lab.remoting.serialization.Serializer;
-
-import java.nio.charset.StandardCharsets;
+import lombok.Getter;
+import lombok.Setter;
 
 public abstract class RpcMessage implements Message {
 
-	private int id;
+    private int id;
 
-	private RpcMessageType rpcMessageType;
+    private MessageType messageType;
 
-	private SerializationType serializationType;
+    private SerializationType serializationType;
 
-	private RpcMessageHeader header;
+    private RpcMessageHeader header;
 
-	public RpcMessage(int id, RpcMessageType rpcMessageType, SerializationType serializationType) {
-		this.id = id;
-		this.rpcMessageType = rpcMessageType;
-		this.serializationType = serializationType;
-	}
+    @Getter
+    @Setter
+    private byte[] headerData;
 
-	@Override
-	public ProtocolCode protocolCode() {
-		return RpcProtocolCode.INSTANCE;
-	}
+    private RpcMessageBody body;
 
-	@Override
-	public int id() {
-		return id;
-	}
+    @Getter
+    @Setter
+    private byte[] bodyData;
 
-	public SerializationType serializationType() {
-		return serializationType;
-	}
+    @Override
+    public ProtocolIdentifier protocolIdentifier() {
+        return RpcProtocolIdentifier.INSTANCE;
+    }
 
-	public RpcMessageType messageType() {
-		return rpcMessageType;
-	}
+    @Override
+    public int id() {
+        return id;
+    }
 
-	@Override
-	public MessageHeader header() {
-		// todo
-		return null;
-	}
+    public SerializationType serializationType() {
+        return serializationType;
+    }
 
-	@Override
-	public MessagePayload payload() {
-		// todo
-		return null;
-	}
+    @Override
+    public MessageType messageType() {
+        return messageType;
+    }
 
-	@Override
-	public void serialize() throws SerializeException {
-		this.serializeContentType();
-		this.serializeHeader();
-		this.serializeContent();
-	}
+    @Override
+    public RpcMessageHeader header() {
+        return header;
+    }
 
-	public void serializeContentType() throws SerializeException {
-		if (contentType != null) {
-			byte[] bytes = contentType.getBytes(StandardCharsets.UTF_8);
-			setContentTypeData(bytes);
-		}
-	}
+    @Override
+    public RpcMessageBody body() {
+        return body;
+    }
 
-	public void setContentTypeData(byte[] bytes) {
-		if (bytes != null) {
-			int length = bytes.length;
-			if (length > Short.MAX_VALUE) {
-				throw new RuntimeException("contentType length exceed maximum, len=" + length);
-			}
-			this.contentTypeLength = (short) length;
-			this.contentTypeData = bytes;
-		}
-	}
+    @Override
+    public void serialize() throws SerializeException {
+        Serializer serializer = SerializationManager.getSerializer(serializationType);
+        if (headerData == null) {
+            if (header != null) {
+                headerData = header.serialize(serializer);
+            }
+        }
+        if (bodyData == null) {
+            if (body != null) {
+                bodyData = body.serialize(serializer);
+            }
+        }
+    }
 
-	public void serializeHeader() throws SerializeException {
-		if (header != null) {
-			Serializer serializer = SerializationManager.getSerializer(serializationType);
-			byte[] bytes = serializer.serialize(header);
-			setHeaderData(bytes);
-		}
-	}
+    @Override
+    public void deserialize() throws DeserializeException {
+        Serializer serializer = SerializationManager.getSerializer(serializationType);
+        if (header == null) {
+            if (headerData != null) {
+                header = new RpcMessageHeader();
+                header.deserialize(serializer, headerData);
+            }
+        }
 
-	public void setHeaderData(byte[] bytes) {
-		if (bytes != null) {
-			int length = bytes.length;
-			if (length > Short.MAX_VALUE) {
-				throw new RuntimeException("contentType length exceed maximum, len=" + length);
-			}
-			this.headerLength = (short) length;
-			this.headerData = bytes;
-		}
-	}
+        if (body == null) {
+            if (bodyData != null) {
+                body = new RpcMessageBody();
+                body.deserialize(serializer, bodyData);
+            }
+        }
 
-	public void serializeContent() throws SerializeException {
-		if (content != null) {
-			Serializer serializer = SerializationManager.getSerializer(serializationType);
-			byte[] bytes = serializer.serialize(content);
-			setContentData(bytes);
-		}
-	}
-
-	public void setContentData(byte[] bytes) {
-		this.contentLength = bytes.length;
-		this.contentData = bytes;
-	}
-
-	@Override
-	public void deserialize() throws DeserializeException {
-		deserializeContentType();
-		deserializeHeader();
-		deserializeContent();
-	}
-
-	public void deserialize(RpcDeserializeLevel level) throws DeserializeException {
-		if (level.ordinal() == RpcDeserializeLevel.CONTENT_TYPE.ordinal()) {
-			deserializeContentType();
-		}
-		else if (level.ordinal() == RpcDeserializeLevel.HEADER.ordinal()) {
-			deserializeContentType();
-			deserializeHeader();
-		}
-		else {
-			deserialize();
-		}
-	}
-
-	private void deserializeContent() throws DeserializeException {
-		if (content == null && contentData != null) {
-			Class<?> clazz = null;
-			try {
-				clazz = Class.forName(contentType);
-			}
-			catch (ClassNotFoundException e) {
-				throw new DeserializeException(e);
-			}
-			this.content = SerializationManager.getSerializer(serializationType).deserialize(contentData, clazz);
-		}
-	}
-
-	private void deserializeHeader() throws DeserializeException {
-		if (header == null && headerData != null) {
-			this.header = SerializationManager.getSerializer(serializationType)
-				.deserialize(headerData, RpcMessageHeader.class);
-		}
-	}
-
-	private void deserializeContentType() {
-		if (contentType == null && contentTypeData != null) {
-			this.contentType = new String(contentTypeData, StandardCharsets.UTF_8);
-		}
-	}
-
+    }
 }
