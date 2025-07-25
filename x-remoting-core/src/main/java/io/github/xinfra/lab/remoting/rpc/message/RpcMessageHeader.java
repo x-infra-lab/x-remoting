@@ -11,21 +11,32 @@ import lombok.Setter;
 
 import java.io.Serializable;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@EqualsAndHashCode
 public class RpcMessageHeader implements Serializable, MessageHeader {
 
+	@Getter
+	@Setter
+	private byte[] headerData;
 
-	@Override
-	public byte[] serialize(Serializer serializer) throws SerializeException {
-		// todo
-		return null;
+	public RpcMessageHeader() {
+	}
+
+	public RpcMessageHeader(byte[] headerData) {
+		this.headerData = headerData;
 	}
 
 	@Override
-	public void deserialize(Serializer serializer, byte[] headerData) throws DeserializeException {
-		// todo
+	public void serialize(Serializer serializer) throws SerializeException {
+
 	}
+
+	@Override
+	public void deserialize(Serializer serializer) throws DeserializeException {
+
+	}
+
+	@Override
+	public byte[] data() {
+		return headerData;
+	}
+
 }

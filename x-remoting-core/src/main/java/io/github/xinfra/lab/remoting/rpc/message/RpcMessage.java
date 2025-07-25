@@ -20,17 +20,15 @@ public abstract class RpcMessage implements Message {
 
     private SerializationType serializationType;
 
-    private RpcMessageHeader header;
+    private RpcMessageHeader header = new RpcMessageHeader();
 
-    @Getter
-    @Setter
-    private byte[] headerData;
+    private RpcMessageBody body = new RpcMessageBody();
 
-    private RpcMessageBody body;
-
-    @Getter
-    @Setter
-    private byte[] bodyData;
+    public RpcMessage(int id, MessageType messageType, SerializationType serializationType) {
+        this.id = id;
+        this.messageType = messageType;
+        this.serializationType = serializationType;
+    }
 
     @Override
     public ProtocolIdentifier protocolIdentifier() {
@@ -64,34 +62,14 @@ public abstract class RpcMessage implements Message {
     @Override
     public void serialize() throws SerializeException {
         Serializer serializer = SerializationManager.getSerializer(serializationType);
-        if (headerData == null) {
-            if (header != null) {
-                headerData = header.serialize(serializer);
-            }
-        }
-        if (bodyData == null) {
-            if (body != null) {
-                bodyData = body.serialize(serializer);
-            }
-        }
+        header.serialize(serializer);
+        body.serialize(serializer);
     }
 
     @Override
     public void deserialize() throws DeserializeException {
         Serializer serializer = SerializationManager.getSerializer(serializationType);
-        if (header == null) {
-            if (headerData != null) {
-                header = new RpcMessageHeader();
-                header.deserialize(serializer, headerData);
-            }
-        }
-
-        if (body == null) {
-            if (bodyData != null) {
-                body = new RpcMessageBody();
-                body.deserialize(serializer, bodyData);
-            }
-        }
-
+        header.deserialize(serializer);
+        body.deserialize(serializer);
     }
 }

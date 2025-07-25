@@ -1,13 +1,9 @@
 package io.github.xinfra.lab.remoting.message;
 
-import io.github.xinfra.lab.remoting.exception.DeserializeException;
-import io.github.xinfra.lab.remoting.exception.SerializeException;
-import io.github.xinfra.lab.remoting.serialization.Serializer;
+import io.github.xinfra.lab.remoting.serialization.SerializableObject;
 
-public interface MessageBody {
 
-	byte[] serialize(Serializer serializer) throws SerializeException;
+public interface MessageBody extends SerializableObject {
 
-	void deserialize(Serializer serializer, byte[] bodyData) throws DeserializeException;
 
 }
