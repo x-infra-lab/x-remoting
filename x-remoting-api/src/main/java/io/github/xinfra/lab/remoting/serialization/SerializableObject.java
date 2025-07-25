@@ -5,10 +5,10 @@ import io.github.xinfra.lab.remoting.exception.SerializeException;
 
 public interface SerializableObject {
 
-    void serialize(Serializer serializer) throws SerializeException;
+	void serialize(Serializer serializer) throws SerializeException;
 
-    void deserialize(Serializer serializer) throws DeserializeException;
+	void deserialize(Serializer serializer) throws DeserializeException;
 
-    byte[] data();
+	byte[] data();
 
 }

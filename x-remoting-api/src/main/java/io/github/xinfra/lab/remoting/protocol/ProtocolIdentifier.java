@@ -4,7 +4,8 @@ public interface ProtocolIdentifier {
 
 	byte[] code();
 
-	default byte version(){
-		return  0x01;
+	default byte version() {
+		return 0x01;
 	}
+
 }
