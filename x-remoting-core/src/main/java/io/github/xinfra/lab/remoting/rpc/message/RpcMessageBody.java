@@ -13,6 +13,12 @@ public class RpcMessageBody implements MessageBody {
     @Setter
     private byte[] bodyData;
 
+    private byte[] typeData;
+    private String type;
+
+    private byte[] valueData;
+    private Object value;
+
     public RpcMessageBody() {
     }
 

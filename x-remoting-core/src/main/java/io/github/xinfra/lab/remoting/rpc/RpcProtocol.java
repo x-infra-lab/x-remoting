@@ -18,9 +18,9 @@ import io.github.xinfra.lab.remoting.rpc.message.RpcMessageHandler;
  */
 public class RpcProtocol implements Protocol {
 
-	public static int RESPONSE_HEADER_BYTES = 18;
+	public static int RESPONSE_HEADER_BYTES = 16;
 
-	public static int REQUEST_HEADER_BYTES = 16;
+	public static int REQUEST_HEADER_BYTES = 14;
 
 	private final RpcMessageCodec rpcMessageCodec;
 

@@ -8,10 +8,7 @@ public enum RpcProtocolIdentifier implements ProtocolIdentifier {
 
 	INSTANCE;
 
-	/**
-	 * short for x-remoting
-	 */
-	public static final byte[] PROTOCOL_CODE = "x-r".getBytes(StandardCharsets.UTF_8);
+	public static final byte[] PROTOCOL_CODE = "x".getBytes(StandardCharsets.UTF_8);
 
 	@Override
 	public byte[] code() {

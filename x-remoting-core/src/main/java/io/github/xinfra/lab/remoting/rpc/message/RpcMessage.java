@@ -9,8 +9,6 @@ import io.github.xinfra.lab.remoting.rpc.RpcProtocolIdentifier;
 import io.github.xinfra.lab.remoting.serialization.SerializationManager;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
 import io.github.xinfra.lab.remoting.serialization.Serializer;
-import lombok.Getter;
-import lombok.Setter;
 
 public abstract class RpcMessage implements Message {
 

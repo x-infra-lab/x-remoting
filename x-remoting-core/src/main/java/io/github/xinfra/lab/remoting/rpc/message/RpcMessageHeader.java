@@ -4,9 +4,7 @@ import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
 import io.github.xinfra.lab.remoting.message.MessageHeader;
 import io.github.xinfra.lab.remoting.serialization.Serializer;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
@@ -16,6 +14,8 @@ public class RpcMessageHeader implements Serializable, MessageHeader {
 	@Getter
 	@Setter
 	private byte[] headerData;
+
+
 
 	public RpcMessageHeader() {
 	}
