@@ -107,12 +107,6 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 		catch (IOException e) {
 			log.warn("connectionFactory close ex", e);
 		}
-		try {
-			heartbeater.close();
-		}
-		catch (IOException e) {
-			log.warn("heartbeater close ex", e);
-		}
 		reconnector.shutdown();
 	}
 

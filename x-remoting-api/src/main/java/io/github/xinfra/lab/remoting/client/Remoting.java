@@ -1,32 +1,21 @@
 package io.github.xinfra.lab.remoting.client;
 
-import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
-import io.github.xinfra.lab.remoting.message.MessageHandler;
 import io.github.xinfra.lab.remoting.message.RequestMessage;
 import io.github.xinfra.lab.remoting.message.ResponseMessage;
 import io.github.xinfra.lab.remoting.message.ResponseStatus;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.netty.channel.ChannelFuture;
-import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timeout;
 import io.netty.util.Timer;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.Closeable;
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 @Slf4j
-public class Remoting implements Closeable {
-
-	private final Timer timer;
-
-	public Remoting() {
-		this.timer = new HashedWheelTimer(new NamedThreadFactory("Remoting-Timer"));
-	}
+public abstract class Remoting {
 
 	public ResponseMessage syncCall(RequestMessage requestMessage, Connection connection, int timeoutMills)
 			throws InterruptedException {
@@ -73,6 +62,7 @@ public class Remoting implements Closeable {
 	public InvokeFuture<? extends ResponseMessage> asyncCall(RequestMessage requestMessage, Connection connection,
 			int timeoutMills) {
 		Protocol protocol = connection.getProtocol();
+		Timer timer = connection.getTimer();
 		MessageFactory messageFactory = protocol.messageFactory();
 
 		int requestId = requestMessage.id();
@@ -120,7 +110,7 @@ public class Remoting implements Closeable {
 			InvokeCallBack invokeCallBack) {
 		Protocol protocol = connection.getProtocol();
 		MessageFactory messageFactory = protocol.messageFactory();
-		MessageHandler messageHandler = protocol.messageHandler();
+		Timer timer = connection.getTimer();
 
 		int requestId = requestMessage.id();
 		InvokeFuture<?> invokeFuture = new InvokeFuture<>(requestId);
@@ -188,11 +178,6 @@ public class Remoting implements Closeable {
 			log.error("Invoke write requestMessage fail. requestId:{} remoteAddress:{}", requestId,
 					connection.remoteAddress(), t);
 		}
-	}
-
-	@Override
-	public void close() throws IOException {
-		this.timer.stop();
 	}
 
 }

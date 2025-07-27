@@ -11,6 +11,7 @@ import io.github.xinfra.lab.remoting.message.ResponseStatus;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.Channel;
 import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.util.Timer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,7 +43,7 @@ public class ConnectionTest {
 	public void before() {
 		testProtocol = new TestProtocol();
 		channel = new EmbeddedChannel();
-		connection = new Connection(testProtocol, channel, mock(Executor.class));
+		connection = new Connection(testProtocol, channel, mock(Executor.class), mock(Timer.class));
 	}
 
 	@Test

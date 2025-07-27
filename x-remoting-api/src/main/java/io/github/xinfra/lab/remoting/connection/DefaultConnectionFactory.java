@@ -19,6 +19,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.util.HashedWheelTimer;
+import io.netty.util.Timer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
 
@@ -69,6 +71,28 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 
 	private ExecutorService executor;
 
+	private Resource<Timer> defaultTimerResource = new Resource<Timer>() {
+
+		Timer defaultTimer;
+
+		@Override
+		public Timer get() {
+			if (defaultTimer == null) {
+				defaultTimer = new HashedWheelTimer(new NamedThreadFactory("Remoting-Client-Timer"));
+			}
+			return defaultTimer;
+		}
+
+		@Override
+		public void close() {
+			if (defaultTimer != null) {
+				defaultTimer.stop();
+			}
+		}
+	};
+
+	private Timer timer;
+
 	private static final Class<? extends SocketChannel> channelClass = Epoll.isAvailable() ? EpollSocketChannel.class
 			: NioSocketChannel.class;
 
@@ -91,6 +115,12 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 		}
 		else {
 			this.executor = defaultExecutorResource.get();
+		}
+		if (connectionConfig.getTimer() != null) {
+			this.timer = connectionConfig.getTimer();
+		}
+		else {
+			this.timer = defaultTimerResource.get();
 		}
 
 		bootstrap = new Bootstrap();
@@ -140,13 +170,14 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 			throw new RemotingException(errMsg, future.cause());
 		}
 		Channel channel = future.channel();
-		return new Connection(protocol, channel, executor);
+		return new Connection(protocol, channel, executor, timer);
 	}
 
 	@Override
 	public void close() throws IOException {
 		workerGroup.shutdownGracefully();
 		defaultExecutorResource.close();
+		defaultTimerResource.close();
 	}
 
 }

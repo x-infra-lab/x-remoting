@@ -18,7 +18,8 @@ public class DefaultHeartbeater implements Heartbeater {
 	private Remoting remoting;
 
 	public DefaultHeartbeater() {
-		this.remoting = new Remoting();
+		this.remoting = new Remoting() {
+		};
 	}
 
 	@Override
@@ -69,11 +70,6 @@ public class DefaultHeartbeater implements Heartbeater {
 	@Override
 	public void enableHeartBeat(SocketAddress socketAddress) {
 		// todo
-	}
-
-	@Override
-	public void close() throws IOException {
-		remoting.close();
 	}
 
 }

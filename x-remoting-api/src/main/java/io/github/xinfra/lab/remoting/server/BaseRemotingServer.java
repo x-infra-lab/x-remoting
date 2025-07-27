@@ -27,6 +27,8 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.util.HashedWheelTimer;
+import io.netty.util.Timer;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Validate;
 
@@ -66,6 +68,28 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 		}
 	};
 
+	private Resource<Timer> defaultTimerResource = new Resource<Timer>() {
+
+		Timer defaultTimer;
+
+		@Override
+		public Timer get() {
+			if (defaultTimer == null) {
+				defaultTimer = new HashedWheelTimer(new NamedThreadFactory("Remoting-Server-Timer"));
+			}
+			return defaultTimer;
+		}
+
+		@Override
+		public void close() {
+			if (defaultTimer != null) {
+				defaultTimer.stop();
+			}
+		}
+	};
+
+	private Timer timer;
+
 	private ServerBootstrap serverBootstrap;
 
 	private final EventLoopGroup bossGroup = Epoll.isAvailable()
@@ -103,6 +127,12 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 		}
 		else {
 			this.executor = defaultExecutorResource.get();
+		}
+		if (config.getTimer() != null) {
+			this.timer = config.getTimer();
+		}
+		else {
+			this.timer = defaultTimerResource.get();
 		}
 
 		this.handler = new ProtocolHandler();
@@ -167,7 +197,7 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 
 	@AccessForTest
 	protected void createConnection(SocketChannel channel) {
-		Connection connection = new Connection(protocol(), channel, executor);
+		Connection connection = new Connection(protocol(), channel, executor, timer);
 		if (config.isManageConnection()) {
 			connectionManager.add(connection);
 		}
@@ -185,6 +215,7 @@ public abstract class BaseRemotingServer extends AbstractLifeCycle implements Re
 			this.connectionEventProcessor.shutdown();
 		}
 		defaultExecutorResource.close();
+		defaultTimerResource.close();
 	}
 
 	@Override

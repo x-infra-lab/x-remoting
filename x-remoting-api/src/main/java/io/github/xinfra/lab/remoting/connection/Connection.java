@@ -9,6 +9,7 @@ import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelFutureListener;
 import io.netty.util.AttributeKey;
+import io.netty.util.Timer;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -37,6 +38,9 @@ public class Connection {
 	private final Executor executor;
 
 	@Getter
+	private final Timer timer;
+
+	@Getter
 	@Setter
 	private int heartbeatFailCnt = 0;
 
@@ -50,13 +54,15 @@ public class Connection {
 
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 
-	public Connection(Protocol protocol, Channel channel, Executor executor) {
+	public Connection(Protocol protocol, Channel channel, Executor executor, Timer timer) {
 		Validate.notNull(protocol, "protocol can not be null");
 		Validate.notNull(channel, "channel can not be null");
 		Validate.notNull(executor, "executor can not be null");
+		Validate.notNull(timer, "timer can not be null");
 		this.protocol = protocol;
 		this.channel = channel;
 		this.executor = executor;
+		this.timer = timer;
 		this.channel.attr(CONNECTION).set(this);
 		this.channel.pipeline().fireUserEventTriggered(ConnectionEvent.CONNECT);
 	}

@@ -4,6 +4,7 @@ import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.timeout.IdleStateHandler;
+import io.netty.util.Timer;
 import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.Executor;
@@ -27,7 +28,7 @@ public class ProtocolHeartBeatHandlerTest {
 		EmbeddedChannel channel = new EmbeddedChannel();
 		channel.pipeline().addLast(new IdleStateHandler(5, 5, 5, TimeUnit.MILLISECONDS));
 		channel.pipeline().addLast(protocolHeartBeatHandler);
-		new Connection(testProtocol, channel, mock(Executor.class));
+		new Connection(testProtocol, channel, mock(Executor.class), mock(Timer.class));
 
 		// simulate IdleStateHandler#fireUserEventTriggered
 		channel.pipeline().firstContext().fireUserEventTriggered(ALL_IDLE_STATE_EVENT);

@@ -4,6 +4,7 @@ import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.channel.embedded.EmbeddedChannel;
+import io.netty.util.Timer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -28,7 +29,7 @@ public class ProtocolHandlerTest {
 		MessageHandler messageHandler = mock(MessageHandler.class);
 
 		testProtocol.setMessageHandler(messageHandler);
-		new Connection(testProtocol, channel, mock(Executor.class));
+		new Connection(testProtocol, channel, mock(Executor.class), mock(Timer.class));
 
 		Object object = new Object();
 		channel.writeInbound(object);

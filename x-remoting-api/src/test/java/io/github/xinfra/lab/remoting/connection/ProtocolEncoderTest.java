@@ -9,6 +9,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.EncoderException;
+import io.netty.util.Timer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -26,7 +27,7 @@ public class ProtocolEncoderTest {
 		ProtocolEncoder protocolEncoder = new ProtocolEncoder();
 		EmbeddedChannel channel = new EmbeddedChannel();
 		channel.pipeline().addLast(protocolEncoder);
-		new Connection(testProtocol, channel, mock(Executor.class));
+		new Connection(testProtocol, channel, mock(Executor.class), mock(Timer.class));
 
 		Message message = mock(Message.class);
 		byte[] data = "testEncode".getBytes(StandardCharsets.UTF_8);
@@ -61,7 +62,7 @@ public class ProtocolEncoderTest {
 		ProtocolEncoder protocolEncoder = new ProtocolEncoder();
 		EmbeddedChannel channel = new EmbeddedChannel();
 		channel.pipeline().addLast(protocolEncoder);
-		new Connection(testProtocol, channel, mock(Executor.class));
+		new Connection(testProtocol, channel, mock(Executor.class), mock(Timer.class));
 
 		Message message = mock(Message.class);
 

@@ -1,5 +1,6 @@
 package io.github.xinfra.lab.remoting.server;
 
+import io.netty.util.Timer;
 import lombok.Data;
 
 import java.util.concurrent.Executor;
@@ -23,5 +24,10 @@ public class RemotingServerConfig {
 	 * The executor is not managed by x-remoting. It must be shutdown externally.
 	 */
 	Executor executor;
+
+	/**
+	 * The timer is not managed by x-remoting. It must be shutdown externally.
+	 */
+	Timer timer;
 
 }
