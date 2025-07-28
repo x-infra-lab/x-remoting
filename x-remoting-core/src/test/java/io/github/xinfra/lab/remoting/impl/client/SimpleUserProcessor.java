@@ -1,0 +1,17 @@
+package io.github.xinfra.lab.remoting.impl.client;
+
+import io.github.xinfra.lab.remoting.impl.processor.UserProcessor;
+
+public class SimpleUserProcessor implements UserProcessor<SimpleRequest> {
+
+	@Override
+	public String interest() {
+		return SimpleRequest.class.getName();
+	}
+
+	@Override
+	public Object handRequest(SimpleRequest request) {
+		return "echo:" + request.getMsg();
+	}
+
+}

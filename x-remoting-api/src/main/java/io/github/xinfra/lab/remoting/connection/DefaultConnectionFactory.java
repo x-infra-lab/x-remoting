@@ -44,9 +44,9 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 	// todo EpollUtils
 	private final EventLoopGroup workerGroup = Epoll.isAvailable()
 			? new EpollEventLoopGroup(Runtime.getRuntime().availableProcessors(),
-					new NamedThreadFactory("Remoting-Client-IO-Worker"))
+					new NamedThreadFactory("RemotingClient-Client-IO-Worker"))
 			: new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(),
-					new NamedThreadFactory("Remoting-Client-IO-Worker"));
+					new NamedThreadFactory("RemotingClient-Client-IO-Worker"));
 
 	private Resource<ExecutorService> defaultExecutorResource = new Resource<ExecutorService>() {
 
@@ -56,7 +56,7 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 		public ExecutorService get() {
 			if (defaultExecutor == null) {
 				defaultExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(),
-						new NamedThreadFactory("Remoting-Client-Default-Executor"));
+						new NamedThreadFactory("RemotingClient-Client-Default-Executor"));
 			}
 			return defaultExecutor;
 		}
@@ -78,7 +78,7 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 		@Override
 		public Timer get() {
 			if (defaultTimer == null) {
-				defaultTimer = new HashedWheelTimer(new NamedThreadFactory("Remoting-Client-Timer"));
+				defaultTimer = new HashedWheelTimer(new NamedThreadFactory("RemotingClient-Client-Timer"));
 			}
 			return defaultTimer;
 		}

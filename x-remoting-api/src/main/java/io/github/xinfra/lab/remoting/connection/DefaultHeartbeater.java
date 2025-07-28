@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import io.github.xinfra.lab.remoting.client.Remoting;
+import io.github.xinfra.lab.remoting.client.RemotingClient;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.message.MessageType;
 import io.github.xinfra.lab.remoting.message.RequestMessage;
@@ -9,16 +9,15 @@ import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
 import java.net.SocketAddress;
 
 @Slf4j
 public class DefaultHeartbeater implements Heartbeater {
 
-	private Remoting remoting;
+	private RemotingClient remotingClient;
 
 	public DefaultHeartbeater() {
-		this.remoting = new Remoting() {
+		this.remotingClient = new RemotingClient() {
 		};
 	}
 
@@ -35,7 +34,7 @@ public class DefaultHeartbeater implements Heartbeater {
 		Protocol protocol = connection.getProtocol();
 		RequestMessage heartbeatRequestMessage = protocol.messageFactory()
 			.createRequest(IDGenerator.nextRequestId(), MessageType.heartbeat, SerializationType.Hession);
-		remoting.asyncCall(heartbeatRequestMessage, connection, connection.getHeartbeatTimeoutMills(),
+		remotingClient.asyncCall(heartbeatRequestMessage, connection, connection.getHeartbeatTimeoutMills(),
 				responseMessage -> {
 
 					if (responseMessage.status() == ResponseStatus.OK) {

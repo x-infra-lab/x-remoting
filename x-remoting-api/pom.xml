@@ -3,15 +3,15 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>io.github.x-infra-lab</groupId>
-        <artifactId>x-remoting</artifactId>
+        <artifactId>x-remotingClient</artifactId>
         <version>0.0.2-RC1</version>
     </parent>
 
-    <artifactId>x-remoting-api</artifactId>
+    <artifactId>x-remotingClient-api</artifactId>
     <packaging>jar</packaging>
 
-    <name>x-remoting-api</name>
-    <url>https://github.com/x-infra-lab/x-remoting</url>
+    <name>x-remotingClient-api</name>
+    <url>https://github.com/x-infra-lab/x-remotingClient</url>
 
     <properties>
     </properties>
