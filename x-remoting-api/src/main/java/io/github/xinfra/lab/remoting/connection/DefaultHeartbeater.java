@@ -37,7 +37,7 @@ public class DefaultHeartbeater implements Heartbeater {
 		remotingClient.asyncCall(heartbeatRequestMessage, connection, connection.getHeartbeatTimeoutMills(),
 				responseMessage -> {
 
-					if (responseMessage.status() == ResponseStatus.OK) {
+					if (responseMessage.responseStatus() == ResponseStatus.OK) {
 						log.debug("heartbeat success. remote address:{}", connection.remoteAddress());
 						connection.setHeartbeatFailCnt(0);
 					}

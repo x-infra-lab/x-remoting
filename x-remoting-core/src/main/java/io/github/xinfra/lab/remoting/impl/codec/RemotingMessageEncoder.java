@@ -25,7 +25,7 @@ public class RemotingMessageEncoder implements MessageEncoder {
                 out.writeByte(remotingMessage.serializationType().data());
                 if (msg instanceof RemotingResponseMessage) {
                     RemotingResponseMessage responseMessage = (RemotingResponseMessage) msg;
-                    out.writeShort(responseMessage.getStatus().status());
+                    out.writeShort(responseMessage.responseStatus().status());
                 }
                 if (msg instanceof RemotingRequestMessage) {
                     RemotingRequestMessage requestMessage = (RemotingRequestMessage) msg;

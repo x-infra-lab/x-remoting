@@ -19,12 +19,14 @@ import java.nio.charset.StandardCharsets;
  * ｜protocol:bytes|protocol-version:byte|message-type:byte|request-id:int|serialization-type:byte|path-length:short|header-length:short|body-length:int|path|header|content|
  */
 
-@Setter
-@Getter
-@ToString
+
 public class RemotingRequestMessage extends RemotingMessage implements RequestMessage {
 
-    private String path = StringUtils.EMPTY;
+    @Setter
+    private String path;
+
+    @Setter
+    @Getter
     private byte[] pathData;
 
     public RemotingRequestMessage(int id, MessageType messageType, SerializationType serializationType) {

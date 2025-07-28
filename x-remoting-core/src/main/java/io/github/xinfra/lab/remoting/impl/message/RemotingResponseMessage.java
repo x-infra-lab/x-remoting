@@ -14,9 +14,6 @@ import lombok.ToString;
  * ｜protocol:bytes|protocol-version:byte|message-type:byte|request-id:int|serialization-type:byte|status:short|header-length:short|body-length:int|header|content|
  */
 
-@Setter
-@Getter
-@ToString
 public class RemotingResponseMessage extends RemotingMessage implements ResponseMessage {
 
 	final ResponseStatus status;
@@ -28,7 +25,7 @@ public class RemotingResponseMessage extends RemotingMessage implements Response
     }
 
 	@Override
-	public ResponseStatus status() {
+	public ResponseStatus responseStatus() {
 		return status;
 	}
 }
