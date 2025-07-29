@@ -30,7 +30,7 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-public class RemotingClientServerTest {
+public class CallServerTest {
 
 	TestProtocol testProtocol;
 
@@ -39,7 +39,7 @@ public class RemotingClientServerTest {
 		testProtocol = new TestProtocol();
 	}
 
-	private Connection getConnection(AbstractRemotingServer server) throws RemotingException {
+	private Connection getConnection(AbstractServer server) throws RemotingException {
 		SocketAddress serverAddress = server.localAddress;
 
 		List<Supplier<ChannelHandler>> channelHandlerSuppliers = new ArrayList<>();
@@ -52,11 +52,11 @@ public class RemotingClientServerTest {
 
 	@Test
 	public void testBaseRemotingServer1() throws RemotingException, InterruptedException, TimeoutException {
-		RemotingServerConfig config = new RemotingServerConfig();
+		ServerConfig config = new ServerConfig();
 		config.setPort(findAvailableTcpPort());
 		config.setManageConnection(false);
 
-		AbstractRemotingServer server = new AbstractRemotingServer(config) {
+		AbstractServer server = new AbstractServer(config) {
 			@Override
 			public Protocol protocol() {
 				return testProtocol;
@@ -70,7 +70,7 @@ public class RemotingClientServerTest {
 		Connection connection = getConnection(server);
 		Assertions.assertNotNull(connection);
 
-		AbstractRemotingServer finalServer = server;
+		AbstractServer finalServer = server;
 		Wait.untilIsTrue(() -> {
 			try {
 				verify(finalServer, atLeastOnce()).createConnection(any());
@@ -88,11 +88,11 @@ public class RemotingClientServerTest {
 
 	@Test
 	public void testBaseRemotingServer2() throws RemotingException, InterruptedException, TimeoutException {
-		RemotingServerConfig config = new RemotingServerConfig();
+		ServerConfig config = new ServerConfig();
 		config.setPort(findAvailableTcpPort());
 		config.setManageConnection(true);
 
-		AbstractRemotingServer server = new AbstractRemotingServer(config) {
+		AbstractServer server = new AbstractServer(config) {
 			@Override
 			public Protocol protocol() {
 				return testProtocol;

@@ -68,8 +68,8 @@ public class RpcMessageHandlerTest {
 		// build a requestMessage
 		String content = "this is rpc content";
 		String contentType = content.getClass().getName();
-		RpcMessageHeader header = new RpcMessageHeader();
-		header.addItem(new RpcMessageHeader.Item("this is header key", "this is header value"));
+		RemotingMessageHeader header = new RemotingMessageHeader();
+		header.addItem(new RemotingMessageHeader.Item("this is header key", "this is header value"));
 		Integer requestId = IDGenerator.nextRequestId();
 		RemotingRequestMessage requestMessage = new RemotingRequestMessage(requestId);
 		requestMessage.setHeader(header);
@@ -129,8 +129,8 @@ public class RpcMessageHandlerTest {
 		// build a requestMessage
 		String content = "this is rpc content";
 		String contentType = content.getClass().getName();
-		RpcMessageHeader header = new RpcMessageHeader();
-		header.addItem(new RpcMessageHeader.Item("this is header key", "this is header value"));
+		RemotingMessageHeader header = new RemotingMessageHeader();
+		header.addItem(new RemotingMessageHeader.Item("this is header key", "this is header value"));
 		Integer requestId = IDGenerator.nextRequestId();
 		RemotingRequestMessage requestMessage = new RemotingRequestMessage(requestId);
 		requestMessage.setHeader(header);
@@ -196,8 +196,8 @@ public class RpcMessageHandlerTest {
 		// build a requestMessage
 		String content = "this is rpc content";
 		String contentType = content.getClass().getName();
-		RpcMessageHeader header = new RpcMessageHeader();
-		header.addItem(new RpcMessageHeader.Item("this is header key", "this is header value"));
+		RemotingMessageHeader header = new RemotingMessageHeader();
+		header.addItem(new RemotingMessageHeader.Item("this is header key", "this is header value"));
 		Integer requestId = IDGenerator.nextRequestId();
 		RemotingRequestMessage requestMessage = new RemotingRequestMessage(requestId);
 		requestMessage.setHeader(header);
@@ -267,8 +267,8 @@ public class RpcMessageHandlerTest {
 		// build a requestMessage
 		String content = "this is rpc content";
 		String contentType = content.getClass().getName();
-		RpcMessageHeader header = new RpcMessageHeader();
-		header.addItem(new RpcMessageHeader.Item("this is header key", "this is header value"));
+		RemotingMessageHeader header = new RemotingMessageHeader();
+		header.addItem(new RemotingMessageHeader.Item("this is header key", "this is header value"));
 		Integer requestId = IDGenerator.nextRequestId();
 		RemotingRequestMessage requestMessage = new RemotingRequestMessage(requestId);
 		requestMessage.setHeader(header);
@@ -380,8 +380,8 @@ public class RpcMessageHandlerTest {
 		// build a response
 		String content = "this is rpc content";
 		String contentType = content.getClass().getName();
-		RpcMessageHeader header = new RpcMessageHeader();
-		header.addItem(new RpcMessageHeader.Item("this is header key", "this is header value"));
+		RemotingMessageHeader header = new RemotingMessageHeader();
+		header.addItem(new RemotingMessageHeader.Item("this is header key", "this is header value"));
 		Integer requestId = IDGenerator.nextRequestId();
 		RemotingResponseMessage responseMessage = new RemotingResponseMessage(requestId);
 		responseMessage.setHeader(header);
@@ -430,8 +430,8 @@ public class RpcMessageHandlerTest {
 		// build a response
 		String content = "this is rpc content";
 		String contentType = content.getClass().getName();
-		RpcMessageHeader header = new RpcMessageHeader();
-		header.addItem(new RpcMessageHeader.Item("this is header key", "this is header value"));
+		RemotingMessageHeader header = new RemotingMessageHeader();
+		header.addItem(new RemotingMessageHeader.Item("this is header key", "this is header value"));
 		Integer requestId = IDGenerator.nextRequestId();
 		RemotingResponseMessage responseMessage = new RemotingResponseMessage(requestId);
 		responseMessage.setHeader(header);

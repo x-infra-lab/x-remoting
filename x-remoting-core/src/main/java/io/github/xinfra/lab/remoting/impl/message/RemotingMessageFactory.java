@@ -9,7 +9,7 @@ import io.github.xinfra.lab.remoting.impl.exception.RpcServerException;
 
 import java.net.SocketAddress;
 
-public class RpcMessageFactory implements MessageFactory {
+public class RemotingMessageFactory implements MessageFactory {
 
 	@Override
 	public RemotingResponseMessage createSendFailedResponseMessage(int id, Throwable cause, SocketAddress remoteAddress) {

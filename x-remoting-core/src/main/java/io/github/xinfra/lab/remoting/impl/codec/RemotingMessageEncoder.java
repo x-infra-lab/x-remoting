@@ -23,32 +23,44 @@ public class RemotingMessageEncoder implements MessageEncoder {
                 out.writeByte(remotingMessage.messageType().data());
                 out.writeInt(remotingMessage.id());
                 out.writeByte(remotingMessage.serializationType().data());
+
                 if (msg instanceof RemotingResponseMessage) {
+                    // write response status
                     RemotingResponseMessage responseMessage = (RemotingResponseMessage) msg;
                     out.writeShort(responseMessage.responseStatus().status());
                 }
                 if (msg instanceof RemotingRequestMessage) {
+                    // write request path length
                     RemotingRequestMessage requestMessage = (RemotingRequestMessage) msg;
-                    out.writeShort(requestMessage.getPathData().length);
+                    if (requestMessage.getPathData() != null) {
+                        out.writeShort(requestMessage.getPathData().length);
+                    } else {
+                        out.writeShort(0);
+                    }
                 }
 
+                // write header and body length
                 if (remotingMessage.header() != null) {
                     out.writeShort(remotingMessage.header().getHeaderData().length);
-                }else {
+                } else {
                     out.writeShort(0);
                 }
 
                 if (remotingMessage.body() != null) {
                     out.writeInt(remotingMessage.body().getBodyData().length);
-                }else {
+                } else {
                     out.writeInt(0);
                 }
 
+                // write request path
                 if (msg instanceof RemotingRequestMessage) {
                     RemotingRequestMessage requestMessage = (RemotingRequestMessage) msg;
-                    out.writeBytes(requestMessage.getPathData());
+                    if (requestMessage.getPathData() != null) {
+                        out.writeBytes(requestMessage.getPathData());
+                    }
                 }
 
+                // write header and body
                 if (remotingMessage.header() != null) {
                     out.writeBytes(remotingMessage.header().getHeaderData());
                 }

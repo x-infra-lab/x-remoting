@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.impl.processor;
 
-import io.github.xinfra.lab.remoting.impl.message.RpcMessageHeader;
+import io.github.xinfra.lab.remoting.impl.message.RemotingMessageHeader;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -25,7 +25,7 @@ public interface UserProcessor<T> {
 
 	interface ExecutorSelector {
 
-		Executor select(String contentType, RpcMessageHeader rpcMessageHeader);
+		Executor select(String contentType, RemotingMessageHeader remotingMessageHeader);
 
 	}
 

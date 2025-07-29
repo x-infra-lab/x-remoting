@@ -4,11 +4,11 @@ import io.github.xinfra.lab.remoting.impl.message.MessageHandlerContext;
 import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.impl.message.RpcMessageType;
 import io.github.xinfra.lab.remoting.impl.message.ResponseStatus;
-import io.github.xinfra.lab.remoting.impl.message.RpcDeserializeLevel;
+import io.github.xinfra.lab.remoting.impl.message.DeserializeLevel;
 import io.github.xinfra.lab.remoting.impl.message.RemotingMessage;
 import io.github.xinfra.lab.remoting.impl.message.RemotingRequestMessage;
 import io.github.xinfra.lab.remoting.impl.message.RemotingResponseMessage;
-import io.github.xinfra.lab.remoting.impl.message.RpcResponses;
+import io.github.xinfra.lab.remoting.impl.message.RemotingResponses;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.Executor;
@@ -19,7 +19,7 @@ public class RpcRequestMessageProcessor extends AbstractMessageProcessor<Remotin
 	@Override
 	public void handleMessage(MessageHandlerContext messageHandlerContext, RemotingMessage message) throws Exception {
 		RemotingRequestMessage requestMessage = (RemotingRequestMessage) message;
-		if (!deserialize(messageHandlerContext, requestMessage, RpcDeserializeLevel.CONTENT_TYPE)) {
+		if (!deserialize(messageHandlerContext, requestMessage, DeserializeLevel.CONTENT_TYPE)) {
 			return;
 		}
 
@@ -35,7 +35,7 @@ public class RpcRequestMessageProcessor extends AbstractMessageProcessor<Remotin
 		// use UserProcessor define executor
 		Executor processorExecutor;
 		if (userProcessor.executorSelector() != null) {
-			if (!deserialize(messageHandlerContext, requestMessage, RpcDeserializeLevel.HEADER)) {
+			if (!deserialize(messageHandlerContext, requestMessage, DeserializeLevel.HEADER)) {
 				return;
 			}
 
@@ -61,7 +61,7 @@ public class RpcRequestMessageProcessor extends AbstractMessageProcessor<Remotin
 	private void process(MessageHandlerContext messageHandlerContext, UserProcessor userProcessor,
 			RemotingRequestMessage requestMessage) {
 
-		if (!deserialize(messageHandlerContext, requestMessage, RpcDeserializeLevel.ALL)) {
+		if (!deserialize(messageHandlerContext, requestMessage, DeserializeLevel.ALL)) {
 			return;
 		}
 
@@ -88,12 +88,12 @@ public class RpcRequestMessageProcessor extends AbstractMessageProcessor<Remotin
 	private void sendResponse(MessageHandlerContext messageHandlerContext, RemotingRequestMessage requestMessage,
 			RemotingResponseMessage responseMessage) {
 		if (requestMessage.messageType() != RpcMessageType.onewayRequest) {
-			RpcResponses.sendResponse(messageHandlerContext, responseMessage);
+			RemotingResponses.sendResponse(messageHandlerContext, responseMessage);
 		}
 	}
 
 	private boolean deserialize(MessageHandlerContext messageHandlerContext, RemotingRequestMessage requestMessage,
-			RpcDeserializeLevel level) {
+			DeserializeLevel level) {
 		try {
 			requestMessage.deserialize(level);
 			return true;

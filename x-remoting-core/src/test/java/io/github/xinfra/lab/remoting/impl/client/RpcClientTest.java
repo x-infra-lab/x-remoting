@@ -2,7 +2,7 @@ package io.github.xinfra.lab.remoting.impl.client;
 
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.impl.exception.RpcServerException;
-import io.github.xinfra.lab.remoting.impl.server.DefaultRemotingServer;
+import io.github.xinfra.lab.remoting.impl.server.RemotingServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -17,13 +17,13 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class RpcClientTest {
 
-	private static DefaultRemotingServer defaultRemotingServer;
+	private static RemotingServer defaultRemotingServer;
 
 	private RpcClient rpcClient;
 
 	@BeforeAll
 	public static void beforeAll() {
-		defaultRemotingServer = new DefaultRemotingServer();
+		defaultRemotingServer = new RemotingServer();
 		defaultRemotingServer.startup();
 
 		defaultRemotingServer.registerUserProcessor(new SimpleUserProcessor());

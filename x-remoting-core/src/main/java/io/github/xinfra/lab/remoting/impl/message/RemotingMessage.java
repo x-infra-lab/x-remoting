@@ -18,9 +18,9 @@ public abstract class RemotingMessage implements Message {
 
     private SerializationType serializationType;
 
-    private RpcMessageHeader header ;
+    private RemotingMessageHeader header ;
 
-    private RpcMessageBody body ;
+    private RemotingMessageBody body ;
 
     public RemotingMessage(int id, MessageType messageType, SerializationType serializationType) {
         this.id = id;
@@ -48,12 +48,12 @@ public abstract class RemotingMessage implements Message {
     }
 
     @Override
-    public RpcMessageHeader header() {
+    public RemotingMessageHeader header() {
         return header;
     }
 
     @Override
-    public RpcMessageBody body() {
+    public RemotingMessageBody body() {
         return body;
     }
 

@@ -5,13 +5,13 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.x-infra-lab</groupId>
-    <artifactId>x-remotingClient</artifactId>
+    <artifactId>x-remoting</artifactId>
     <version>0.0.2-RC1</version>
     <packaging>pom</packaging>
 
-    <name>x-remotingClient</name>
-    <description>x-remotingClient is a network communication framework based on Netty.</description>
-    <url>https://github.com/x-infra-lab/x-remotingClient</url>
+    <name>x-remoting</name>
+    <description>x-remoting is a network communication framework based on Netty.</description>
+    <url>https://github.com/x-infra-lab/x-remoting</url>
 
     <licenses>
         <license>
@@ -29,14 +29,14 @@
         </developer>
     </developers>
     <modules>
-        <module>x-remotingClient-api</module>
-        <module>x-remotingClient-core</module>
+        <module>x-remoting-api</module>
+        <module>x-remoting-core</module>
     </modules>
 
     <scm>
-        <connection>scm:git:https://github.com/x-infra-lab/x-remotingClient.git</connection>
-        <developerConnection>scm:git:https://github.com/x-infra-lab/x-remotingClient.git</developerConnection>
-        <url>https://github.com/x-infra-lab/x-remotingClient/tree/main</url>
+        <connection>scm:git:https://github.com/x-infra-lab/x-remoting.git</connection>
+        <developerConnection>scm:git:https://github.com/x-infra-lab/x-remoting.git</developerConnection>
+        <url>https://github.com/x-infra-lab/x-remoting/tree/main</url>
     </scm>
 
     <properties>

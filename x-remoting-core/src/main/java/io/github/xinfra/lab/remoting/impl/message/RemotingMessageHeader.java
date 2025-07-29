@@ -9,16 +9,16 @@ import lombok.Setter;
 
 import java.io.Serializable;
 
-public class RpcMessageHeader implements Serializable, MessageHeader {
+public class RemotingMessageHeader implements Serializable, MessageHeader {
 
 	@Getter
 	@Setter
 	private byte[] headerData;
 
-	public RpcMessageHeader() {
+	public RemotingMessageHeader() {
 	}
 
-	public RpcMessageHeader(byte[] headerData) {
+	public RemotingMessageHeader(byte[] headerData) {
 		this.headerData = headerData;
 	}
 

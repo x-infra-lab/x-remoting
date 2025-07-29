@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.impl.client;
 
-import io.github.xinfra.lab.remoting.client.RemotingClient;
+import io.github.xinfra.lab.remoting.client.Call;
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.connection.ConnectionManager;
@@ -10,15 +10,15 @@ import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.message.RequestMessage;
 import io.github.xinfra.lab.remoting.impl.message.RemotingRequestMessage;
 import io.github.xinfra.lab.remoting.impl.message.RemotingResponseMessage;
-import io.github.xinfra.lab.remoting.impl.message.RpcResponses;
+import io.github.xinfra.lab.remoting.impl.message.RemotingResponses;
 
 import java.net.SocketAddress;
 
-public class DefaultRemotingClientClient implements RemotingClient {
+public class RemotingCall implements Call {
 
 	protected ConnectionManager connectionManager;
 
-	public DefaultRemotingClientClient(ConnectionManager connectionManager) {
+	public RemotingCall(ConnectionManager connectionManager) {
 		this.connectionManager = connectionManager;
 	}
 
@@ -32,7 +32,7 @@ public class DefaultRemotingClientClient implements RemotingClient {
 
 		RemotingResponseMessage responseMessage = (RemotingResponseMessage) syncCall(requestMessage, connection,
 				timeoutMills);
-		return RpcResponses.getResponseObject(responseMessage);
+		return RemotingResponses.getResponseObject(responseMessage);
 	}
 
 	public <R> RpcInvokeFuture<R> asyncCall(Object request, SocketAddress socketAddress, int timeoutMills)

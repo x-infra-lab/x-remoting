@@ -1,29 +1,29 @@
 package io.github.xinfra.lab.remoting.impl.server;
 
 import io.github.xinfra.lab.remoting.exception.RemotingException;
-import io.github.xinfra.lab.remoting.impl.client.DefaultRemotingClientClient;
+import io.github.xinfra.lab.remoting.impl.client.RemotingCall;
 import io.github.xinfra.lab.remoting.impl.processor.UserProcessor;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.impl.RemotingProtocol;
 import io.github.xinfra.lab.remoting.impl.client.RpcInvokeCallBack;
 import io.github.xinfra.lab.remoting.impl.client.RpcInvokeFuture;
-import io.github.xinfra.lab.remoting.server.AbstractRemotingServer;
+import io.github.xinfra.lab.remoting.server.AbstractServer;
 import lombok.Getter;
 
 import java.net.SocketAddress;
 
-public class DefaultRemotingServer extends AbstractRemotingServer {
+public class RemotingServer extends AbstractServer {
 
 	@Getter
 	private RemotingProtocol protocol;
 
-	private DefaultRemotingClientClient rpcServerRemoting;
+	private RemotingCall rpcServerRemoting;
 
-	public DefaultRemotingServer() {
-		super(new DefaultRemotingServerConfig());
+	public RemotingServer() {
+		super(new RemotingServerConfig());
 	}
 
-	public DefaultRemotingServer(DefaultRemotingServerConfig config) {
+	public RemotingServer(RemotingServerConfig config) {
 		super(config);
 	}
 
@@ -31,7 +31,7 @@ public class DefaultRemotingServer extends AbstractRemotingServer {
 	public void startup() {
 		super.startup();
 		protocol = new RemotingProtocol();
-		rpcServerRemoting = new DefaultRemotingClientClient(connectionManager);
+		rpcServerRemoting = new RemotingCall(connectionManager);
 	}
 
 	@Override

@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.impl.client;
 
-import io.github.xinfra.lab.remoting.client.RemotingClient;
+import io.github.xinfra.lab.remoting.client.Call;
 import io.github.xinfra.lab.remoting.connection.ClientConnectionManager;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.connection.ConnectionManager;
@@ -9,8 +9,8 @@ import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.impl.RemotingProtocol;
-import io.github.xinfra.lab.remoting.impl.server.DefaultRemotingServer;
-import io.github.xinfra.lab.remoting.impl.server.DefaultRemotingServerConfig;
+import io.github.xinfra.lab.remoting.impl.server.RemotingServer;
+import io.github.xinfra.lab.remoting.impl.server.RemotingServerConfig;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,13 +26,13 @@ import static io.github.xinfra.lab.remoting.common.TestSocketUtils.findAvailable
 
 public class RpcHeartBeatTest {
 
-	private DefaultRemotingServer defaultRemotingServer;
+	private RemotingServer defaultRemotingServer;
 
 	@BeforeEach
 	public void before() {
-		DefaultRemotingServerConfig defaultRemotingServerConfig = new DefaultRemotingServerConfig();
+		RemotingServerConfig defaultRemotingServerConfig = new RemotingServerConfig();
 		defaultRemotingServerConfig.setPort(findAvailableTcpPort());
-		defaultRemotingServer = new DefaultRemotingServer(defaultRemotingServerConfig);
+		defaultRemotingServer = new RemotingServer(defaultRemotingServerConfig);
 		defaultRemotingServer.startup();
 		defaultRemotingServer.registerUserProcessor(new SimpleUserProcessor());
 	}
@@ -51,18 +51,18 @@ public class RpcHeartBeatTest {
 		connectionManager.startup();
 
 		MessageFactory messageFactory = protocol.messageFactory();
-		RemotingClient remotingClient = new RemotingClient(protocol);
+		Call call = new Call(protocol);
 		Message heartbeatRequestMessage = messageFactory.createHeartbeatRequestMessage();
 
 		Connection connection = connectionManager.get(remoteAddress);
 
-		Message heartbeatResponseMessage = remotingClient.syncCall(heartbeatRequestMessage, connection, 1000);
+		Message heartbeatResponseMessage = call.syncCall(heartbeatRequestMessage, connection, 1000);
 
 		Assertions.assertNotNull(heartbeatResponseMessage);
 
 		CountDownLatch countDownLatch = new CountDownLatch(1);
 		AtomicReference<Message> messageAtomicReference = new AtomicReference<>();
-		remotingClient.asyncCall(heartbeatRequestMessage, connection, 1000, message -> {
+		call.asyncCall(heartbeatRequestMessage, connection, 1000, message -> {
 			messageAtomicReference.set(message);
 			countDownLatch.countDown();
 		});

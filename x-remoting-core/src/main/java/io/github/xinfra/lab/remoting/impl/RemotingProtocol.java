@@ -2,8 +2,8 @@ package io.github.xinfra.lab.remoting.impl;
 
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.impl.codec.RpcMessageCodec;
-import io.github.xinfra.lab.remoting.impl.message.RpcMessageFactory;
-import io.github.xinfra.lab.remoting.impl.message.RpcMessageHandler;
+import io.github.xinfra.lab.remoting.impl.message.RemotingMessageFactory;
+import io.github.xinfra.lab.remoting.impl.message.RemotingMessageHandler;
 
 /**
  * remoting protocol definition:
@@ -24,14 +24,14 @@ public class RemotingProtocol implements Protocol {
 
 	private final RpcMessageCodec rpcMessageCodec;
 
-	private final RpcMessageHandler rpcMessageHandler;
+	private final RemotingMessageHandler remotingMessageHandler;
 
-	private final RpcMessageFactory rpcMessageFactory;
+	private final RemotingMessageFactory remotingMessageFactory;
 
 	public RemotingProtocol() {
 		this.rpcMessageCodec = new RpcMessageCodec();
-		this.rpcMessageHandler = new RpcMessageHandler();
-		this.rpcMessageFactory = new RpcMessageFactory();
+		this.remotingMessageHandler = new RemotingMessageHandler();
+		this.remotingMessageFactory = new RemotingMessageFactory();
 	}
 
 	@Override
@@ -45,13 +45,13 @@ public class RemotingProtocol implements Protocol {
 	}
 
 	@Override
-	public RpcMessageHandler messageHandler() {
-		return this.rpcMessageHandler;
+	public RemotingMessageHandler messageHandler() {
+		return this.remotingMessageHandler;
 	}
 
 	@Override
-	public RpcMessageFactory messageFactory() {
-		return this.rpcMessageFactory;
+	public RemotingMessageFactory messageFactory() {
+		return this.remotingMessageFactory;
 	}
 
 }

@@ -41,7 +41,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
-public abstract class AbstractRemotingServer extends AbstractLifeCycle implements RemotingServer {
+public abstract class AbstractServer extends AbstractLifeCycle implements Server {
 
 	protected SocketAddress localAddress;
 
@@ -113,11 +113,11 @@ public abstract class AbstractRemotingServer extends AbstractLifeCycle implement
 
 	protected ServerConnectionManager connectionManager;
 
-	private RemotingServerConfig config;
+	private ServerConfig config;
 
 	private ConnectionEventProcessor connectionEventProcessor;
 
-	public AbstractRemotingServer(RemotingServerConfig config) {
+	public AbstractServer(ServerConfig config) {
 		Validate.notNull(config, "RemotingServerConfig can not be null");
 		Validate.inclusiveBetween(0, 0xFFFF, config.getPort(), "port out of range: " + config.getPort());
 

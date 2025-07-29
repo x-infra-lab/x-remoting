@@ -17,9 +17,9 @@ public class RpcMessageFactoryTest {
 
 	@Test
 	public void testCreateRequestMessage() {
-		RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
+		RemotingMessageFactory remotingMessageFactory = new RemotingMessageFactory();
 
-		RemotingRequestMessage requestMessage = rpcMessageFactory.createRequestMessage();
+		RemotingRequestMessage requestMessage = remotingMessageFactory.createRequestMessage();
 		Assertions.assertNotNull(requestMessage);
 		Assertions.assertEquals(requestMessage.messageType(), RpcMessageType.request);
 		Assertions.assertArrayEquals(requestMessage.protocolIdentifier(), RemotingProtocol.PROTOCOL_CODE);
@@ -28,10 +28,10 @@ public class RpcMessageFactoryTest {
 
 	@Test
 	public void testCreateSendFailResponseMessage() throws UnknownHostException {
-		RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
+		RemotingMessageFactory remotingMessageFactory = new RemotingMessageFactory();
 		InetSocketAddress remoteAddress = InetSocketAddress.createUnresolved("localhost", 8080);
 
-		RemotingResponseMessage responseMessage = rpcMessageFactory.createSendFailedResponseMessage(
+		RemotingResponseMessage responseMessage = remotingMessageFactory.createSendFailedResponseMessage(
 				IDGenerator.nextRequestId(), new RuntimeException("testCreateSendFailResponseMessage"), remoteAddress);
 		Assertions.assertNotNull(responseMessage);
 		Assertions.assertEquals(responseMessage.getStatus(), ResponseStatus.CLIENT_SEND_ERROR.getCode());
@@ -43,10 +43,10 @@ public class RpcMessageFactoryTest {
 
 	@Test
 	public void testCreateTimeoutResponseMessage() throws UnknownHostException {
-		RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
+		RemotingMessageFactory remotingMessageFactory = new RemotingMessageFactory();
 		InetSocketAddress remoteAddress = InetSocketAddress.createUnresolved("localhost", 8080);
 
-		RemotingResponseMessage responseMessage = rpcMessageFactory.createTimeoutResponseMessage(IDGenerator.nextRequestId(),
+		RemotingResponseMessage responseMessage = remotingMessageFactory.createTimeoutResponseMessage(IDGenerator.nextRequestId(),
 				remoteAddress);
 		Assertions.assertNotNull(responseMessage);
 		Assertions.assertEquals(responseMessage.getStatus(), ResponseStatus.TIMEOUT.getCode());
@@ -57,10 +57,10 @@ public class RpcMessageFactoryTest {
 
 	@Test
 	public void testCreateConnectionClosedMessage() throws UnknownHostException {
-		RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
+		RemotingMessageFactory remotingMessageFactory = new RemotingMessageFactory();
 		InetSocketAddress remoteAddress = InetSocketAddress.createUnresolved("localhost", 8080);
 
-		RemotingResponseMessage responseMessage = rpcMessageFactory
+		RemotingResponseMessage responseMessage = remotingMessageFactory
 			.createConnectionClosedMessage(IDGenerator.nextRequestId(), remoteAddress);
 		Assertions.assertNotNull(responseMessage);
 		Assertions.assertEquals(responseMessage.getStatus(), ResponseStatus.CONNECTION_CLOSED.getCode());
@@ -71,9 +71,9 @@ public class RpcMessageFactoryTest {
 
 	@Test
 	public void testCreateHeartbeatRequestMessage() {
-		RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
+		RemotingMessageFactory remotingMessageFactory = new RemotingMessageFactory();
 
-		RemotingRequestMessage requestMessage = rpcMessageFactory.createHeartbeatRequestMessage();
+		RemotingRequestMessage requestMessage = remotingMessageFactory.createHeartbeatRequestMessage();
 		Assertions.assertNotNull(requestMessage);
 		Assertions.assertEquals(requestMessage.messageType(), RpcMessageType.heartbeatRequest);
 		Assertions.assertArrayEquals(requestMessage.protocolIdentifier(), RemotingProtocol.PROTOCOL_CODE);
@@ -82,8 +82,8 @@ public class RpcMessageFactoryTest {
 	@Test
 	public void testCreateResponse1() {
 		String responseContent = "this is response content";
-		RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
-		RemotingResponseMessage response = rpcMessageFactory.createResponse(IDGenerator.nextRequestId(), responseContent);
+		RemotingMessageFactory remotingMessageFactory = new RemotingMessageFactory();
+		RemotingResponseMessage response = remotingMessageFactory.createResponse(IDGenerator.nextRequestId(), responseContent);
 
 		Assertions.assertNotNull(response);
 		Assertions.assertEquals(response.messageType(), RpcMessageType.response);
@@ -95,8 +95,8 @@ public class RpcMessageFactoryTest {
 	@Test
 	public void testCreateExceptionResponse1() {
 		String errorMsg = "testCreateExceptionResponse1";
-		RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
-		RemotingResponseMessage response = rpcMessageFactory.createExceptionResponse(IDGenerator.nextRequestId(), errorMsg);
+		RemotingMessageFactory remotingMessageFactory = new RemotingMessageFactory();
+		RemotingResponseMessage response = remotingMessageFactory.createExceptionResponse(IDGenerator.nextRequestId(), errorMsg);
 
 		Assertions.assertNotNull(response);
 		Assertions.assertEquals(response.messageType(), RpcMessageType.response);
@@ -108,8 +108,8 @@ public class RpcMessageFactoryTest {
 	@Test
 	public void testCreateExceptionResponse2() {
 		String errorMsg = "testCreateExceptionResponse2";
-		RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
-		RemotingResponseMessage response = rpcMessageFactory.createExceptionResponse(IDGenerator.nextRequestId(),
+		RemotingMessageFactory remotingMessageFactory = new RemotingMessageFactory();
+		RemotingResponseMessage response = remotingMessageFactory.createExceptionResponse(IDGenerator.nextRequestId(),
 				new RuntimeException("testCreateExceptionResponse2"), errorMsg);
 
 		Assertions.assertNotNull(response);

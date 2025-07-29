@@ -7,7 +7,7 @@ import io.github.xinfra.lab.remoting.serialization.Serializer;
 import lombok.Getter;
 import lombok.Setter;
 
-public class RpcMessageBody implements MessageBody {
+public class RemotingMessageBody implements MessageBody {
 
     @Getter
     @Setter
@@ -19,10 +19,10 @@ public class RpcMessageBody implements MessageBody {
     private byte[] valueData;
     private Object value;
 
-    public RpcMessageBody() {
+    public RemotingMessageBody() {
     }
 
-    public RpcMessageBody(byte[] bodyData) {
+    public RemotingMessageBody(byte[] bodyData) {
         this.bodyData = bodyData;
     }
 

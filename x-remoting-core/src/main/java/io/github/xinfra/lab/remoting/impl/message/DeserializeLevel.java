@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.impl.message;
 
-public enum RpcDeserializeLevel {
+public enum DeserializeLevel {
 
 	 HEADER, ALL,
 

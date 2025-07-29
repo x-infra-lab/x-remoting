@@ -2,7 +2,7 @@ package io.github.xinfra.lab.remoting.impl.client;
 
 import io.github.xinfra.lab.remoting.client.InvokeCallBack;
 import io.github.xinfra.lab.remoting.message.ResponseMessage;
-import io.github.xinfra.lab.remoting.impl.message.RpcResponses;
+import io.github.xinfra.lab.remoting.impl.message.RemotingResponses;
 import io.github.xinfra.lab.remoting.impl.message.RemotingResponseMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,7 +19,7 @@ public interface RpcInvokeCallBack<R> extends InvokeCallBack {
 		Runnable task = () -> {
 			try {
 				RemotingResponseMessage rpcResponseMessage = (RemotingResponseMessage) responseMessage;
-				Object responseObject = RpcResponses.getResponseObject(rpcResponseMessage);
+				Object responseObject = RemotingResponses.getResponseObject(rpcResponseMessage);
 				try {
 					onResponse((R) responseObject);
 				}

@@ -1,16 +1,16 @@
 # Getting-Started
 
 ## Setup
-x-remotingClient JARs are available via Maven Central. If you are using Maven, just add the following lines to  your pom.xml:
+x-remoting JARs are available via Maven Central. If you are using Maven, just add the following lines to  your pom.xml:
 ```xml
 <dependency>
     <groupId>io.github.x-infra-lab</groupId>
-    <artifactId>x-remotingClient</artifactId>
+    <artifactId>x-remoting</artifactId>
     <version>${version}</version>
 </dependency>
 ```
 
-Maven Central lastest version :  [![Maven Central](https://img.shields.io/maven-central/v/io.github.x-infra-lab/x-remotingClient)](https://central.sonatype.com/artifact/io.github.x-infra-lab/x-remotingClient/)
+Maven Central lastest version :  [![Maven Central](https://img.shields.io/maven-central/v/io.github.x-infra-lab/x-remoting)](https://central.sonatype.com/artifact/io.github.x-infra-lab/x-remoting/)
 ## Remoting Call
 * define request message class
 ```java
@@ -68,7 +68,7 @@ rpcClient.startup();
 ```java
 @Test
 public void testSyncCall() throws RemotingException, InterruptedException {
-    String msg = "hello x-remotingClient";
+    String msg = "hello x-remoting";
     SimpleRequest request = new SimpleRequest(msg);
     String result = rpcClient.syncCall(request, rpcServer.localAddress(), 1000);
     
@@ -79,7 +79,7 @@ public void testSyncCall() throws RemotingException, InterruptedException {
 ```java
 @Test
 public void testAsyncCall1() throws RemotingException, InterruptedException, TimeoutException {
-    String msg = "hello x-remotingClient";
+    String msg = "hello x-remoting";
     SimpleRequest request = new SimpleRequest(msg);
     RpcInvokeFuture<String> future = rpcClient.asyncCall(request, rpcServer.localAddress(), 1000);
 
@@ -91,7 +91,7 @@ public void testAsyncCall1() throws RemotingException, InterruptedException, Tim
 ```java
 @Test
 public void testAsyncCall2() throws RemotingException, InterruptedException, TimeoutException {
-    String msg = "hello x-remotingClient";
+    String msg = "hello x-remoting";
     SimpleRequest request = new SimpleRequest(msg);
 
     CountDownLatch countDownLatch = new CountDownLatch(1);
@@ -117,7 +117,7 @@ public void testAsyncCall2() throws RemotingException, InterruptedException, Tim
 ```java
 @Test
 public void testOnewayCall() throws RemotingException, InterruptedException {
-    String msg = "hello x-remotingClient";
+    String msg = "hello x-remoting";
     SimpleRequest request = new SimpleRequest(msg);
 
     rpcClient.oneway(request, rpcServer.localAddress());

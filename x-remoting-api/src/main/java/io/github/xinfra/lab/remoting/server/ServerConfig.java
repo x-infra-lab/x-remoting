@@ -1,12 +1,13 @@
 package io.github.xinfra.lab.remoting.server;
 
+import io.github.xinfra.lab.remoting.serialization.SerializationType;
 import io.netty.util.Timer;
 import lombok.Data;
 
 import java.util.concurrent.Executor;
 
 @Data
-public class RemotingServerConfig {
+public class ServerConfig {
 
 	private int port;
 
@@ -19,6 +20,8 @@ public class RemotingServerConfig {
 	private long idleWriterTimeout = 0L;
 
 	private long idleAllTimeout = 90000L;
+
+	private SerializationType serializationType = SerializationType.Hession;
 
 	/**
 	 * The executor is not managed by x-remoting. It must be shutdown externally.

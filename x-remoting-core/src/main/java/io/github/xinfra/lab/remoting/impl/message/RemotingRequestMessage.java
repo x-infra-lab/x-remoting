@@ -41,6 +41,9 @@ public class RemotingRequestMessage extends RemotingMessage implements RequestMe
     @Override
     public void serialize() throws SerializeException {
         super.serialize();
+        if(path == null){
+            return;
+        }
         if (pathData == null) {
             pathData = path.getBytes(StandardCharsets.UTF_8);
         }
@@ -49,6 +52,9 @@ public class RemotingRequestMessage extends RemotingMessage implements RequestMe
     @Override
     public void deserialize() throws DeserializeException {
         super.deserialize();
+        if (pathData == null){
+            return;
+        }
         if (path == null) {
             path = new String(pathData, StandardCharsets.UTF_8);
         }

@@ -5,7 +5,7 @@ import io.github.xinfra.lab.remoting.protocol.Protocol;
 
 import java.net.SocketAddress;
 
-public interface RemotingServer extends LifeCycle {
+public interface Server extends LifeCycle {
 
 	SocketAddress localAddress();
 

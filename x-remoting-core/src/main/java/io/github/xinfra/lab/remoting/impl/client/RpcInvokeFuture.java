@@ -2,7 +2,7 @@ package io.github.xinfra.lab.remoting.impl.client;
 
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
-import io.github.xinfra.lab.remoting.impl.message.RpcResponses;
+import io.github.xinfra.lab.remoting.impl.message.RemotingResponses;
 import io.github.xinfra.lab.remoting.impl.message.RemotingResponseMessage;
 
 import java.util.concurrent.TimeUnit;
@@ -18,12 +18,12 @@ public class RpcInvokeFuture<T> {
 
 	public T get() throws InterruptedException, RemotingException {
 		RemotingResponseMessage responseMessage = (RemotingResponseMessage) invokeFuture.get();
-		return RpcResponses.getResponseObject(responseMessage);
+		return RemotingResponses.getResponseObject(responseMessage);
 	}
 
 	public T get(long timeout, TimeUnit unit) throws InterruptedException, TimeoutException, RemotingException {
 		RemotingResponseMessage responseMessage = (RemotingResponseMessage) invokeFuture.get(timeout, unit);
-		return RpcResponses.getResponseObject(responseMessage);
+		return RemotingResponses.getResponseObject(responseMessage);
 	}
 
 	public boolean isDone() {

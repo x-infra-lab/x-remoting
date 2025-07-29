@@ -11,9 +11,9 @@ import java.net.SocketAddress;
 import java.util.Objects;
 
 @Slf4j
-public class RpcResponses {
+public class RemotingResponses {
 
-	private RpcResponses() {
+	private RemotingResponses() {
 	}
 
 	public static <R> R getResponseObject(RemotingResponseMessage rpcResponseMessage) throws RemotingException {

@@ -9,8 +9,8 @@ import io.github.xinfra.lab.remoting.impl.client.RpcInvokeCallBack;
 import io.github.xinfra.lab.remoting.impl.client.RpcInvokeFuture;
 import io.github.xinfra.lab.remoting.impl.client.SimpleRequest;
 import io.github.xinfra.lab.remoting.impl.client.SimpleUserProcessor;
-import io.github.xinfra.lab.remoting.server.AbstractRemotingServer;
-import io.github.xinfra.lab.remoting.server.RemotingServerConfig;
+import io.github.xinfra.lab.remoting.server.AbstractServer;
+import io.github.xinfra.lab.remoting.server.ServerConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -24,7 +24,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class RpcServerTest {
 
-	private static DefaultRemotingServer defaultRemotingServer;
+	private static RemotingServer defaultRemotingServer;
 
 	private static RpcClient rpcClient;
 
@@ -34,9 +34,9 @@ public class RpcServerTest {
 		rpcClient.startup();
 		rpcClient.registerUserProcessor(new SimpleUserProcessor());
 
-		DefaultRemotingServerConfig config = new DefaultRemotingServerConfig();
+		RemotingServerConfig config = new RemotingServerConfig();
 		config.setManageConnection(true);
-		defaultRemotingServer = new DefaultRemotingServer(config);
+		defaultRemotingServer = new RemotingServer(config);
 		defaultRemotingServer.startup();
 		defaultRemotingServer.registerUserProcessor(new SimpleUserProcessor());
 	}
@@ -142,11 +142,11 @@ public class RpcServerTest {
 		MessageHandler messageHandler = mock(MessageHandler.class);
 		doReturn(messageHandler).when(testProtocol).messageHandler();
 
-		RemotingServerConfig config = new RemotingServerConfig();
+		ServerConfig config = new ServerConfig();
 		config.setPort(findAvailableTcpPort());
 		config.setManageConnection(true);
 
-		AbstractRemotingServer server = new AbstractRemotingServer(config) {
+		AbstractServer server = new AbstractServer(config) {
 			@Override
 			public Protocol protocol() {
 				return testProtocol;

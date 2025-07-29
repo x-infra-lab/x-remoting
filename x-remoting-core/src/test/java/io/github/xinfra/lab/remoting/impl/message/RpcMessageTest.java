@@ -13,8 +13,8 @@ public class RpcMessageTest {
 	public void testRpcRequest1() throws SerializeException, DeserializeException {
 		String content = "this is rpc content";
 		String contentType = content.getClass().getName();
-		RpcMessageHeader header = new RpcMessageHeader();
-		header.addItem(new RpcMessageHeader.Item("this is header key", "this is header value"));
+		RemotingMessageHeader header = new RemotingMessageHeader();
+		header.addItem(new RemotingMessageHeader.Item("this is header key", "this is header value"));
 
 		Integer requestId = IDGenerator.nextRequestId();
 		RemotingRequestMessage requestMessage = new RemotingRequestMessage(requestId);
@@ -49,8 +49,8 @@ public class RpcMessageTest {
 	public void testRpcResponse1() throws SerializeException, DeserializeException {
 		String content = "this is rpc content";
 		String contentType = content.getClass().getName();
-		RpcMessageHeader header = new RpcMessageHeader();
-		header.addItem(new RpcMessageHeader.Item("this is header key", "this is header value"));
+		RemotingMessageHeader header = new RemotingMessageHeader();
+		header.addItem(new RemotingMessageHeader.Item("this is header key", "this is header value"));
 
 		Integer requestId = IDGenerator.nextRequestId();
 		RemotingResponseMessage responseMessage = new RemotingResponseMessage(requestId);
@@ -76,17 +76,17 @@ public class RpcMessageTest {
 		responseMessage2.setHeaderData(responseMessage.getHeaderData());
 		responseMessage2.setContentData(responseMessage.getContentData());
 
-		responseMessage2.deserialize(RpcDeserializeLevel.CONTENT_TYPE);
+		responseMessage2.deserialize(DeserializeLevel.CONTENT_TYPE);
 		Assertions.assertNotNull(responseMessage2.getContentType());
 		Assertions.assertNull(responseMessage2.getHeader());
 		Assertions.assertNull(responseMessage2.getContent());
 
-		responseMessage2.deserialize(RpcDeserializeLevel.HEADER);
+		responseMessage2.deserialize(DeserializeLevel.HEADER);
 		Assertions.assertNotNull(responseMessage2.getContentType());
 		Assertions.assertNotNull(responseMessage2.getHeader());
 		Assertions.assertNull(responseMessage2.getContent());
 
-		responseMessage2.deserialize(RpcDeserializeLevel.ALL);
+		responseMessage2.deserialize(DeserializeLevel.ALL);
 
 		Assertions.assertEquals(responseMessage2.getContentType(), responseMessage.getContentType());
 		Assertions.assertEquals(responseMessage2.getHeader(), responseMessage.getHeader());
@@ -96,8 +96,8 @@ public class RpcMessageTest {
 	@Test
 	public void testExceptionRpcResponse1() throws SerializeException, DeserializeException {
 		int requestId = IDGenerator.nextRequestId();
-		RpcMessageFactory rpcMessageFactory = new RpcMessageFactory();
-		RemotingResponseMessage responseMessage = rpcMessageFactory.createExceptionResponse(requestId,
+		RemotingMessageFactory remotingMessageFactory = new RemotingMessageFactory();
+		RemotingResponseMessage responseMessage = remotingMessageFactory.createExceptionResponse(requestId,
 				new RuntimeException("testCreateExceptionResponse1"), ResponseStatus.SERVER_DESERIAL_EXCEPTION);
 
 		responseMessage.serialize();
@@ -112,15 +112,15 @@ public class RpcMessageTest {
 		responseMessage2.setContentTypeData(responseMessage.getContentTypeData());
 		responseMessage2.setContentData(responseMessage.getContentData());
 
-		responseMessage2.deserialize(RpcDeserializeLevel.CONTENT_TYPE);
+		responseMessage2.deserialize(DeserializeLevel.CONTENT_TYPE);
 		Assertions.assertNotNull(responseMessage2.getContentType());
 		Assertions.assertNull(responseMessage2.getContent());
 
-		responseMessage2.deserialize(RpcDeserializeLevel.HEADER);
+		responseMessage2.deserialize(DeserializeLevel.HEADER);
 		Assertions.assertNotNull(responseMessage2.getContentType());
 		Assertions.assertNull(responseMessage2.getContent());
 
-		responseMessage2.deserialize(RpcDeserializeLevel.ALL);
+		responseMessage2.deserialize(DeserializeLevel.ALL);
 
 		Assertions.assertEquals(responseMessage2.getContentType(), responseMessage.getContentType());
 		Assertions.assertEquals(responseMessage2.getHeader(), responseMessage.getHeader());

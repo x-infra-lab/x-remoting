@@ -26,7 +26,7 @@ public class RpcClient extends AbstractLifeCycle {
 	@Getter
 	private RemotingProtocol protocol;
 
-	private DefaultRemotingClientClient rpcClientRemoting;
+	private RemotingCall rpcClientRemoting;
 
 	@Getter
 	private ClientConnectionManager connectionManager;
@@ -54,7 +54,7 @@ public class RpcClient extends AbstractLifeCycle {
 			this.connectionManager = new ClientConnectionManager(protocol);
 		}
 
-		this.rpcClientRemoting = new DefaultRemotingClientClient(connectionManager);
+		this.rpcClientRemoting = new RemotingCall(connectionManager);
 	}
 
 	@Override
