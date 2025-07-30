@@ -1,7 +1,5 @@
 package io.github.xinfra.lab.remoting.impl.client;
 
-import io.github.xinfra.lab.remoting.impl.processor.UserProcessor;
-
 public class ExceptionProcessor implements UserProcessor<ExceptionRequest> {
 
 	@Override

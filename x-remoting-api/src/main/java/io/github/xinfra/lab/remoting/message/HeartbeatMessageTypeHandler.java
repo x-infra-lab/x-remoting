@@ -2,7 +2,7 @@ package io.github.xinfra.lab.remoting.message;
 
 import io.github.xinfra.lab.remoting.connection.Connection;
 
-public class HeartbeatMessageTypeHandler implements MessageTypeHandler {
+public class HeartbeatMessageTypeHandler implements MessageTypeHandler<RequestMessage> {
 
 	@Override
 	public MessageType messageType() {
@@ -10,8 +10,10 @@ public class HeartbeatMessageTypeHandler implements MessageTypeHandler {
 	}
 
 	@Override
-	public void handleMessage(Connection connection, Message msg) {
-		// todo
+	public void handleMessage(Connection connection, RequestMessage requestMessage) {
+		MessageFactory messageFactory = connection.getProtocol().messageFactory();
+		Responses.sendResponse(connection,
+				messageFactory.createResponse(requestMessage.id(), ResponseStatus.OK));
 	}
 
 }

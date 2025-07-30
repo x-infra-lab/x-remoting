@@ -32,6 +32,7 @@ public interface MessageHandler {
 					ResponseMessage response = connection.getProtocol()
 						.messageFactory()
 						.createResponse(msg.id(), ResponseStatus.Error, e);
+					// todo oneway response的处理
 					Responses.sendResponse(connection, response);
 				}
 			};
@@ -42,6 +43,7 @@ public interface MessageHandler {
 			ResponseMessage response = connection.getProtocol()
 				.messageFactory()
 				.createResponse(msg.id(), ResponseStatus.Error, e);
+			// todo oneway response的处理
 			Responses.sendResponse(connection, response);
 		}
 	}

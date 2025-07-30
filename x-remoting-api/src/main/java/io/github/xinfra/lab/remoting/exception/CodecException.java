@@ -6,4 +6,7 @@ public class CodecException extends RemotingException {
 		super(message);
 	}
 
+	public CodecException(String message, Throwable cause) {
+		super(message, cause);
+	}
 }

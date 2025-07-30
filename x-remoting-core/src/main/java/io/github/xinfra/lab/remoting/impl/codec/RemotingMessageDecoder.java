@@ -5,9 +5,12 @@ import io.github.xinfra.lab.remoting.exception.CodecException;
 import io.github.xinfra.lab.remoting.impl.RemotingProtocol;
 import io.github.xinfra.lab.remoting.impl.RemotingProtocolIdentifier;
 import io.github.xinfra.lab.remoting.impl.message.RemotingMessage;
+import io.github.xinfra.lab.remoting.impl.message.RemotingMessageBody;
+import io.github.xinfra.lab.remoting.impl.message.RemotingMessageHeader;
 import io.github.xinfra.lab.remoting.impl.message.RemotingRequestMessage;
 import io.github.xinfra.lab.remoting.impl.message.RemotingResponseMessage;
 import io.github.xinfra.lab.remoting.message.MessageType;
+import io.github.xinfra.lab.remoting.message.ResponseStatus;
 import io.github.xinfra.lab.remoting.serialization.SerializationManager;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
 import io.netty.buffer.ByteBuf;
@@ -15,6 +18,8 @@ import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+
+import static io.github.xinfra.lab.remoting.message.MessageType.*;
 
 @Slf4j
 public class RemotingMessageDecoder implements MessageDecoder {
@@ -25,77 +30,78 @@ public class RemotingMessageDecoder implements MessageDecoder {
 
     @Override
     public void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
-        if (in.readableBytes() >= minLength) {
-            in.markReaderIndex();
-            in.skipBytes(protocolCodeLength);
-            in.skipBytes(1); // skip protocol version
+        try {
+            if (in.readableBytes() >= minLength) {
+                in.markReaderIndex();
+                in.skipBytes(protocolCodeLength);
+                in.skipBytes(1); // skip protocol version
 
-            byte messageTypeCode = in.readByte();
-            MessageType messageType = MessageType.valueOf(messageTypeCode);
+                byte messageTypeCode = in.readByte();
+                MessageType messageType = valueOf(messageTypeCode);
 
-            int requestId = in.readInt();
-            byte serializationTypeCode = in.readByte();
-            SerializationType serializationType = SerializationManager.valueOf(serializationTypeCode);
+                int requestId = in.readInt();
+                byte serializationTypeCode = in.readByte();
+                SerializationType serializationType = SerializationManager.valueOf(serializationTypeCode);
+
+                ResponseStatus responseStatus = null;
+                if (messageType == response) {
+                    short status = in.readShort();
+                    responseStatus = ResponseStatus.valueOf(status);
+                }
+
+                short pathDataLength = 0;
+                if (messageType == heartbeat ||
+                        messageType == request ||
+                        messageType == oneway) {
+                    pathDataLength = in.readShort();
+                }
+
+                short headerDataLength = in.readShort();
+                int bodyDataLength = in.readInt();
+
+                int remainLength = pathDataLength + headerDataLength + bodyDataLength;
+
+                if (remainLength <= in.readableBytes()) {
+                    RemotingMessage remotingMessage;
+
+                    if (messageType == heartbeat ||
+                            messageType == request ||
+                            messageType == oneway) {
+                        RemotingRequestMessage remotingRequestMessage = new RemotingRequestMessage(requestId, messageType, serializationType);
+
+                        if (pathDataLength > 0) {
+                            byte[] bytes = new byte[pathDataLength];
+                            in.readBytes(bytes);
+                            remotingRequestMessage.setPathData(bytes);
+                        }
+                        remotingMessage = remotingRequestMessage;
+                    } else if (messageType == response) {
+                        remotingMessage = new RemotingResponseMessage(requestId, messageType, serializationType, responseStatus);
+                    } else {
+                        log.warn("MessageType not support:{}", messageType);
+                        throw new CodecException("MessageType not support:" + messageType);
+                    }
 
 
-            if (messageType == MessageType.response) {
-                short status = in.readShort();
+                    if (headerDataLength > 0) {
+                        byte[] bytes = new byte[headerDataLength];
+                        in.readBytes(bytes);
+                        remotingMessage.setHeader(new RemotingMessageHeader(bytes));
+                    }
+                    if (bodyDataLength > 0) {
+                        byte[] bytes = new byte[bodyDataLength];
+                        in.readBytes(bytes);
+                        remotingMessage.setBody(new RemotingMessageBody(bytes));
+                    }
+
+                    out.add(remotingMessage);
+                } else {
+                    in.resetReaderIndex();
+                }
             }
-            if (messageType == MessageType.heartbeat ||
-                    messageType == MessageType.request ||
-                    messageType == MessageType.oneway) {
-                short pathDataLength = in.readShort();
-
-            }
-
-            short headerDataLength = in.readShort();
-            int bodyDataLength = in.readInt();
-
-            int remainLength = headerDataLength + bodyDataLength;
-
-            if (remainLength <= in.readableBytes()) {
-                RemotingMessage remotingMessage;
-                switch (messageType) {
-                    case MessageType.request:
-                        remotingMessage = new RemotingRequestMessage(requestId, , serializationType);
-                        break;
-                    case onewayRequest:
-                        remotingMessage = new RemotingRequestMessage(requestId, onewayRequest, serializationType);
-                        break;
-                    case response:
-                        RemotingResponseMessage rpcResponseMessage = new RemotingResponseMessage(requestId, serializationType);
-                        remotingMessage = rpcResponseMessage;
-                        break;
-                    case heartbeatRequest:
-                        remotingMessage = new RpcHeartbeatRequestMessage(requestId, serializationType);
-                        break;
-                    default:
-                        log.warn("MessageType not support:{}", rpcMessageType);
-                        throw new CodecException("MessageType not support:" + rpcMessageType);
-
-                }
-
-                if (contentTypeLength > 0) {
-                    byte[] bytes = new byte[contentTypeLength];
-                    in.readBytes(bytes);
-                    remotingMessage.setContentTypeData(bytes);
-                }
-
-                if (headerLength > 0) {
-                    byte[] bytes = new byte[headerLength];
-                    in.readBytes(bytes);
-                    remotingMessage.setHeaderData(bytes);
-                }
-                if (contentLength > 0) {
-                    byte[] bytes = new byte[contentLength];
-                    in.readBytes(bytes);
-                    remotingMessage.setContentData(bytes);
-                }
-
-                out.add(remotingMessage);
-            } else {
-                in.resetReaderIndex();
-            }
+        } catch (Exception e) {
+            log.error("RemotingMessageDecoder encode fail.", e);
+            throw new CodecException("RemotingMessageDecoder decode fail.", e);
         }
     }
 

@@ -2,7 +2,9 @@ package io.github.xinfra.lab.remoting.message;
 
 public interface ResponseStatus {
 
-	short status();
+
+
+    short status();
 
 	ResponseStatus OK = () -> (short) 0;
 
@@ -14,4 +16,8 @@ public interface ResponseStatus {
 
 	ResponseStatus ConnectionClosed = () -> (short) 4;
 
+	static ResponseStatus valueOf(short status) {
+		// todo
+		return null;
+	}
 }

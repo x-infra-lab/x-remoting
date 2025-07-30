@@ -5,7 +5,6 @@ import io.github.xinfra.lab.remoting.connection.ClientConnectionManager;
 import io.github.xinfra.lab.remoting.connection.ConnectionConfig;
 import io.github.xinfra.lab.remoting.connection.ConnectionManagerConfig;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
-import io.github.xinfra.lab.remoting.impl.processor.UserProcessor;
 import io.github.xinfra.lab.remoting.impl.RemotingProtocol;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;

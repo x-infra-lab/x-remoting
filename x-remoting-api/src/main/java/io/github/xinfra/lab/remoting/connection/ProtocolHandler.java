@@ -11,7 +11,7 @@ import static io.github.xinfra.lab.remoting.connection.Connection.CONNECTION;
 public class ProtocolHandler extends ChannelDuplexHandler {
 
 	@Override
-	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
+	public void channelRead(ChannelHandlerContext ctx, Object msg) {
 		if (msg instanceof Message) {
 			Connection connection = ctx.channel().attr(CONNECTION).get();
 			connection.getProtocol().messageHandler().handleMessage(ctx, (Message) msg);

@@ -9,6 +9,7 @@ import io.github.xinfra.lab.remoting.impl.RemotingProtocolIdentifier;
 import io.github.xinfra.lab.remoting.serialization.SerializationManager;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
 import io.github.xinfra.lab.remoting.serialization.Serializer;
+import lombok.Setter;
 
 public abstract class RemotingMessage implements Message {
 
@@ -18,8 +19,10 @@ public abstract class RemotingMessage implements Message {
 
     private SerializationType serializationType;
 
+    @Setter
     private RemotingMessageHeader header ;
 
+    @Setter
     private RemotingMessageBody body ;
 
     public RemotingMessage(int id, MessageType messageType, SerializationType serializationType) {
