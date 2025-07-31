@@ -15,4 +15,5 @@ public abstract class RequestMessageTypeHandler implements MessageTypeHandler<Re
     }
 
     public abstract ResponseMessage handleRequestMessage(RequestMessage requestMessage);
+
 }

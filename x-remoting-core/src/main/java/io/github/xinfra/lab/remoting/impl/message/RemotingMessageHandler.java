@@ -1,30 +1,23 @@
 package io.github.xinfra.lab.remoting.impl.message;
 
-import io.github.xinfra.lab.remoting.message.HeartbeatMessageTypeHandler;
+import io.github.xinfra.lab.remoting.message.AbstractMessageHandler;
 import io.github.xinfra.lab.remoting.message.Message;
-import io.github.xinfra.lab.remoting.message.MessageHandler;
 import io.github.xinfra.lab.remoting.message.MessageType;
 import io.github.xinfra.lab.remoting.message.MessageTypeHandler;
-import io.github.xinfra.lab.remoting.message.ResponseMeesageTypeHandler;
-import io.netty.channel.ChannelHandlerContext;
+=import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.concurrent.ConcurrentHashMap;
 
 
 
 @Slf4j
-public class RemotingMessageHandler implements MessageHandler {
+public class RemotingMessageHandler extends AbstractMessageHandler {
 
-	private ConcurrentHashMap<MessageType, MessageTypeHandler<RemotingMessage>>
-			messageTypeHandlers = new ConcurrentHashMap<>();
+
 
 
 	public RemotingMessageHandler() {
-		// heartbeat
-		this.registerMessageTypeHandler(new HeartbeatMessageTypeHandler());
-		// response
-		this.registerMessageTypeHandler(new ResponseMeesageTypeHandler());
+
 //		// request
 //		RpcRequestMessageProcessor rpcRequestMessageProcessor = new RpcRequestMessageProcessor();
 //		this.registerMessageProcessor(RpcMessageType.request, rpcRequestMessageProcessor);
