@@ -12,8 +12,7 @@ public class HeartbeatMessageTypeHandler implements MessageTypeHandler<RequestMe
 	@Override
 	public void handleMessage(Connection connection, RequestMessage requestMessage) {
 		MessageFactory messageFactory = connection.getProtocol().messageFactory();
-		Responses.sendResponse(connection,
-				messageFactory.createResponse(requestMessage.id(), ResponseStatus.OK));
+		Responses.sendResponse(connection, messageFactory.createResponse(requestMessage.id(), ResponseStatus.OK));
 	}
 
 }
