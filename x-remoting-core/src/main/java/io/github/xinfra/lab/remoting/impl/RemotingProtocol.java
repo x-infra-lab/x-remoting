@@ -1,7 +1,7 @@
 package io.github.xinfra.lab.remoting.impl;
 
 import io.github.xinfra.lab.remoting.protocol.Protocol;
-import io.github.xinfra.lab.remoting.impl.codec.RpcMessageCodec;
+import io.github.xinfra.lab.remoting.impl.codec.RemotingMessageCodec;
 import io.github.xinfra.lab.remoting.impl.message.RemotingMessageFactory;
 import io.github.xinfra.lab.remoting.impl.message.RemotingMessageHandler;
 
@@ -22,14 +22,14 @@ public class RemotingProtocol implements Protocol {
 
 	public static int REQUEST_HEADER_BYTES = 16;
 
-	private final RpcMessageCodec rpcMessageCodec;
+	private final RemotingMessageCodec remotingMessageCodec;
 
 	private final RemotingMessageHandler remotingMessageHandler;
 
 	private final RemotingMessageFactory remotingMessageFactory;
 
 	public RemotingProtocol() {
-		this.rpcMessageCodec = new RpcMessageCodec();
+		this.remotingMessageCodec = new RemotingMessageCodec();
 		this.remotingMessageHandler = new RemotingMessageHandler();
 		this.remotingMessageFactory = new RemotingMessageFactory();
 	}
@@ -40,8 +40,8 @@ public class RemotingProtocol implements Protocol {
 	}
 
 	@Override
-	public RpcMessageCodec messageCodec() {
-		return rpcMessageCodec;
+	public RemotingMessageCodec messageCodec() {
+		return remotingMessageCodec;
 	}
 
 	@Override

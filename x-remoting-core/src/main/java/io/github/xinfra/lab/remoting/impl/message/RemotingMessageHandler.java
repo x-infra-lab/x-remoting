@@ -2,43 +2,23 @@ package io.github.xinfra.lab.remoting.impl.message;
 
 import io.github.xinfra.lab.remoting.message.AbstractMessageHandler;
 import io.github.xinfra.lab.remoting.message.Message;
-import io.github.xinfra.lab.remoting.message.MessageType;
-import io.github.xinfra.lab.remoting.message.MessageTypeHandler;
 import io.netty.channel.ChannelHandlerContext;
 import lombok.extern.slf4j.Slf4j;
-
-
 
 
 @Slf4j
 public class RemotingMessageHandler extends AbstractMessageHandler {
 
 
-
-
-	public RemotingMessageHandler() {
-
-//		// request
+    public RemotingMessageHandler() {
+        // request
 //		RpcRequestMessageProcessor rpcRequestMessageProcessor = new RpcRequestMessageProcessor();
 //		this.registerMessageProcessor(RpcMessageType.request, rpcRequestMessageProcessor);
 //		this.registerMessageProcessor(RpcMessageType.onewayRequest, rpcRequestMessageProcessor);
-//		// response
-//		this.registerMessageProcessor(RpcMessageType.response, new RpcResponseMessageProcessor());
+    }
 
-	}
-
-	@Override
-	public void registerMessageTypeHandler(MessageTypeHandler messageTypeHandler) {
-
-	}
-
-	@Override
-	public MessageTypeHandler messageTypeHandler(MessageType messageType) {
-		return null;
-	}
-
-	@Override
-	public void handleMessage(ChannelHandlerContext ctx, Message msg) {
+    @Override
+    public void handleMessage(ChannelHandlerContext ctx, Message msg) {
 //		RemotingMessage remotingMessage = (RemotingMessage) msg;
 //		MessageHandlerContext messageHandlerContext = new MessageHandlerContext(ctx);
 //		try {
@@ -48,7 +28,7 @@ public class RemotingMessageHandler extends AbstractMessageHandler {
 //		catch (Throwable t) {
 //			exceptionForMessage(messageHandlerContext, remotingMessage, t);
 //		}
-	}
+    }
 //
 //	private void registerMessageProcessor(RpcMessageType rpcMessageType, MessageProcessor<?> messageProcessor) {
 //		MessageProcessor<RemotingMessage> prevMessageProcessor = messageProcessors.putIfAbsent(rpcMessageType,
@@ -83,7 +63,5 @@ public class RemotingMessageHandler extends AbstractMessageHandler {
 //			RemotingResponses.sendResponse(messageHandlerContext, responseMessage);
 //		}
 //	}
-
-
 
 }
