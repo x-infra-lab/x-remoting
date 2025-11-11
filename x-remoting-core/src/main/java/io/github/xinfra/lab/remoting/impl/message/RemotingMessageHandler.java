@@ -1,5 +1,6 @@
 package io.github.xinfra.lab.remoting.impl.message;
 
+import io.github.xinfra.lab.remoting.impl.handler.HandlerRegistry;
 import io.github.xinfra.lab.remoting.message.AbstractMessageHandler;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.netty.channel.ChannelHandlerContext;
@@ -10,11 +11,9 @@ import lombok.extern.slf4j.Slf4j;
 public class RemotingMessageHandler extends AbstractMessageHandler {
 
 
-    public RemotingMessageHandler() {
-        // request
-//		RpcRequestMessageProcessor rpcRequestMessageProcessor = new RpcRequestMessageProcessor();
-//		this.registerMessageProcessor(RpcMessageType.request, rpcRequestMessageProcessor);
-//		this.registerMessageProcessor(RpcMessageType.onewayRequest, rpcRequestMessageProcessor);
+    public RemotingMessageHandler(HandlerRegistry handlerRegistry) {
+        super();
+        registerMessageTypeHandler(new RemotingRequestMessageTypeHandler(handlerRegistry));
     }
 
     @Override

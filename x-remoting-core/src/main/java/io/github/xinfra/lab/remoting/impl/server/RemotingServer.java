@@ -2,6 +2,7 @@ package io.github.xinfra.lab.remoting.impl.server;
 
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.impl.client.RemotingCall;
+import io.github.xinfra.lab.remoting.impl.handler.HandlerRegistry;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.impl.RemotingProtocol;
 import io.github.xinfra.lab.remoting.impl.client.RpcInvokeCallBack;
@@ -18,6 +19,8 @@ public class RemotingServer extends AbstractServer {
 
 	private RemotingCall rpcServerRemoting;
 
+	private HandlerRegistry handlerRegistry;
+
 	public RemotingServer() {
 		super(new RemotingServerConfig());
 	}
@@ -29,7 +32,7 @@ public class RemotingServer extends AbstractServer {
 	@Override
 	public void startup() {
 		super.startup();
-		protocol = new RemotingProtocol();
+		protocol = new RemotingProtocol(handlerRegistry);
 		rpcServerRemoting = new RemotingCall(connectionManager);
 	}
 

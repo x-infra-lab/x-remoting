@@ -34,7 +34,7 @@ public class DefaultHeartbeatTriggerTest {
 
 	@BeforeEach
 	public void beforeEach() {
-		protocol = new RemotingProtocol();
+		protocol = new RemotingProtocol(handlerRegistry);
 	}
 
 	@AfterEach

@@ -54,7 +54,7 @@ public class RpcMessageHandlerTest {
 
 	@BeforeEach
 	public void beforeEach() {
-		protocol = new RemotingProtocol();
+		protocol = new RemotingProtocol(handlerRegistry);
 	}
 
 	@AfterEach

@@ -127,6 +127,7 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 		return connections;
 	}
 
+	// todo 改名holder
 	protected void createConnectionForHolder(SocketAddress socketAddress, Connections connections, int size)
 			throws RemotingException {
 		for (int i = connections.size(); i < size; i++) {

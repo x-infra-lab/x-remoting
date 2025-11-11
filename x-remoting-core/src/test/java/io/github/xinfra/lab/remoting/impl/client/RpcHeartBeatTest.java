@@ -46,7 +46,7 @@ public class RpcHeartBeatTest {
 	public void heartbeatTest1() throws RemotingException, InterruptedException, IOException {
 		SocketAddress remoteAddress = defaultRemotingServer.localAddress();
 
-		Protocol protocol = new RemotingProtocol();
+		Protocol protocol = new RemotingProtocol(handlerRegistry);
 		ConnectionManager connectionManager = new ClientConnectionManager(protocol);
 		connectionManager.startup();
 
