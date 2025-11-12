@@ -6,6 +6,7 @@ import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.connection.ConnectionManager;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
+import io.github.xinfra.lab.remoting.impl.RequestApi;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.message.RequestMessage;
 import io.github.xinfra.lab.remoting.impl.message.RemotingRequestMessage;
@@ -22,7 +23,7 @@ public class RemotingCall implements Call {
 		this.connectionManager = connectionManager;
 	}
 
-	public <R> R syncCall(Object request, SocketAddress socketAddress, int timeoutMills)
+	public <R> R syncCall(RequestApi requestApi, Object request, SocketAddress socketAddress, int timeoutMills)
 			throws InterruptedException, RemotingException {
 
 		Connection connection = connectionManager.get(socketAddress);
@@ -35,7 +36,7 @@ public class RemotingCall implements Call {
 		return RemotingResponses.getResponseObject(responseMessage);
 	}
 
-	public <R> RpcInvokeFuture<R> asyncCall(Object request, SocketAddress socketAddress, int timeoutMills)
+	public <R> RpcInvokeFuture<R> asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress, int timeoutMills)
 			throws RemotingException {
 
 		Connection connection = connectionManager.get(socketAddress);
@@ -48,7 +49,7 @@ public class RemotingCall implements Call {
 		return new RpcInvokeFuture<R>(invokeFuture);
 	}
 
-	public <R> void asyncCall(Object request, SocketAddress socketAddress, int timeoutMills,
+	public <R> void asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress, int timeoutMills,
 			RpcInvokeCallBack<R> rpcInvokeCallBack) throws RemotingException {
 
 		Connection connection = connectionManager.get(socketAddress);
@@ -60,7 +61,7 @@ public class RemotingCall implements Call {
 		super.asyncCall(requestMessage, connection, timeoutMills, rpcInvokeCallBack);
 	}
 
-	public void oneway(Object request, SocketAddress socketAddress) throws RemotingException {
+	public void oneway(RequestApi requestApi, Object request, SocketAddress socketAddress) throws RemotingException {
 
 		Connection connection = connectionManager.get(socketAddress);
 		connectionManager.check(connection);

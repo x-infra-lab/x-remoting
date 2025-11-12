@@ -19,7 +19,7 @@ public interface Call {
 
 	Logger log = LoggerFactory.getLogger(Call.class);
 
-	default ResponseMessage syncCall(RequestMessage requestMessage, Connection connection, int timeoutMills)
+	default ResponseMessage syncCall(RequestMessage requestMessage, Connection connection, CallOptions callOptions)
 			throws InterruptedException {
 		Protocol protocol = connection.getProtocol();
 		MessageFactory messageFactory = protocol.messageFactory();
@@ -62,7 +62,7 @@ public interface Call {
 	}
 
 	default InvokeFuture<? extends ResponseMessage> asyncCall(RequestMessage requestMessage, Connection connection,
-			int timeoutMills) {
+															  CallOptions callOptions) {
 		Protocol protocol = connection.getProtocol();
 		Timer timer = connection.getTimer();
 		MessageFactory messageFactory = protocol.messageFactory();
@@ -108,7 +108,7 @@ public interface Call {
 		return invokeFuture;
 	}
 
-	default void asyncCall(RequestMessage requestMessage, Connection connection, int timeoutMills,
+	default void asyncCall(RequestMessage requestMessage, Connection connection, CallOptions callOptions,
 			InvokeCallBack invokeCallBack) {
 		Protocol protocol = connection.getProtocol();
 		MessageFactory messageFactory = protocol.messageFactory();
@@ -162,7 +162,7 @@ public interface Call {
 
 	}
 
-	default void oneway(RequestMessage requestMessage, Connection connection) {
+	default void oneway(RequestMessage requestMessage, Connection connection,CallOptions callOptions) {
 		int requestId = requestMessage.id();
 		try {
 			connection.getChannel().writeAndFlush(requestMessage).addListener((ChannelFuture future) -> {
