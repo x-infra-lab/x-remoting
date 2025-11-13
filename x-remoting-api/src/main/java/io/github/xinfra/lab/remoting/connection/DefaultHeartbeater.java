@@ -1,6 +1,7 @@
 package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.client.Call;
+import io.github.xinfra.lab.remoting.client.CallOptions;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.message.MessageType;
 import io.github.xinfra.lab.remoting.message.RequestMessage;
@@ -34,19 +35,20 @@ public class DefaultHeartbeater implements Heartbeater {
 		Protocol protocol = connection.getProtocol();
 		RequestMessage heartbeatRequestMessage = protocol.messageFactory()
 			.createRequest(IDGenerator.nextRequestId(), MessageType.heartbeat, SerializationType.Hession);
-		call.asyncCall(heartbeatRequestMessage, connection, connection.getHeartbeatTimeoutMills(), responseMessage -> {
+		call.asyncCall(heartbeatRequestMessage, connection,
+				CallOptions.builder().timeoutMills(connection.getHeartbeatTimeoutMills()).build(), responseMessage -> {
 
-			if (responseMessage.responseStatus() == ResponseStatus.OK) {
-				log.debug("heartbeat success. remote address:{}", connection.remoteAddress());
-				connection.setHeartbeatFailCnt(0);
-			}
-			else {
-				int failCount = connection.getHeartbeatFailCnt() + 1;
-				log.warn("heartbeat fail {} times. remote address:{}", failCount, connection.remoteAddress());
-				connection.setHeartbeatFailCnt(failCount);
-			}
+					if (responseMessage.responseStatus() == ResponseStatus.OK) {
+						log.debug("heartbeat success. remote address:{}", connection.remoteAddress());
+						connection.setHeartbeatFailCnt(0);
+					}
+					else {
+						int failCount = connection.getHeartbeatFailCnt() + 1;
+						log.warn("heartbeat fail {} times. remote address:{}", failCount, connection.remoteAddress());
+						connection.setHeartbeatFailCnt(failCount);
+					}
 
-		});
+				});
 
 	}
 

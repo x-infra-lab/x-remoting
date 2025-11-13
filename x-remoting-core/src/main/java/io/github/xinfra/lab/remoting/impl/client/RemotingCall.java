@@ -1,6 +1,7 @@
 package io.github.xinfra.lab.remoting.impl.client;
 
 import io.github.xinfra.lab.remoting.client.Call;
+import io.github.xinfra.lab.remoting.client.CallOptions;
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.connection.ConnectionManager;
@@ -23,7 +24,7 @@ public class RemotingCall implements Call {
 		this.connectionManager = connectionManager;
 	}
 
-	public <R> R syncCall(RequestApi requestApi, Object request, SocketAddress socketAddress, int timeoutMills)
+	public <R> R syncCall(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions)
 			throws InterruptedException, RemotingException {
 
 		Connection connection = connectionManager.get(socketAddress);
@@ -32,11 +33,11 @@ public class RemotingCall implements Call {
 		RequestMessage requestMessage = buildRequestMessage(messageFactory, request);
 
 		RemotingResponseMessage responseMessage = (RemotingResponseMessage) syncCall(requestMessage, connection,
-				timeoutMills);
+				 callOptions);
 		return RemotingResponses.getResponseObject(responseMessage);
 	}
 
-	public <R> RpcInvokeFuture<R> asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress, int timeoutMills)
+	public <R> RpcInvokeFuture<R> asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions)
 			throws RemotingException {
 
 		Connection connection = connectionManager.get(socketAddress);
@@ -45,11 +46,11 @@ public class RemotingCall implements Call {
 		MessageFactory messageFactory = connection.getProtocol().messageFactory();
 		RequestMessage requestMessage = buildRequestMessage(messageFactory, request);
 
-		InvokeFuture<?> invokeFuture = super.asyncCall(requestMessage, connection, timeoutMills);
+		InvokeFuture<?> invokeFuture = asyncCall(requestMessage, connection, callOptions);
 		return new RpcInvokeFuture<R>(invokeFuture);
 	}
 
-	public <R> void asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress, int timeoutMills,
+	public <R> void asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions,
 			RpcInvokeCallBack<R> rpcInvokeCallBack) throws RemotingException {
 
 		Connection connection = connectionManager.get(socketAddress);
@@ -58,10 +59,10 @@ public class RemotingCall implements Call {
 		MessageFactory messageFactory = connection.getProtocol().messageFactory();
 		RequestMessage requestMessage = buildRequestMessage(messageFactory, request);
 
-		super.asyncCall(requestMessage, connection, timeoutMills, rpcInvokeCallBack);
+		asyncCall(requestMessage, connection, callOptions, rpcInvokeCallBack);
 	}
 
-	public void oneway(RequestApi requestApi, Object request, SocketAddress socketAddress) throws RemotingException {
+	public void oneway(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions) throws RemotingException {
 
 		Connection connection = connectionManager.get(socketAddress);
 		connectionManager.check(connection);
@@ -69,7 +70,7 @@ public class RemotingCall implements Call {
 		MessageFactory messageFactory = connection.getProtocol().messageFactory();
 		RequestMessage requestMessage = buildRequestMessage(messageFactory, request);
 
-		super.oneway(requestMessage, connection);
+		oneway(requestMessage, connection, callOptions);
 	}
 
 	private RequestMessage buildRequestMessage(MessageFactory messageFactory, Object request)

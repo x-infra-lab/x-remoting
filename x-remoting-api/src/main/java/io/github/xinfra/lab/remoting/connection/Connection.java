@@ -46,7 +46,7 @@ public class Connection {
 
 	@Getter
 	@Setter
-	private int heartbeatTimeoutMills = 1000;
+	private int heartbeatTimeoutMills = 3000;
 
 	@Getter
 	@Setter

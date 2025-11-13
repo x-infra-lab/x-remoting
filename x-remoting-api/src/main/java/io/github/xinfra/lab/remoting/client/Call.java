@@ -50,7 +50,7 @@ public interface Call {
 		}
 		ResponseMessage responseMessage;
 		try {
-			responseMessage = invokeFuture.get(timeoutMills, TimeUnit.MILLISECONDS);
+			responseMessage = invokeFuture.get(callOptions.getTimeoutMills(), TimeUnit.MILLISECONDS);
 		}
 		catch (TimeoutException timeoutException) {
 			log.warn("Wait responseMessage timeout. requestId:{} remoteAddress:{}", requestId,
@@ -62,7 +62,7 @@ public interface Call {
 	}
 
 	default InvokeFuture<? extends ResponseMessage> asyncCall(RequestMessage requestMessage, Connection connection,
-															  CallOptions callOptions) {
+			CallOptions callOptions) {
 		Protocol protocol = connection.getProtocol();
 		Timer timer = connection.getTimer();
 		MessageFactory messageFactory = protocol.messageFactory();
@@ -77,7 +77,7 @@ public interface Call {
 				ResponseMessage responseMessage = messageFactory.createResponse(requestId, ResponseStatus.Timeout);
 				future.complete(responseMessage);
 			}
-		}, timeoutMills, TimeUnit.MILLISECONDS);
+		}, callOptions.getTimeoutMills(), TimeUnit.MILLISECONDS);
 		invokeFuture.addTimeout(timeout);
 
 		try {
@@ -125,7 +125,7 @@ public interface Call {
 				future.complete(responseMessage);
 				future.asyncExecuteCallBack(connection.getExecutor());
 			}
-		}, timeoutMills, TimeUnit.MILLISECONDS);
+		}, callOptions.getTimeoutMills(), TimeUnit.MILLISECONDS);
 		invokeFuture.addTimeout(timeout);
 		invokeFuture.addCallBack(invokeCallBack);
 
@@ -162,7 +162,7 @@ public interface Call {
 
 	}
 
-	default void oneway(RequestMessage requestMessage, Connection connection,CallOptions callOptions) {
+	default void oneway(RequestMessage requestMessage, Connection connection, CallOptions callOptions) {
 		int requestId = requestMessage.id();
 		try {
 			connection.getChannel().writeAndFlush(requestMessage).addListener((ChannelFuture future) -> {
