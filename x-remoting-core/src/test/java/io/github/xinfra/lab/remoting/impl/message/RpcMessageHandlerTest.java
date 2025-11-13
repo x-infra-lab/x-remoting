@@ -8,7 +8,7 @@ import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
 import io.github.xinfra.lab.remoting.impl.RemotingProtocol;
-import io.github.xinfra.lab.remoting.impl.exception.RpcServerException;
+import io.github.xinfra.lab.remoting.impl.exception.RemotingServerException;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
 import org.junit.jupiter.api.AfterEach;
@@ -178,10 +178,10 @@ public class RpcMessageHandlerTest {
 				if (argument.getCause() != null) {
 					return false;
 				}
-				if (!Objects.equals(argument.getContentType(), RpcServerException.class.getName())) {
+				if (!Objects.equals(argument.getContentType(), RemotingServerException.class.getName())) {
 					return false;
 				}
-				if (!(argument.getContent() instanceof RpcServerException)) {
+				if (!(argument.getContent() instanceof RemotingServerException)) {
 					return false;
 				}
 				return true;
@@ -249,10 +249,10 @@ public class RpcMessageHandlerTest {
 				if (argument.getCause() != null) {
 					return false;
 				}
-				if (!Objects.equals(argument.getContentType(), RpcServerException.class.getName())) {
+				if (!Objects.equals(argument.getContentType(), RemotingServerException.class.getName())) {
 					return false;
 				}
-				if (!(argument.getContent() instanceof RpcServerException)) {
+				if (!(argument.getContent() instanceof RemotingServerException)) {
 					return false;
 				}
 				return true;
@@ -317,10 +317,10 @@ public class RpcMessageHandlerTest {
 				if (argument.getCause() != null) {
 					return false;
 				}
-				if (!Objects.equals(argument.getContentType(), RpcServerException.class.getName())) {
+				if (!Objects.equals(argument.getContentType(), RemotingServerException.class.getName())) {
 					return false;
 				}
-				if (!(argument.getContent() instanceof RpcServerException)) {
+				if (!(argument.getContent() instanceof RemotingServerException)) {
 					return false;
 				}
 				return true;

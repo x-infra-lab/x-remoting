@@ -14,32 +14,31 @@ import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.net.SocketAddress;
 
 @Slf4j
-public class RpcClient extends AbstractLifeCycle {
+public class RemotingClient extends AbstractLifeCycle {
 
-	private static final Logger log = LoggerFactory.getLogger(RpcClient.class);
+	private static final Logger log = LoggerFactory.getLogger(RemotingClient.class);
 
 	@Getter
-	private RpcClientConfig config;
+	private RemotingClientConfig config;
 
 	@Getter
 	private RemotingProtocol protocol;
 
-	private RemotingCall rpcClientRemoting;
+	private RemotingCall clientRemotingCall;
 
 	private RequestHandlerRegistry requestHandlerRegistry = new RequestHandlerRegistry();
 
 	@Getter
 	private ClientConnectionManager connectionManager;
 
-	public RpcClient() {
-		this(new RpcClientConfig());
+	public RemotingClient() {
+		this(new RemotingClientConfig());
 	}
 
-	public RpcClient(RpcClientConfig config) {
+	public RemotingClient(RemotingClientConfig config) {
 		this.config = config;
 		this.protocol = new RemotingProtocol(requestHandlerRegistry);
 
@@ -58,7 +57,7 @@ public class RpcClient extends AbstractLifeCycle {
 			this.connectionManager = new ClientConnectionManager(protocol);
 		}
 
-		this.rpcClientRemoting = new RemotingCall(connectionManager);
+		this.clientRemotingCall = new RemotingCall(connectionManager);
 	}
 
 	@Override
@@ -71,32 +70,26 @@ public class RpcClient extends AbstractLifeCycle {
 	public void shutdown() {
 		super.shutdown();
 		connectionManager.shutdown();
-		try {
-			rpcClientRemoting.close();
-		}
-		catch (IOException e) {
-			log.warn("rpcClientRemoting close ex", e);
-		}
 	}
 
 	public <R> R syncCall(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions)
 			throws RemotingException, InterruptedException {
 
-		return rpcClientRemoting.syncCall(requestApi, request, socketAddress, callOptions);
+		return clientRemotingCall.syncCall(requestApi, request, socketAddress, callOptions);
 	}
 
-	public <R> RpcInvokeFuture<R> asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions)
+	public <R> RemotingInvokeFuture<R> asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions)
 			throws RemotingException {
-		return rpcClientRemoting.asyncCall(requestApi, request, socketAddress, callOptions);
+		return clientRemotingCall.asyncCall(requestApi, request, socketAddress, callOptions);
 	}
 
 	public <R> void asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions,
-			RpcInvokeCallBack<R> rpcInvokeCallBack) throws RemotingException {
-		rpcClientRemoting.asyncCall(requestApi, request, socketAddress, callOptions, rpcInvokeCallBack);
+			RemotingInvokeCallBack<R> remotingInvokeCallBack) throws RemotingException {
+		clientRemotingCall.asyncCall(requestApi, request, socketAddress, callOptions, remotingInvokeCallBack);
 	}
 
 	public void oneway(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions) throws RemotingException {
-		rpcClientRemoting.oneway(requestApi, request, socketAddress, CallOptions);
+		clientRemotingCall.oneway(requestApi, request, socketAddress, CallOptions);
 	}
 
 

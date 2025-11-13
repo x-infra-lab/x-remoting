@@ -4,9 +4,9 @@ import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
-import io.github.xinfra.lab.remoting.impl.client.RpcClient;
-import io.github.xinfra.lab.remoting.impl.client.RpcInvokeCallBack;
-import io.github.xinfra.lab.remoting.impl.client.RpcInvokeFuture;
+import io.github.xinfra.lab.remoting.impl.client.RemotingClient;
+import io.github.xinfra.lab.remoting.impl.client.RemotingInvokeCallBack;
+import io.github.xinfra.lab.remoting.impl.client.RemotingInvokeFuture;
 import io.github.xinfra.lab.remoting.impl.client.SimpleRequest;
 import io.github.xinfra.lab.remoting.impl.client.SimpleUserProcessor;
 import io.github.xinfra.lab.remoting.server.AbstractServer;
@@ -26,13 +26,13 @@ public class RpcServerTest {
 
 	private static RemotingServer defaultRemotingServer;
 
-	private static RpcClient rpcClient;
+	private static RemotingClient remotingClient;
 
 	@BeforeAll
 	public static void beforeAll() {
-		rpcClient = new RpcClient();
-		rpcClient.startup();
-		rpcClient.registerUserProcessor(new SimpleUserProcessor());
+		remotingClient = new RemotingClient();
+		remotingClient.startup();
+		remotingClient.registerUserProcessor(new SimpleUserProcessor());
 
 		RemotingServerConfig config = new RemotingServerConfig();
 		config.setManageConnection(true);
@@ -43,7 +43,7 @@ public class RpcServerTest {
 
 	@AfterAll
 	public static void afterAll() {
-		rpcClient.shutdown();
+		remotingClient.shutdown();
 
 		defaultRemotingServer.shutdown();
 	}
@@ -53,10 +53,10 @@ public class RpcServerTest {
 		SocketAddress serverAddress = defaultRemotingServer.localAddress();
 		String msg = "hello x-remoting";
 		SimpleRequest request = new SimpleRequest(msg);
-		String result = rpcClient.syncCall(request, serverAddress, 1000);
+		String result = remotingClient.syncCall(request, serverAddress, 1000);
 		Assertions.assertEquals(result, "echo:" + msg);
 
-		Connection connection = rpcClient.getConnectionManager().get(serverAddress);
+		Connection connection = remotingClient.getConnectionManager().get(serverAddress);
 		result = defaultRemotingServer.syncCall(request, connection.getChannel().localAddress(), 1000);
 		Assertions.assertEquals(result, "echo:" + msg);
 	}
@@ -66,12 +66,12 @@ public class RpcServerTest {
 		SocketAddress serverAddress = defaultRemotingServer.localAddress();
 		String msg = "hello x-remoting";
 		SimpleRequest request = new SimpleRequest(msg);
-		RpcInvokeFuture<String> future = rpcClient.asyncCall(request, serverAddress, 1000);
+		RemotingInvokeFuture<String> future = remotingClient.asyncCall(request, serverAddress, 1000);
 
 		String result = future.get(3, TimeUnit.SECONDS);
 		Assertions.assertEquals(result, "echo:" + msg);
 
-		Connection connection = rpcClient.getConnectionManager().get(serverAddress);
+		Connection connection = remotingClient.getConnectionManager().get(serverAddress);
 		future = defaultRemotingServer.asyncCall(request, connection.getChannel().localAddress(), 1000);
 		result = future.get(3, TimeUnit.SECONDS);
 		Assertions.assertEquals(result, "echo:" + msg);
@@ -85,7 +85,7 @@ public class RpcServerTest {
 
 		CountDownLatch countDownLatch = new CountDownLatch(1);
 		AtomicReference<String> result = new AtomicReference<>();
-		rpcClient.asyncCall(request, serverAddress, 1000, new RpcInvokeCallBack<String>() {
+		remotingClient.asyncCall(request, serverAddress, 1000, new RemotingInvokeCallBack<String>() {
 			@Override
 			public void onException(Throwable t) {
 				countDownLatch.countDown();
@@ -101,10 +101,10 @@ public class RpcServerTest {
 		countDownLatch.await(3, TimeUnit.SECONDS);
 		Assertions.assertEquals(result.get(), "echo:" + msg);
 
-		Connection connection = rpcClient.getConnectionManager().get(serverAddress);
+		Connection connection = remotingClient.getConnectionManager().get(serverAddress);
 		CountDownLatch countDownLatch2 = new CountDownLatch(1);
 		AtomicReference<String> result2 = new AtomicReference<>();
-		defaultRemotingServer.asyncCall(request, connection.getChannel().localAddress(), 1000, new RpcInvokeCallBack<String>() {
+		defaultRemotingServer.asyncCall(request, connection.getChannel().localAddress(), 1000, new RemotingInvokeCallBack<String>() {
 			@Override
 			public void onException(Throwable t) {
 				countDownLatch2.countDown();
@@ -128,9 +128,9 @@ public class RpcServerTest {
 		String msg = "hello x-remoting";
 		SimpleRequest request = new SimpleRequest(msg);
 
-		rpcClient.oneway(request, serverAddress);
+		remotingClient.oneway(request, serverAddress);
 
-		Connection connection = rpcClient.getConnectionManager().get(serverAddress);
+		Connection connection = remotingClient.getConnectionManager().get(serverAddress);
 		defaultRemotingServer.oneway(request, connection.getChannel().localAddress());
 
 		TimeUnit.SECONDS.sleep(2);

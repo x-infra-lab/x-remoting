@@ -3,7 +3,7 @@ package io.github.xinfra.lab.remoting.impl.message;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
-import io.github.xinfra.lab.remoting.impl.exception.RpcServerException;
+import io.github.xinfra.lab.remoting.impl.exception.RemotingServerException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -124,7 +124,7 @@ public class RpcMessageTest {
 
 		Assertions.assertEquals(responseMessage2.getContentType(), responseMessage.getContentType());
 		Assertions.assertEquals(responseMessage2.getHeader(), responseMessage.getHeader());
-		Assertions.assertTrue(responseMessage2.getContent() instanceof RpcServerException);
+		Assertions.assertTrue(responseMessage2.getContent() instanceof RemotingServerException);
 
 	}
 

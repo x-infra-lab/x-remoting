@@ -5,7 +5,7 @@ import io.github.xinfra.lab.remoting.exception.ConnectionClosedException;
 import io.github.xinfra.lab.remoting.exception.SendMessageException;
 import io.github.xinfra.lab.remoting.exception.TimeoutException;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
-import io.github.xinfra.lab.remoting.impl.exception.RpcServerException;
+import io.github.xinfra.lab.remoting.impl.exception.RemotingServerException;
 
 import java.net.SocketAddress;
 
@@ -43,9 +43,9 @@ public class RemotingMessageFactory implements MessageFactory {
 	public RemotingResponseMessage createExceptionResponse(int id, Throwable t, ResponseStatus status) {
 		RemotingResponseMessage rpcResponseMessage = new RemotingResponseMessage(id);
 		rpcResponseMessage.setStatus(status.getCode());
-		RpcServerException rpcServerException = new RpcServerException(t);
-		rpcResponseMessage.setContent(rpcServerException);
-		rpcResponseMessage.setContentType(RpcServerException.class.getName());
+		RemotingServerException remotingServerException = new RemotingServerException(t);
+		rpcResponseMessage.setContent(remotingServerException);
+		rpcResponseMessage.setContentType(RemotingServerException.class.getName());
 		return rpcResponseMessage;
 	}
 
@@ -53,9 +53,9 @@ public class RemotingMessageFactory implements MessageFactory {
 	public RemotingResponseMessage createExceptionResponse(int id, Throwable t, String errorMsg) {
 		RemotingResponseMessage rpcResponseMessage = new RemotingResponseMessage(id);
 		rpcResponseMessage.setStatus(ResponseStatus.SERVER_EXCEPTION.getCode());
-		RpcServerException rpcServerException = new RpcServerException(errorMsg, t);
-		rpcResponseMessage.setContent(rpcServerException);
-		rpcResponseMessage.setContentType(RpcServerException.class.getName());
+		RemotingServerException remotingServerException = new RemotingServerException(errorMsg, t);
+		rpcResponseMessage.setContent(remotingServerException);
+		rpcResponseMessage.setContentType(RemotingServerException.class.getName());
 		return rpcResponseMessage;
 	}
 
@@ -63,9 +63,9 @@ public class RemotingMessageFactory implements MessageFactory {
 	public RemotingResponseMessage createExceptionResponse(int id, String errorMsg) {
 		RemotingResponseMessage rpcResponseMessage = new RemotingResponseMessage(id);
 		rpcResponseMessage.setStatus(ResponseStatus.SERVER_EXCEPTION.getCode());
-		RpcServerException rpcServerException = new RpcServerException(errorMsg);
-		rpcResponseMessage.setContent(rpcServerException);
-		rpcResponseMessage.setContentType(RpcServerException.class.getName());
+		RemotingServerException remotingServerException = new RemotingServerException(errorMsg);
+		rpcResponseMessage.setContent(remotingServerException);
+		rpcResponseMessage.setContentType(RemotingServerException.class.getName());
 		return rpcResponseMessage;
 	}
 

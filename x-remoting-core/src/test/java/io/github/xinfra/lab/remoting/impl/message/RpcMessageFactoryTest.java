@@ -5,7 +5,7 @@ import io.github.xinfra.lab.remoting.exception.ConnectionClosedException;
 import io.github.xinfra.lab.remoting.exception.SendMessageException;
 import io.github.xinfra.lab.remoting.exception.TimeoutException;
 import io.github.xinfra.lab.remoting.impl.RemotingProtocol;
-import io.github.xinfra.lab.remoting.impl.exception.RpcServerException;
+import io.github.xinfra.lab.remoting.impl.exception.RemotingServerException;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -102,7 +102,7 @@ public class RpcMessageFactoryTest {
 		Assertions.assertEquals(response.messageType(), RpcMessageType.response);
 		Assertions.assertArrayEquals(response.protocolIdentifier(), RemotingProtocol.PROTOCOL_CODE);
 		Assertions.assertEquals(response.getStatus(), ResponseStatus.SERVER_EXCEPTION.getCode());
-		Assertions.assertInstanceOf(RpcServerException.class, response.getContent());
+		Assertions.assertInstanceOf(RemotingServerException.class, response.getContent());
 	}
 
 	@Test
@@ -116,7 +116,7 @@ public class RpcMessageFactoryTest {
 		Assertions.assertEquals(response.messageType(), RpcMessageType.response);
 		Assertions.assertArrayEquals(response.protocolIdentifier(), RemotingProtocol.PROTOCOL_CODE);
 		Assertions.assertEquals(response.getStatus(), ResponseStatus.SERVER_EXCEPTION.getCode());
-		Assertions.assertInstanceOf(RpcServerException.class, response.getContent());
+		Assertions.assertInstanceOf(RemotingServerException.class, response.getContent());
 	}
 
 }

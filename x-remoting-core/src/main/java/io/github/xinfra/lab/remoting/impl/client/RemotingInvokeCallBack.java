@@ -10,9 +10,9 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 
-public interface RpcInvokeCallBack<R> extends InvokeCallBack {
+public interface RemotingInvokeCallBack<R> extends InvokeCallBack {
 
-	Logger LOGGER = LoggerFactory.getLogger(RpcInvokeCallBack.class);
+	Logger LOGGER = LoggerFactory.getLogger(RemotingInvokeCallBack.class);
 
 	@Override
 	default void complete(ResponseMessage responseMessage) {
@@ -44,7 +44,7 @@ public interface RpcInvokeCallBack<R> extends InvokeCallBack {
 				executor.execute(task);
 			}
 			catch (RejectedExecutionException re) {
-				LOGGER.error("fail execute callback. id:{}", rpcResponseMessage.id(), re);
+				LOGGER.error("fail execute callback. id:{}", responseMessage.id(), re);
 			}
 		}
 		else {

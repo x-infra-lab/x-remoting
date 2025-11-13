@@ -5,7 +5,7 @@ import io.github.xinfra.lab.remoting.connection.ConnectionManagerConfig;
 import lombok.Data;
 
 @Data
-public class RpcClientConfig {
+public class RemotingClientConfig {
 
 	private ConnectionConfig connectionConfig;
 

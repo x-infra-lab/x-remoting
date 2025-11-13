@@ -1,7 +1,7 @@
 package io.github.xinfra.lab.remoting.impl.client;
 
 import io.github.xinfra.lab.remoting.exception.RemotingException;
-import io.github.xinfra.lab.remoting.impl.exception.RpcServerException;
+import io.github.xinfra.lab.remoting.impl.exception.RemotingServerException;
 import io.github.xinfra.lab.remoting.impl.server.RemotingServer;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
@@ -19,7 +19,7 @@ public class RpcClientTest {
 
 	private static RemotingServer defaultRemotingServer;
 
-	private RpcClient rpcClient;
+	private RemotingClient remotingClient;
 
 	@BeforeAll
 	public static void beforeAll() {
@@ -37,20 +37,20 @@ public class RpcClientTest {
 
 	@BeforeEach
 	public void beforeEach() {
-		rpcClient = new RpcClient();
-		rpcClient.startup();
+		remotingClient = new RemotingClient();
+		remotingClient.startup();
 	}
 
 	@AfterEach
 	public void afterEach() {
-		rpcClient.shutdown();
+		remotingClient.shutdown();
 	}
 
 	@Test
 	public void testSyncCall() throws RemotingException, InterruptedException {
 		String msg = "hello x-remoting";
 		SimpleRequest request = new SimpleRequest(msg);
-		String result = rpcClient.syncCall(request, defaultRemotingServer.localAddress(), 1000);
+		String result = remotingClient.syncCall(request, defaultRemotingServer.localAddress(), 1000);
 
 		Assertions.assertEquals(result, "echo:" + msg);
 	}
@@ -61,10 +61,10 @@ public class RpcClientTest {
 		ExceptionRequest request = new ExceptionRequest(msg);
 
 		RemotingException remotingException = Assertions.assertThrows(RemotingException.class, () -> {
-			rpcClient.syncCall(request, defaultRemotingServer.localAddress(), 1000);
+			remotingClient.syncCall(request, defaultRemotingServer.localAddress(), 1000);
 		});
 
-		Assertions.assertInstanceOf(RpcServerException.class, remotingException.getCause());
+		Assertions.assertInstanceOf(RemotingServerException.class, remotingException.getCause());
 
 		remotingException.printStackTrace();
 	}
@@ -73,7 +73,7 @@ public class RpcClientTest {
 	public void testAsyncCall1() throws RemotingException, InterruptedException, TimeoutException {
 		String msg = "hello x-remoting";
 		SimpleRequest request = new SimpleRequest(msg);
-		RpcInvokeFuture<String> future = rpcClient.asyncCall(request, defaultRemotingServer.localAddress(), 1000);
+		RemotingInvokeFuture<String> future = remotingClient.asyncCall(request, defaultRemotingServer.localAddress(), 1000);
 
 		String result = future.get(3, TimeUnit.SECONDS);
 		Assertions.assertEquals(result, "echo:" + msg);
@@ -86,7 +86,7 @@ public class RpcClientTest {
 
 		CountDownLatch countDownLatch = new CountDownLatch(1);
 		AtomicReference<String> result = new AtomicReference<>();
-		rpcClient.asyncCall(request, defaultRemotingServer.localAddress(), 1000, new RpcInvokeCallBack<String>() {
+		remotingClient.asyncCall(request, defaultRemotingServer.localAddress(), 1000, new RemotingInvokeCallBack<String>() {
 			@Override
 			public void onException(Throwable t) {
 				countDownLatch.countDown();
@@ -108,7 +108,7 @@ public class RpcClientTest {
 		String msg = "hello x-remoting";
 		SimpleRequest request = new SimpleRequest(msg);
 
-		rpcClient.oneway(request, defaultRemotingServer.localAddress());
+		remotingClient.oneway(request, defaultRemotingServer.localAddress());
 		TimeUnit.SECONDS.sleep(2);
 	}
 
