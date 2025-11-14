@@ -10,9 +10,9 @@ import org.slf4j.LoggerFactory;
 import java.util.concurrent.Executor;
 import java.util.concurrent.RejectedExecutionException;
 
-public interface RemotingInvokeCallBack<R> extends InvokeCallBack {
+public interface RemotingCallBack<R> extends InvokeCallBack {
 
-	Logger LOGGER = LoggerFactory.getLogger(RemotingInvokeCallBack.class);
+	Logger LOGGER = LoggerFactory.getLogger(RemotingCallBack.class);
 
 	@Override
 	default void complete(ResponseMessage responseMessage) {

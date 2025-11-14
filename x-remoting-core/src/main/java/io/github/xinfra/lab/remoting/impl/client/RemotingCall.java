@@ -37,7 +37,7 @@ public class RemotingCall implements Call {
 		return RemotingResponses.getResponseObject(responseMessage);
 	}
 
-	public <R> RemotingInvokeFuture<R> asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions)
+	public <R> RemotingFuture<R> asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions)
 			throws RemotingException {
 
 		Connection connection = connectionManager.get(socketAddress);
@@ -47,11 +47,11 @@ public class RemotingCall implements Call {
 		RequestMessage requestMessage = buildRequestMessage(messageFactory, request);
 
 		InvokeFuture<?> invokeFuture = asyncCall(requestMessage, connection, callOptions);
-		return new RemotingInvokeFuture<R>(invokeFuture);
+		return new RemotingFuture<R>(invokeFuture);
 	}
 
 	public <R> void asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions,
-			RemotingInvokeCallBack<R> remotingInvokeCallBack) throws RemotingException {
+			RemotingCallBack<R> remotingCallBack) throws RemotingException {
 
 		Connection connection = connectionManager.get(socketAddress);
 		connectionManager.check(connection);
@@ -59,7 +59,7 @@ public class RemotingCall implements Call {
 		MessageFactory messageFactory = connection.getProtocol().messageFactory();
 		RequestMessage requestMessage = buildRequestMessage(messageFactory, request);
 
-		asyncCall(requestMessage, connection, callOptions, remotingInvokeCallBack);
+		asyncCall(requestMessage, connection, callOptions, remotingCallBack);
 	}
 
 	public void oneway(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions) throws RemotingException {

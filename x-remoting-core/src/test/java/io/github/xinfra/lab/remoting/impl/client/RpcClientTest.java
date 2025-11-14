@@ -73,7 +73,7 @@ public class RpcClientTest {
 	public void testAsyncCall1() throws RemotingException, InterruptedException, TimeoutException {
 		String msg = "hello x-remoting";
 		SimpleRequest request = new SimpleRequest(msg);
-		RemotingInvokeFuture<String> future = remotingClient.asyncCall(request, defaultRemotingServer.localAddress(), 1000);
+		RemotingFuture<String> future = remotingClient.asyncCall(request, defaultRemotingServer.localAddress(), 1000);
 
 		String result = future.get(3, TimeUnit.SECONDS);
 		Assertions.assertEquals(result, "echo:" + msg);
@@ -86,7 +86,7 @@ public class RpcClientTest {
 
 		CountDownLatch countDownLatch = new CountDownLatch(1);
 		AtomicReference<String> result = new AtomicReference<>();
-		remotingClient.asyncCall(request, defaultRemotingServer.localAddress(), 1000, new RemotingInvokeCallBack<String>() {
+		remotingClient.asyncCall(request, defaultRemotingServer.localAddress(), 1000, new RemotingCallBack<String>() {
 			@Override
 			public void onException(Throwable t) {
 				countDownLatch.countDown();

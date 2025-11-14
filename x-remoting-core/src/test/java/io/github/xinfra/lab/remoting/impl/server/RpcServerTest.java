@@ -5,8 +5,8 @@ import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.impl.client.RemotingClient;
-import io.github.xinfra.lab.remoting.impl.client.RemotingInvokeCallBack;
-import io.github.xinfra.lab.remoting.impl.client.RemotingInvokeFuture;
+import io.github.xinfra.lab.remoting.impl.client.RemotingCallBack;
+import io.github.xinfra.lab.remoting.impl.client.RemotingFuture;
 import io.github.xinfra.lab.remoting.impl.client.SimpleRequest;
 import io.github.xinfra.lab.remoting.impl.client.SimpleUserProcessor;
 import io.github.xinfra.lab.remoting.server.AbstractServer;
@@ -66,7 +66,7 @@ public class RpcServerTest {
 		SocketAddress serverAddress = defaultRemotingServer.localAddress();
 		String msg = "hello x-remoting";
 		SimpleRequest request = new SimpleRequest(msg);
-		RemotingInvokeFuture<String> future = remotingClient.asyncCall(request, serverAddress, 1000);
+		RemotingFuture<String> future = remotingClient.asyncCall(request, serverAddress, 1000);
 
 		String result = future.get(3, TimeUnit.SECONDS);
 		Assertions.assertEquals(result, "echo:" + msg);
@@ -85,7 +85,7 @@ public class RpcServerTest {
 
 		CountDownLatch countDownLatch = new CountDownLatch(1);
 		AtomicReference<String> result = new AtomicReference<>();
-		remotingClient.asyncCall(request, serverAddress, 1000, new RemotingInvokeCallBack<String>() {
+		remotingClient.asyncCall(request, serverAddress, 1000, new RemotingCallBack<String>() {
 			@Override
 			public void onException(Throwable t) {
 				countDownLatch.countDown();
@@ -104,7 +104,7 @@ public class RpcServerTest {
 		Connection connection = remotingClient.getConnectionManager().get(serverAddress);
 		CountDownLatch countDownLatch2 = new CountDownLatch(1);
 		AtomicReference<String> result2 = new AtomicReference<>();
-		defaultRemotingServer.asyncCall(request, connection.getChannel().localAddress(), 1000, new RemotingInvokeCallBack<String>() {
+		defaultRemotingServer.asyncCall(request, connection.getChannel().localAddress(), 1000, new RemotingCallBack<String>() {
 			@Override
 			public void onException(Throwable t) {
 				countDownLatch2.countDown();

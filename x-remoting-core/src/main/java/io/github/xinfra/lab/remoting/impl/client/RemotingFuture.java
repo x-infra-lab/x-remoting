@@ -8,11 +8,11 @@ import io.github.xinfra.lab.remoting.impl.message.RemotingResponseMessage;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-public class RemotingInvokeFuture<T> {
+public class RemotingFuture<T> {
 
 	private InvokeFuture invokeFuture;
 
-	public RemotingInvokeFuture(InvokeFuture invokeFuture) {
+	public RemotingFuture(InvokeFuture invokeFuture) {
 		this.invokeFuture = invokeFuture;
 	}
 

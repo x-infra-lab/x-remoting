@@ -4,8 +4,8 @@ import io.github.xinfra.lab.remoting.client.CallOptions;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.impl.RemotingProtocol;
 import io.github.xinfra.lab.remoting.impl.client.RemotingCall;
-import io.github.xinfra.lab.remoting.impl.client.RemotingInvokeCallBack;
-import io.github.xinfra.lab.remoting.impl.client.RemotingInvokeFuture;
+import io.github.xinfra.lab.remoting.impl.client.RemotingCallBack;
+import io.github.xinfra.lab.remoting.impl.client.RemotingFuture;
 import io.github.xinfra.lab.remoting.impl.handler.RequestApi;
 import io.github.xinfra.lab.remoting.impl.handler.RequestHandler;
 import io.github.xinfra.lab.remoting.impl.handler.RequestHandlerRegistry;
@@ -51,7 +51,7 @@ public class RemotingServer extends AbstractServer {
         return serverRemotingCall.syncCall(requestApi, request, socketAddress, callOptions);
     }
 
-    public <R> RemotingInvokeFuture<R> asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions)
+    public <R> RemotingFuture<R> asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions)
             throws RemotingException {
         ensureStarted();
 
@@ -59,10 +59,10 @@ public class RemotingServer extends AbstractServer {
     }
 
     public <R> void asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions,
-                              RemotingInvokeCallBack<R> remotingInvokeCallBack) throws RemotingException {
+                              RemotingCallBack<R> remotingCallBack) throws RemotingException {
         ensureStarted();
 
-        serverRemotingCall.asyncCall(requestApi, request, socketAddress, callOptions, remotingInvokeCallBack);
+        serverRemotingCall.asyncCall(requestApi, request, socketAddress, callOptions, remotingCallBack);
     }
 
     public void oneway(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions) throws RemotingException {
