@@ -25,7 +25,7 @@ public class RemotingRequestMessage extends RemotingMessage implements RequestMe
 	private byte[] pathData;
 
 	public RemotingRequestMessage(int id, SerializationType serializationType) {
-		super(id,  serializationType);
+		super(id, serializationType);
 	}
 
 	@Override

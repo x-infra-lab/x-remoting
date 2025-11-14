@@ -6,6 +6,7 @@ import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
 import io.github.xinfra.lab.remoting.message.MessageTypeHandler;
+import io.github.xinfra.lab.remoting.message.RequestMessage;
 import io.github.xinfra.lab.remoting.message.ResponseMessage;
 import io.github.xinfra.lab.remoting.message.ResponseStatus;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
@@ -62,14 +63,21 @@ public class ConnectionTest {
 		final int requestId1 = IDGenerator.nextRequestId();
 		Assertions.assertNull(connection.removeInvokeFuture(requestId1));
 
-		connection.addInvokeFuture(new InvokeFuture<>(requestId1));
+		RequestMessage requestMessage1 = mock(RequestMessage.class);
+		doReturn(requestId1).when(requestMessage1).id();
+
+		connection.addInvokeFuture(new InvokeFuture<>(requestMessage1));
 		Assertions.assertThrows(IllegalArgumentException.class, () -> {
-			connection.addInvokeFuture(new InvokeFuture<>(requestId1));
+			connection.addInvokeFuture(new InvokeFuture<>(requestMessage1));
 		});
 
 		// repeat remove
 		final int requestId2 = IDGenerator.nextRequestId();
-		InvokeFuture<?> invokeFuture = new InvokeFuture<>(requestId2);
+
+		RequestMessage requestMessage2 = mock(RequestMessage.class);
+		doReturn(requestId2).when(requestMessage2).id();
+
+		InvokeFuture<?> invokeFuture = new InvokeFuture<>(requestMessage2);
 		connection.addInvokeFuture(invokeFuture);
 
 		Assertions.assertEquals(invokeFuture, connection.removeInvokeFuture(requestId2));
@@ -94,7 +102,7 @@ public class ConnectionTest {
 	public void testOnCloseConnection() {
 		MessageFactory messageFactory = mock(MessageFactory.class);
 		ResponseMessage connectionClosedMessage = mock(ResponseMessage.class);
-		when(messageFactory.createResponse(anyInt(), eq(ResponseStatus.ConnectionClosed)))
+		when(messageFactory.createResponse(anyInt(), any(), eq(ResponseStatus.ConnectionClosed)))
 			.thenReturn(connectionClosedMessage);
 		testProtocol.setMessageFactory(messageFactory);
 
@@ -106,7 +114,9 @@ public class ConnectionTest {
 		List<InvokeFuture<?>> invokeFutures = new ArrayList<>();
 		for (int i = 0; i < times; i++) {
 			Integer requestId = IDGenerator.nextRequestId();
-			InvokeFuture<ResponseMessage> invokeFuture = new InvokeFuture<>(requestId);
+			RequestMessage requestMessage = mock(RequestMessage.class);
+			doReturn(requestId).when(requestMessage).id();
+			InvokeFuture<ResponseMessage> invokeFuture = new InvokeFuture<>(requestMessage);
 			invokeFutures.add(invokeFuture);
 			connection.addInvokeFuture(invokeFuture);
 		}

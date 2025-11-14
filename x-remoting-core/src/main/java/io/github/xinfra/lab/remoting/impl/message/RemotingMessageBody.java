@@ -11,16 +11,13 @@ import lombok.Setter;
 @Data
 public class RemotingMessageBody implements MessageBody {
 
-
 	private byte[] bodyData;
-
 
 	private byte[] typeData;
 
 	private String type;
 
 	private byte[] valueData;
-
 
 	private Object value;
 

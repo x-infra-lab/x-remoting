@@ -108,7 +108,8 @@ public class Connection {
 			if (invokeFuture != null) {
 				invokeFuture.cancelTimeout();
 				ResponseMessage responseMessage = protocol.messageFactory()
-					.createResponse(requestId, ResponseStatus.ConnectionClosed);
+					.createResponse(requestId, invokeFuture.getRequestMessage().serializationType(),
+							ResponseStatus.ConnectionClosed);
 				invokeFuture.complete(responseMessage);
 				invokeFuture.asyncExecuteCallBack(getExecutor());
 			}

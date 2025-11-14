@@ -14,7 +14,8 @@ public abstract class RequestMessageTypeHandler implements MessageTypeHandler<Re
 	public void handleMessage(Connection connection, RequestMessage requestMessage) {
 		if (Requests.isHeartbeatRequest(requestMessage)) {
 			MessageFactory messageFactory = connection.getProtocol().messageFactory();
-			Responses.sendResponse(connection, messageFactory.createResponse(requestMessage.id(),requestMessage.serializationType(),  ResponseStatus.OK));
+			Responses.sendResponse(connection, messageFactory.createResponse(requestMessage.id(),
+					requestMessage.serializationType(), ResponseStatus.OK));
 			return;
 		}
 		ResponseMessage responseMessage = handleRequestMessage(requestMessage);

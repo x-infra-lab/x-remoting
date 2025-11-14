@@ -18,8 +18,7 @@ public class RemotingResponseMessage extends RemotingMessage implements Response
 
 	final ResponseStatus status;
 
-	public RemotingResponseMessage(int id,  SerializationType serializationType,
-			ResponseStatus status) {
+	public RemotingResponseMessage(int id, SerializationType serializationType, ResponseStatus status) {
 		super(id, serializationType);
 		this.status = status;
 	}

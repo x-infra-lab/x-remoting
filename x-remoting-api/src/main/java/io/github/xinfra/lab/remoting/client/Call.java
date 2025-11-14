@@ -25,7 +25,7 @@ public interface Call {
 		MessageFactory messageFactory = protocol.messageFactory();
 
 		int requestId = requestMessage.id();
-		InvokeFuture<?> invokeFuture = new InvokeFuture<>(requestId);
+		InvokeFuture<?> invokeFuture = new InvokeFuture<>(requestMessage);
 		try {
 			connection.addInvokeFuture(invokeFuture);
 			connection.getChannel().writeAndFlush(requestMessage).addListener((ChannelFuture channelFuture) -> {
@@ -70,7 +70,7 @@ public interface Call {
 		MessageFactory messageFactory = protocol.messageFactory();
 
 		int requestId = requestMessage.id();
-		InvokeFuture<?> invokeFuture = new InvokeFuture<>(requestId);
+		InvokeFuture<?> invokeFuture = new InvokeFuture<>(requestMessage);
 		Timeout timeout = timer.newTimeout((t) -> {
 			log.warn("Wait responseMessage timeout. requestId:{} remoteAddress:{}", requestId,
 					connection.remoteAddress());
@@ -119,7 +119,7 @@ public interface Call {
 		Timer timer = connection.getTimer();
 
 		int requestId = requestMessage.id();
-		InvokeFuture<?> invokeFuture = new InvokeFuture<>(requestId);
+		InvokeFuture<?> invokeFuture = new InvokeFuture<>(requestMessage);
 		Timeout timeout = timer.newTimeout((t) -> {
 			log.warn("Wait responseMessage timeout. requestId:{} remoteAddress:{}", requestId,
 					connection.remoteAddress());

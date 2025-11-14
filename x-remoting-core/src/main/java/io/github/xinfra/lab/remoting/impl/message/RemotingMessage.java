@@ -14,7 +14,6 @@ public abstract class RemotingMessage implements Message {
 
 	private int id;
 
-
 	private SerializationType serializationType;
 
 	@Setter
@@ -41,7 +40,6 @@ public abstract class RemotingMessage implements Message {
 	public SerializationType serializationType() {
 		return serializationType;
 	}
-
 
 	@Override
 	public RemotingMessageHeader header() {

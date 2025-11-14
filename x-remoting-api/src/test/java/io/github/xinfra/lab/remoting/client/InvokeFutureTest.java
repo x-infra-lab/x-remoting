@@ -4,6 +4,7 @@ import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.common.Wait;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
+import io.github.xinfra.lab.remoting.message.RequestMessage;
 import io.github.xinfra.lab.remoting.message.ResponseMessage;
 import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.util.HashedWheelTimer;
@@ -39,7 +40,9 @@ public class InvokeFutureTest {
 	public void before() {
 		testProtocol = new TestProtocol();
 		final int requestId = IDGenerator.nextRequestId();
-		invokeFuture = new InvokeFuture<>(requestId);
+		RequestMessage requestMessage = mock(RequestMessage.class);
+		doReturn(requestId).when(requestMessage).id();
+		invokeFuture = new InvokeFuture<>(requestMessage);
 	}
 
 	@Test
@@ -104,7 +107,7 @@ public class InvokeFutureTest {
 			URLClassLoader urlClassLoader = new URLClassLoader(new URL[] {}, contextClassLoader);
 			Thread.currentThread().setContextClassLoader(urlClassLoader);
 
-			InvokeFuture<?> future = new InvokeFuture<>(IDGenerator.nextRequestId());
+			InvokeFuture<?> future = new InvokeFuture<>(mock(RequestMessage.class));
 			Assertions.assertSame(future.getAppClassLoader(), urlClassLoader);
 		}
 		finally {

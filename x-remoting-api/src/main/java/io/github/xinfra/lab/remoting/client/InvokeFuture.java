@@ -1,6 +1,7 @@
 package io.github.xinfra.lab.remoting.client;
 
 import io.github.xinfra.lab.remoting.annotation.AccessForTest;
+import io.github.xinfra.lab.remoting.message.RequestMessage;
 import io.github.xinfra.lab.remoting.message.ResponseMessage;
 import io.netty.util.Timeout;
 import lombok.Getter;
@@ -21,6 +22,9 @@ public class InvokeFuture<T extends ResponseMessage> implements Future<ResponseM
 	@Getter
 	private final int requestId;
 
+	@Getter
+	protected final RequestMessage requestMessage;
+
 	private final CountDownLatch countDownLatch;
 
 	private volatile ResponseMessage responseMessage;
@@ -34,8 +38,9 @@ public class InvokeFuture<T extends ResponseMessage> implements Future<ResponseM
 
 	private final ClassLoader classLoader;
 
-	public InvokeFuture(int requestId) {
-		this.requestId = requestId;
+	public InvokeFuture(RequestMessage requestMessage) {
+		this.requestId = requestMessage.id();
+		this.requestMessage = requestMessage;
 		this.countDownLatch = new CountDownLatch(1);
 		this.classLoader = Thread.currentThread().getContextClassLoader();
 	}
