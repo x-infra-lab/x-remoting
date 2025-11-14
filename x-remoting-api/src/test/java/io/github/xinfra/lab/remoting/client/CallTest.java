@@ -50,6 +50,8 @@ public class CallTest {
 
 	MessageFactory messageFactory;
 
+	CallOptions callOptions = CallOptions.builder().build();
+
 	@BeforeEach
 	public void beforeEach() {
 		testProtocol = new TestProtocol();
@@ -72,7 +74,7 @@ public class CallTest {
 	}
 
 	@Test
-	public void testSyncCall() throws InterruptedException {
+	public void testBlockingCall() throws InterruptedException {
 		RequestMessage requestMessage = mock(RequestMessage.class);
 		doReturn(requestId).when(requestMessage).id();
 
@@ -97,13 +99,13 @@ public class CallTest {
 			}
 		});
 
-		ResponseMessage responseMessage = call.syncCall(requestMessage, connection, 1000);
+		ResponseMessage responseMessage = call.blockingCall(requestMessage, connection, callOptions);
 
-		Assertions.assertTrue(mockResponseMessage == responseMessage);
+		Assertions.assertEquals(mockResponseMessage, responseMessage);
 	}
 
 	@Test
-	public void testSyncCallSendFailed1() throws InterruptedException {
+	public void testBlockingCallSendFailed1() throws InterruptedException {
 		ResponseMessage mockSendFailedresponseMessage = mock(ResponseMessage.class);
 		when(messageFactory.createResponse(anyInt(), eq(ResponseStatus.SendFailed), any()))
 			.thenReturn(mockSendFailedresponseMessage);
@@ -116,12 +118,12 @@ public class CallTest {
 
 		doThrow(new RuntimeException("network error")).when(channel).writeAndFlush(any());
 
-		ResponseMessage responseMessage = call.syncCall(requestMessage, connection, 1000);
+		ResponseMessage responseMessage = call.blockingCall(requestMessage, connection, callOptions);
 		Assertions.assertTrue(responseMessage == mockSendFailedresponseMessage);
 	}
 
 	@Test
-	public void testSyncCallSendFailed2() throws InterruptedException {
+	public void testBlockingCallSendFailed2() throws InterruptedException {
 		ResponseMessage mockSendFailedresponseMessage = mock(ResponseMessage.class);
 		when(messageFactory.createResponse(anyInt(), eq(ResponseStatus.SendFailed), any()))
 			.thenReturn(mockSendFailedresponseMessage);
@@ -134,12 +136,12 @@ public class CallTest {
 
 		doReturn(channel.newFailedFuture(new RuntimeException("network error"))).when(channel).writeAndFlush(any());
 
-		ResponseMessage responseMessage = call.syncCall(requestMessage, connection, 1000);
+		ResponseMessage responseMessage = call.blockingCall(requestMessage, connection, callOptions);
 		Assertions.assertTrue(responseMessage == mockSendFailedresponseMessage);
 	}
 
 	@Test
-	public void testSyncCallTimeout() throws InterruptedException {
+	public void testBlockingCallTimeout() throws InterruptedException {
 		ResponseMessage mockTimeoutresponseMessage = mock(ResponseMessage.class);
 		when(messageFactory.createResponse(anyInt(), eq(ResponseStatus.Timeout)))
 			.thenReturn(mockTimeoutresponseMessage);
@@ -148,18 +150,18 @@ public class CallTest {
 		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 		Connection connection = new Connection(testProtocol, channel, executor, timer);
-		ResponseMessage responseMessage = call.syncCall(requestMessage, connection, 100);
+		ResponseMessage responseMessage = call.blockingCall(requestMessage, connection, callOptions);
 		Assertions.assertTrue(responseMessage == mockTimeoutresponseMessage);
 	}
 
 	@Test
-	public void testAsyncCall() throws InterruptedException, TimeoutException {
+	public void testFutureCall() throws InterruptedException, TimeoutException {
 		ResponseMessage responseMessage = mock(ResponseMessage.class);
 		RequestMessage requestMessage = mock(RequestMessage.class);
 		doReturn(requestId).when(requestMessage).id();
 		Channel channel = new EmbeddedChannel();
 		Connection connection = new Connection(testProtocol, channel, executor, timer);
-		InvokeFuture invokeFuture = call.asyncCall(requestMessage, connection, 1000);
+		InvokeFuture invokeFuture = call.futureCall(requestMessage, connection, callOptions);
 
 		// complete invokeFuture
 		Wait.untilIsTrue(() -> {
@@ -177,7 +179,7 @@ public class CallTest {
 	}
 
 	@Test
-	public void testAsyncCallSendFailed1() throws InterruptedException {
+	public void testFutureCallSendFailed1() throws InterruptedException {
 		ResponseMessage mockSendFailedresponseMessage = mock(ResponseMessage.class);
 		when(messageFactory.createResponse(anyInt(), eq(ResponseStatus.SendFailed), any()))
 			.thenReturn(mockSendFailedresponseMessage);
@@ -189,12 +191,12 @@ public class CallTest {
 		Connection connection = new Connection(testProtocol, channel, executor, timer);
 		doThrow(new RuntimeException("network error")).when(channel).writeAndFlush(any());
 
-		InvokeFuture invokeFuture = call.asyncCall(requestMessage, connection, 1000);
+		InvokeFuture invokeFuture = call.futureCall(requestMessage, connection, callOptions);
 		Assertions.assertTrue(invokeFuture.get() == mockSendFailedresponseMessage);
 	}
 
 	@Test
-	public void testAsyncCallSendFailed2() throws InterruptedException {
+	public void testFutureCallSendFailed2() throws InterruptedException {
 		ResponseMessage mockSendFailedresponseMessage = mock(ResponseMessage.class);
 		when(messageFactory.createResponse(anyInt(), eq(ResponseStatus.SendFailed), any()))
 			.thenReturn(mockSendFailedresponseMessage);
@@ -206,12 +208,12 @@ public class CallTest {
 		Connection connection = new Connection(testProtocol, channel, executor, timer);
 		doReturn(channel.newFailedFuture(new RuntimeException("network error"))).when(channel).writeAndFlush(any());
 
-		InvokeFuture invokeFuture = call.asyncCall(requestMessage, connection, 1000);
+		InvokeFuture invokeFuture = call.futureCall(requestMessage, connection, callOptions);
 		Assertions.assertTrue(invokeFuture.get() == mockSendFailedresponseMessage);
 	}
 
 	@Test
-	public void testAsyncCallTimeout() throws InterruptedException {
+	public void testFutureCallTimeout() throws InterruptedException {
 		ResponseMessage mockTimeoutresponseMessage = mock(ResponseMessage.class);
 		when(messageFactory.createResponse(anyInt(), eq(ResponseStatus.Timeout)))
 			.thenReturn(mockTimeoutresponseMessage);
@@ -221,12 +223,12 @@ public class CallTest {
 		Channel channel = new EmbeddedChannel();
 
 		Connection connection = new Connection(testProtocol, channel, executor, timer);
-		InvokeFuture invokeFuture = call.asyncCall(requestMessage, connection, 100);
+		InvokeFuture invokeFuture = call.futureCall(requestMessage, connection, callOptions);
 		Assertions.assertTrue(invokeFuture.get() == mockTimeoutresponseMessage);
 	}
 
 	@Test
-	public void testAsyncCallWithCallback() throws InterruptedException, TimeoutException {
+	public void testAsyncCall() throws InterruptedException, TimeoutException {
 		ResponseMessage responseMessage = mock(ResponseMessage.class);
 		RequestMessage requestMessage = mock(RequestMessage.class);
 		doReturn(requestId).when(requestMessage).id();
@@ -234,7 +236,7 @@ public class CallTest {
 		Connection connection = new Connection(testProtocol, channel, executor, timer);
 
 		AtomicReference<Message> callbackMessage = new AtomicReference<>();
-		call.asyncCall(requestMessage, connection, 1000, (msg) -> {
+		call.asyncCall(requestMessage, connection, callOptions, (msg) -> {
 			callbackMessage.set(msg);
 		});
 
@@ -262,7 +264,7 @@ public class CallTest {
 	}
 
 	@Test
-	public void testAsyncCallWithCallbackSendFailed1() throws InterruptedException, TimeoutException {
+	public void testAsyncCallSendFailed1() throws InterruptedException, TimeoutException {
 		ResponseMessage mockSendFailedresponseMessage = mock(ResponseMessage.class);
 		when(messageFactory.createResponse(anyInt(), eq(ResponseStatus.SendFailed), any()))
 			.thenReturn(mockSendFailedresponseMessage);
@@ -276,7 +278,7 @@ public class CallTest {
 		doThrow(new RuntimeException("network error")).when(channel).writeAndFlush(any());
 
 		AtomicReference<ResponseMessage> callbackMessage = new AtomicReference<>();
-		call.asyncCall(requestMessage, connection, 1000, (msg) -> {
+		call.asyncCall(requestMessage, connection, callOptions, (msg) -> {
 			callbackMessage.set(msg);
 		});
 
@@ -291,7 +293,7 @@ public class CallTest {
 	}
 
 	@Test
-	public void testAsyncCallWithCallbackSendFailed2() throws InterruptedException, TimeoutException {
+	public void testAsyncCallSendFailed2() throws InterruptedException, TimeoutException {
 		ResponseMessage mockSendFailedresponseMessage = mock(ResponseMessage.class);
 		when(messageFactory.createResponse(anyInt(), eq(ResponseStatus.SendFailed), any()))
 			.thenReturn(mockSendFailedresponseMessage);
@@ -305,7 +307,7 @@ public class CallTest {
 		doReturn(channel.newFailedFuture(new RuntimeException("network error"))).when(channel).writeAndFlush(any());
 
 		AtomicReference<ResponseMessage> callbackMessage = new AtomicReference<>();
-		call.asyncCall(requestMessage, connection, 1000, (msg) -> {
+		call.asyncCall(requestMessage, connection, callOptions, (msg) -> {
 			callbackMessage.set(msg);
 		});
 
@@ -320,7 +322,7 @@ public class CallTest {
 	}
 
 	@Test
-	public void testAsyncCallWithCallbackTimeout() throws InterruptedException, TimeoutException {
+	public void testAsyncCallTimeout() throws InterruptedException, TimeoutException {
 		ResponseMessage mockTimeoutresponseMessage = mock(ResponseMessage.class);
 		when(messageFactory.createResponse(anyInt(), eq(ResponseStatus.Timeout)))
 			.thenReturn(mockTimeoutresponseMessage);
@@ -331,7 +333,7 @@ public class CallTest {
 		Connection connection = new Connection(testProtocol, channel, executor, timer);
 
 		AtomicReference<ResponseMessage> callbackMessage = new AtomicReference<>();
-		call.asyncCall(requestMessage, connection, 100, (msg) -> {
+		call.asyncCall(requestMessage, connection, callOptions, (msg) -> {
 			callbackMessage.set(msg);
 		});
 
@@ -352,7 +354,7 @@ public class CallTest {
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
 		Connection connection = new Connection(testProtocol, channel, executor, timer);
-		call.oneway(requestMessage, connection);
+		call.oneway(requestMessage, connection, callOptions);
 
 		// complete invokeFuture
 		Channel finalChannel = channel;
@@ -380,7 +382,7 @@ public class CallTest {
 
 		doThrow(new RuntimeException("network error")).when(channel).writeAndFlush(any());
 
-		call.oneway(requestMessage, connection);
+		call.oneway(requestMessage, connection, callOptions);
 
 		// complete invokeFuture
 		Channel finalChannel = channel;
@@ -408,7 +410,7 @@ public class CallTest {
 
 		doReturn(channel.newFailedFuture(new RuntimeException("network error"))).when(channel).writeAndFlush(any());
 
-		call.oneway(requestMessage, connection);
+		call.oneway(requestMessage, connection, callOptions);
 
 		// complete invokeFuture
 		Channel finalChannel = channel;

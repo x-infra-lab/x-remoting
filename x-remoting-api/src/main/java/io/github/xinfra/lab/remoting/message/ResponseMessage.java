@@ -4,4 +4,8 @@ public interface ResponseMessage extends Message {
 
 	ResponseStatus responseStatus();
 
+	default MessageType messageType() {
+		return MessageType.response;
+	}
+
 }

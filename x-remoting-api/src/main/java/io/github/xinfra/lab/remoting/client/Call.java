@@ -19,7 +19,7 @@ public interface Call {
 
 	Logger log = LoggerFactory.getLogger(Call.class);
 
-	default ResponseMessage syncCall(RequestMessage requestMessage, Connection connection, CallOptions callOptions)
+	default ResponseMessage blockingCall(RequestMessage requestMessage, Connection connection, CallOptions callOptions)
 			throws InterruptedException {
 		Protocol protocol = connection.getProtocol();
 		MessageFactory messageFactory = protocol.messageFactory();
@@ -34,8 +34,8 @@ public interface Call {
 							connection.remoteAddress(), channelFuture.cause());
 					InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
 					if (future != null) {
-						future.complete(messageFactory.createResponse(requestId, ResponseStatus.SendFailed,
-								channelFuture.cause()));
+						future.complete(messageFactory.createResponse(requestId, requestMessage.serializationType(),
+								ResponseStatus.SendFailed, channelFuture.cause()));
 					}
 				}
 			});
@@ -45,7 +45,8 @@ public interface Call {
 					connection.remoteAddress(), t);
 			InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
 			if (future != null) {
-				future.complete(messageFactory.createResponse(requestId, ResponseStatus.SendFailed, t));
+				future.complete(messageFactory.createResponse(requestId, requestMessage.serializationType(),
+						ResponseStatus.SendFailed, t));
 			}
 		}
 		ResponseMessage responseMessage;
@@ -56,12 +57,13 @@ public interface Call {
 			log.warn("Wait responseMessage timeout. requestId:{} remoteAddress:{}", requestId,
 					connection.remoteAddress());
 			connection.removeInvokeFuture(requestId);
-			responseMessage = messageFactory.createResponse(requestId, ResponseStatus.Timeout);
+			responseMessage = messageFactory.createResponse(requestId, requestMessage.serializationType(),
+					ResponseStatus.Timeout);
 		}
 		return responseMessage;
 	}
 
-	default InvokeFuture<? extends ResponseMessage> asyncCall(RequestMessage requestMessage, Connection connection,
+	default InvokeFuture<? extends ResponseMessage> futureCall(RequestMessage requestMessage, Connection connection,
 			CallOptions callOptions) {
 		Protocol protocol = connection.getProtocol();
 		Timer timer = connection.getTimer();
@@ -74,7 +76,8 @@ public interface Call {
 					connection.remoteAddress());
 			InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
 			if (future != null) {
-				ResponseMessage responseMessage = messageFactory.createResponse(requestId, ResponseStatus.Timeout);
+				ResponseMessage responseMessage = messageFactory.createResponse(requestId,
+						requestMessage.serializationType(), ResponseStatus.Timeout);
 				future.complete(responseMessage);
 			}
 		}, callOptions.getTimeoutMills(), TimeUnit.MILLISECONDS);
@@ -89,8 +92,8 @@ public interface Call {
 					InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
 					if (future != null) {
 						future.cancelTimeout();
-						future.complete(messageFactory.createResponse(requestId, ResponseStatus.SendFailed,
-								channelFuture.cause()));
+						future.complete(messageFactory.createResponse(requestId, requestMessage.serializationType(),
+								ResponseStatus.SendFailed, channelFuture.cause()));
 					}
 				}
 			});
@@ -101,7 +104,8 @@ public interface Call {
 			InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
 			if (future != null) {
 				future.cancelTimeout();
-				future.complete(messageFactory.createResponse(requestId, ResponseStatus.SendFailed, t));
+				future.complete(messageFactory.createResponse(requestId, requestMessage.serializationType(),
+						ResponseStatus.SendFailed, t));
 			}
 		}
 
@@ -121,7 +125,8 @@ public interface Call {
 					connection.remoteAddress());
 			InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
 			if (future != null) {
-				ResponseMessage responseMessage = messageFactory.createResponse(requestId, ResponseStatus.Timeout);
+				ResponseMessage responseMessage = messageFactory.createResponse(requestId,
+						requestMessage.serializationType(), ResponseStatus.Timeout);
 				future.complete(responseMessage);
 				future.asyncExecuteCallBack(connection.getExecutor());
 			}
@@ -139,7 +144,7 @@ public interface Call {
 					if (future != null) {
 						future.cancelTimeout();
 						ResponseMessage responseMessage = messageFactory.createResponse(requestId,
-								ResponseStatus.SendFailed, channelFuture.cause());
+								requestMessage.serializationType(), ResponseStatus.SendFailed, channelFuture.cause());
 						future.complete(responseMessage);
 						future.asyncExecuteCallBack(connection.getExecutor());
 					}
@@ -153,8 +158,8 @@ public interface Call {
 			InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
 			if (future != null) {
 				future.cancelTimeout();
-				ResponseMessage responseMessage = messageFactory.createResponse(requestId, ResponseStatus.SendFailed,
-						t);
+				ResponseMessage responseMessage = messageFactory.createResponse(requestId,
+						requestMessage.serializationType(), ResponseStatus.SendFailed, t);
 				future.complete(responseMessage);
 				future.asyncExecuteCallBack(connection.getExecutor());
 			}

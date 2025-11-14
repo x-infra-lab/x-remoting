@@ -17,67 +17,68 @@ import java.net.SocketAddress;
 
 public class RemotingServer extends AbstractServer {
 
-    @Getter
-    private RemotingProtocol protocol;
+	@Getter
+	private RemotingProtocol protocol;
 
-    private RemotingCall serverRemotingCall;
+	private RemotingCall serverRemotingCall;
 
-    private RequestHandlerRegistry requestHandlerRegistry = new RequestHandlerRegistry();
+	private RequestHandlerRegistry requestHandlerRegistry = new RequestHandlerRegistry();
 
-    public RemotingServer() {
-        super(new RemotingServerConfig());
-    }
+	public RemotingServer() {
+		super(new RemotingServerConfig());
+	}
 
-    public RemotingServer(RemotingServerConfig config) {
-        super(config);
-    }
+	public RemotingServer(RemotingServerConfig config) {
+		super(config);
+	}
 
-    @Override
-    public void startup() {
-        super.startup();
-        protocol = new RemotingProtocol(requestHandlerRegistry);
-        serverRemotingCall = new RemotingCall(connectionManager);
-    }
+	@Override
+	public void startup() {
+		super.startup();
+		protocol = new RemotingProtocol(requestHandlerRegistry);
+		serverRemotingCall = new RemotingCall(connectionManager);
+	}
 
-    @Override
-    public void shutdown() {
-        super.shutdown();
-    }
+	@Override
+	public void shutdown() {
+		super.shutdown();
+	}
 
-    public <R> R syncCall(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions)
-            throws InterruptedException, RemotingException {
-        ensureStarted();
+	public <R> R syncCall(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions)
+			throws InterruptedException, RemotingException {
+		ensureStarted();
 
-        return serverRemotingCall.syncCall(requestApi, request, socketAddress, callOptions);
-    }
+		return serverRemotingCall.syncCall(requestApi, request, socketAddress, callOptions);
+	}
 
-    public <R> RemotingFuture<R> asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions)
-            throws RemotingException {
-        ensureStarted();
+	public <R> RemotingFuture<R> asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress,
+			CallOptions callOptions) throws RemotingException {
+		ensureStarted();
 
-        return serverRemotingCall.asyncCall(requestApi, request, socketAddress, callOptions);
-    }
+		return serverRemotingCall.asyncCall(requestApi, request, socketAddress, callOptions);
+	}
 
-    public <R> void asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions,
-                              RemotingCallBack<R> remotingCallBack) throws RemotingException {
-        ensureStarted();
+	public <R> void asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress,
+			CallOptions callOptions, RemotingCallBack<R> remotingCallBack) throws RemotingException {
+		ensureStarted();
 
-        serverRemotingCall.asyncCall(requestApi, request, socketAddress, callOptions, remotingCallBack);
-    }
+		serverRemotingCall.asyncCall(requestApi, request, socketAddress, callOptions, remotingCallBack);
+	}
 
-    public void oneway(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions) throws RemotingException {
-        ensureStarted();
+	public void oneway(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions)
+			throws RemotingException {
+		ensureStarted();
 
-        serverRemotingCall.oneway(requestApi, request, socketAddress, callOptions);
-    }
+		serverRemotingCall.oneway(requestApi, request, socketAddress, callOptions);
+	}
 
-    @Override
-    public Protocol protocol() {
-        return protocol;
-    }
+	@Override
+	public Protocol protocol() {
+		return protocol;
+	}
 
-    public <T, R> void registerRequestHandler(RequestApi requestApi, RequestHandler<T, R> userProcessor) {
-        requestHandlerRegistry.register(requestApi, userProcessor);
-    }
+	public <T, R> void registerRequestHandler(RequestApi requestApi, RequestHandler<T, R> userProcessor) {
+		requestHandlerRegistry.register(requestApi, userProcessor);
+	}
 
 }

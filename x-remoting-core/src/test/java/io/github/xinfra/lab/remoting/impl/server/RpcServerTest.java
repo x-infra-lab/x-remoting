@@ -104,18 +104,19 @@ public class RpcServerTest {
 		Connection connection = remotingClient.getConnectionManager().get(serverAddress);
 		CountDownLatch countDownLatch2 = new CountDownLatch(1);
 		AtomicReference<String> result2 = new AtomicReference<>();
-		defaultRemotingServer.asyncCall(request, connection.getChannel().localAddress(), 1000, new RemotingCallBack<String>() {
-			@Override
-			public void onException(Throwable t) {
-				countDownLatch2.countDown();
-			}
+		defaultRemotingServer.asyncCall(request, connection.getChannel().localAddress(), 1000,
+				new RemotingCallBack<String>() {
+					@Override
+					public void onException(Throwable t) {
+						countDownLatch2.countDown();
+					}
 
-			@Override
-			public void onResponse(String response) {
-				result2.set(response);
-				countDownLatch2.countDown();
-			}
-		});
+					@Override
+					public void onResponse(String response) {
+						result2.set(response);
+						countDownLatch2.countDown();
+					}
+				});
 
 		countDownLatch2.await(3, TimeUnit.SECONDS);
 		Assertions.assertEquals(result2.get(), "echo:" + msg);

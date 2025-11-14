@@ -5,7 +5,7 @@ import io.github.xinfra.lab.remoting.connection.Connection;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class ResponseMeesageTypeHandler implements MessageTypeHandler<ResponseMessage> {
+public class ResponseMessageTypeHandler implements MessageTypeHandler<ResponseMessage> {
 
 	@Override
 	public MessageType messageType() {

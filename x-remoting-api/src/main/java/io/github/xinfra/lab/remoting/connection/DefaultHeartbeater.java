@@ -3,6 +3,7 @@ package io.github.xinfra.lab.remoting.connection;
 import io.github.xinfra.lab.remoting.client.Call;
 import io.github.xinfra.lab.remoting.client.CallOptions;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
+import io.github.xinfra.lab.remoting.common.Requests;
 import io.github.xinfra.lab.remoting.message.MessageType;
 import io.github.xinfra.lab.remoting.message.RequestMessage;
 import io.github.xinfra.lab.remoting.message.ResponseStatus;
@@ -34,7 +35,8 @@ public class DefaultHeartbeater implements Heartbeater {
 
 		Protocol protocol = connection.getProtocol();
 		RequestMessage heartbeatRequestMessage = protocol.messageFactory()
-			.createRequest(IDGenerator.nextRequestId(), MessageType.heartbeat, SerializationType.Hession);
+			.createRequest(IDGenerator.nextRequestId(), SerializationType.Hession);
+		Requests.markHeartbeatRequest(heartbeatRequestMessage);
 		call.asyncCall(heartbeatRequestMessage, connection,
 				CallOptions.builder().timeoutMills(connection.getHeartbeatTimeoutMills()).build(), responseMessage -> {
 

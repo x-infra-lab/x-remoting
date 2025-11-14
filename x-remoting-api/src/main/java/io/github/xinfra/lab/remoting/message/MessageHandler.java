@@ -1,5 +1,6 @@
 package io.github.xinfra.lab.remoting.message;
 
+import io.github.xinfra.lab.remoting.common.Requests;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.netty.channel.ChannelHandlerContext;
 import org.slf4j.Logger;
@@ -29,23 +30,29 @@ public interface MessageHandler {
 				}
 				catch (Exception e) {
 					log.error("MessageTypeHandler handleMessage ex", e);
-					ResponseMessage response = connection.getProtocol()
-						.messageFactory()
-						.createResponse(msg.id(), ResponseStatus.Error, e);
-					// todo oneway response的处理
-					Responses.sendResponse(connection, response);
+					if (isNeedResponse(msg)) {
+						ResponseMessage response = connection.getProtocol()
+							.messageFactory()
+							.createResponse(msg.id(), msg.serializationType(), ResponseStatus.UnKnownError, e);
+						Responses.sendResponse(connection, response);
+					}
 				}
 			};
 			executor.execute(task);
 		}
 		catch (Exception e) {
 			log.error("MessageHandler handleMessage ex", e);
-			ResponseMessage response = connection.getProtocol()
-				.messageFactory()
-				.createResponse(msg.id(), ResponseStatus.Error, e);
-			// todo oneway response的处理
-			Responses.sendResponse(connection, response);
+			if (isNeedResponse(msg)) {
+				ResponseMessage response = connection.getProtocol()
+					.messageFactory()
+					.createResponse(msg.id(), msg.serializationType(), ResponseStatus.UnKnownError, e);
+				Responses.sendResponse(connection, response);
+			}
 		}
+	}
+
+	static boolean isNeedResponse(Message msg) {
+		return msg instanceof RequestMessage && !Requests.isOnewayRequest((RequestMessage) msg);
 	}
 
 }

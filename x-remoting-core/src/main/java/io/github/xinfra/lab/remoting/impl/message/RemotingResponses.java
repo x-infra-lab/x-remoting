@@ -51,7 +51,7 @@ public class RemotingResponses {
 		catch (SerializeException e) {
 			String errorMsg = String.format("sendResponse SerializeException. id: %s", id);
 			log.error(errorMsg, e);
-			rpcResponseMessage = messageFactory.createResponse(id, e, ResponseStatus.SERVER_SERIAL_EXCEPTION);
+			rpcResponseMessage = messageFactory.createResponse(id, rpcResponseMessage.serializationType(), e, ResponseStatus.SERVER_SERIAL_EXCEPTION);
 
 			// serialize again
 			try {
@@ -64,7 +64,7 @@ public class RemotingResponses {
 		catch (Throwable t) {
 			String errorMsg = String.format("sendResponse fail. id: %s", id);
 			log.error(errorMsg, t);
-			rpcResponseMessage = messageFactory.createResponse(id, t, errorMsg);
+			rpcResponseMessage = messageFactory.createResponse(id,rpcResponseMessage.serializationType(), t, errorMsg);
 
 			// serialize again
 			try {

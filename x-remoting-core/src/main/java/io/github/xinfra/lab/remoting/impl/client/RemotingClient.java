@@ -78,20 +78,19 @@ public class RemotingClient extends AbstractLifeCycle {
 		return clientRemotingCall.syncCall(requestApi, request, socketAddress, callOptions);
 	}
 
-	public <R> RemotingFuture<R> asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions)
-			throws RemotingException {
+	public <R> RemotingFuture<R> asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress,
+			CallOptions callOptions) throws RemotingException {
 		return clientRemotingCall.asyncCall(requestApi, request, socketAddress, callOptions);
 	}
 
-	public <R> void asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions,
-			RemotingCallBack<R> remotingCallBack) throws RemotingException {
+	public <R> void asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress,
+			CallOptions callOptions, RemotingCallBack<R> remotingCallBack) throws RemotingException {
 		clientRemotingCall.asyncCall(requestApi, request, socketAddress, callOptions, remotingCallBack);
 	}
 
-	public void oneway(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions) throws RemotingException {
+	public void oneway(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions)
+			throws RemotingException {
 		clientRemotingCall.oneway(requestApi, request, socketAddress, CallOptions);
 	}
-
-
 
 }

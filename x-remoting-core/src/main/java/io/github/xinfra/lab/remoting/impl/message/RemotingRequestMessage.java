@@ -15,44 +15,44 @@ import java.nio.charset.StandardCharsets;
  * ｜protocol:bytes|protocol-version:byte|message-type:byte|request-id:int|serialization-type:byte|path-length:short|header-length:short|body-length:int|path|header|content|
  */
 
-
 public class RemotingRequestMessage extends RemotingMessage implements RequestMessage {
 
-    @Setter
-    private String path;
+	@Setter
+	private String path;
 
-    @Setter
-    @Getter
-    private byte[] pathData;
+	@Setter
+	@Getter
+	private byte[] pathData;
 
-    public RemotingRequestMessage(int id, MessageType messageType, SerializationType serializationType) {
-        super(id, messageType, serializationType);
-    }
+	public RemotingRequestMessage(int id, SerializationType serializationType) {
+		super(id,  serializationType);
+	}
 
-    @Override
-    public String path() {
-        return this.path;
-    }
+	@Override
+	public String path() {
+		return this.path;
+	}
 
-    @Override
-    public void serialize() throws SerializeException {
-        super.serialize();
-        if(path == null){
-            return;
-        }
-        if (pathData == null) {
-            pathData = path.getBytes(StandardCharsets.UTF_8);
-        }
-    }
+	@Override
+	public void serialize() throws SerializeException {
+		super.serialize();
+		if (path == null) {
+			return;
+		}
+		if (pathData == null) {
+			pathData = path.getBytes(StandardCharsets.UTF_8);
+		}
+	}
 
-    @Override
-    public void deserialize() throws DeserializeException {
-        super.deserialize();
-        if (pathData == null){
-            return;
-        }
-        if (path == null) {
-            path = new String(pathData, StandardCharsets.UTF_8);
-        }
-    }
+	@Override
+	public void deserialize() throws DeserializeException {
+		super.deserialize();
+		if (pathData == null) {
+			return;
+		}
+		if (path == null) {
+			path = new String(pathData, StandardCharsets.UTF_8);
+		}
+	}
+
 }

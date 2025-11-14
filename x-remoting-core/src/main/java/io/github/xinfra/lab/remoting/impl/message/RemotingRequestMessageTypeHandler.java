@@ -7,14 +7,15 @@ import io.github.xinfra.lab.remoting.message.ResponseMessage;
 
 public class RemotingRequestMessageTypeHandler extends RequestMessageTypeHandler {
 
-    private RequestHandlerRegistry requestHandlerRegistry;
+	private RequestHandlerRegistry requestHandlerRegistry;
 
-    public RemotingRequestMessageTypeHandler(RequestHandlerRegistry requestHandlerRegistry) {
-        this.requestHandlerRegistry = requestHandlerRegistry;
-    }
+	public RemotingRequestMessageTypeHandler(RequestHandlerRegistry requestHandlerRegistry) {
+		this.requestHandlerRegistry = requestHandlerRegistry;
+	}
 
-    @Override
-    public ResponseMessage handleRequestMessage(RequestMessage requestMessage) {
-        return null;
-    }
+	@Override
+	public ResponseMessage handleRequestMessage(RequestMessage requestMessage) {
+		return null;
+	}
+
 }

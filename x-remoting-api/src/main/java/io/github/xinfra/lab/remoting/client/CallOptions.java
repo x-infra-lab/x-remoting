@@ -7,6 +7,7 @@ import lombok.Data;
 @Builder
 public class CallOptions {
 
+	@Builder.Default
 	private int timeoutMills = 3000;
 
 }

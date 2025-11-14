@@ -32,13 +32,13 @@ public class RemotingCall implements Call {
 		MessageFactory messageFactory = connection.getProtocol().messageFactory();
 		RequestMessage requestMessage = buildRequestMessage(messageFactory, request);
 
-		RemotingResponseMessage responseMessage = (RemotingResponseMessage) syncCall(requestMessage, connection,
-				 callOptions);
+		RemotingResponseMessage responseMessage = (RemotingResponseMessage) blockingCall(requestMessage, connection,
+				callOptions);
 		return RemotingResponses.getResponseObject(responseMessage);
 	}
 
-	public <R> RemotingFuture<R> asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions)
-			throws RemotingException {
+	public <R> RemotingFuture<R> asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress,
+			CallOptions callOptions) throws RemotingException {
 
 		Connection connection = connectionManager.get(socketAddress);
 		connectionManager.check(connection);
@@ -46,12 +46,12 @@ public class RemotingCall implements Call {
 		MessageFactory messageFactory = connection.getProtocol().messageFactory();
 		RequestMessage requestMessage = buildRequestMessage(messageFactory, request);
 
-		InvokeFuture<?> invokeFuture = asyncCall(requestMessage, connection, callOptions);
+		InvokeFuture<?> invokeFuture = futureCall(requestMessage, connection, callOptions);
 		return new RemotingFuture<R>(invokeFuture);
 	}
 
-	public <R> void asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions,
-			RemotingCallBack<R> remotingCallBack) throws RemotingException {
+	public <R> void asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress,
+			CallOptions callOptions, RemotingCallBack<R> remotingCallBack) throws RemotingException {
 
 		Connection connection = connectionManager.get(socketAddress);
 		connectionManager.check(connection);
@@ -62,7 +62,8 @@ public class RemotingCall implements Call {
 		asyncCall(requestMessage, connection, callOptions, remotingCallBack);
 	}
 
-	public void oneway(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions) throws RemotingException {
+	public void oneway(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions)
+			throws RemotingException {
 
 		Connection connection = connectionManager.get(socketAddress);
 		connectionManager.check(connection);

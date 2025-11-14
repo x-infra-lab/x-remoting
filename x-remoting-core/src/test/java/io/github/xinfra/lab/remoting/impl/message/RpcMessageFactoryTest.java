@@ -46,8 +46,8 @@ public class RpcMessageFactoryTest {
 		RemotingMessageFactory remotingMessageFactory = new RemotingMessageFactory();
 		InetSocketAddress remoteAddress = InetSocketAddress.createUnresolved("localhost", 8080);
 
-		RemotingResponseMessage responseMessage = remotingMessageFactory.createTimeoutResponseMessage(IDGenerator.nextRequestId(),
-				remoteAddress);
+		RemotingResponseMessage responseMessage = remotingMessageFactory
+			.createTimeoutResponseMessage(IDGenerator.nextRequestId(), remoteAddress);
 		Assertions.assertNotNull(responseMessage);
 		Assertions.assertEquals(responseMessage.getStatus(), ResponseStatus.TIMEOUT.getCode());
 		Assertions.assertTrue(responseMessage.getCause() instanceof TimeoutException);
@@ -83,7 +83,8 @@ public class RpcMessageFactoryTest {
 	public void testCreateResponse1() {
 		String responseContent = "this is response content";
 		RemotingMessageFactory remotingMessageFactory = new RemotingMessageFactory();
-		RemotingResponseMessage response = remotingMessageFactory.createResponse(IDGenerator.nextRequestId(), responseContent);
+		RemotingResponseMessage response = remotingMessageFactory.createResponse(IDGenerator.nextRequestId(),
+				responseContent);
 
 		Assertions.assertNotNull(response);
 		Assertions.assertEquals(response.messageType(), RpcMessageType.response);
@@ -96,7 +97,8 @@ public class RpcMessageFactoryTest {
 	public void testCreateExceptionResponse1() {
 		String errorMsg = "testCreateExceptionResponse1";
 		RemotingMessageFactory remotingMessageFactory = new RemotingMessageFactory();
-		RemotingResponseMessage response = remotingMessageFactory.createExceptionResponse(IDGenerator.nextRequestId(), errorMsg);
+		RemotingResponseMessage response = remotingMessageFactory.createExceptionResponse(IDGenerator.nextRequestId(),
+				errorMsg);
 
 		Assertions.assertNotNull(response);
 		Assertions.assertEquals(response.messageType(), RpcMessageType.response);

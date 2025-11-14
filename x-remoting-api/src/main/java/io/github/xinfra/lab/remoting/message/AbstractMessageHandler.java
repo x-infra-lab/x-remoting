@@ -7,10 +7,8 @@ public abstract class AbstractMessageHandler implements MessageHandler {
 	private ConcurrentHashMap<MessageType, MessageTypeHandler<? extends Message>> messageTypeHandlers = new ConcurrentHashMap<>();
 
 	public AbstractMessageHandler() {
-		// heartbeat
-		this.registerMessageTypeHandler(new HeartbeatMessageTypeHandler());
 		// response
-		this.registerMessageTypeHandler(new ResponseMeesageTypeHandler());
+		this.registerMessageTypeHandler(new ResponseMessageTypeHandler());
 	}
 
 	@Override

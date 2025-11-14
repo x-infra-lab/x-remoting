@@ -4,42 +4,46 @@ import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
 import io.github.xinfra.lab.remoting.message.MessageBody;
 import io.github.xinfra.lab.remoting.serialization.Serializer;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+@Data
 public class RemotingMessageBody implements MessageBody {
 
-    @Getter
-    @Setter
-    private byte[] bodyData;
 
-    private byte[] typeData;
-    private String type;
+	private byte[] bodyData;
 
-    private byte[] valueData;
-    private Object value;
 
-    public RemotingMessageBody() {
-    }
+	private byte[] typeData;
 
-    public RemotingMessageBody(byte[] bodyData) {
-        this.bodyData = bodyData;
-    }
+	private String type;
 
-    @Override
-    public void serialize(Serializer serializer) throws SerializeException {
+	private byte[] valueData;
 
-    }
 
-    @Override
-    public void deserialize(Serializer serializer) throws DeserializeException {
+	private Object value;
 
-    }
+	public RemotingMessageBody() {
+	}
 
-    @Override
-    public byte[] data() {
-        return bodyData;
-    }
+	public RemotingMessageBody(byte[] bodyData) {
+		this.bodyData = bodyData;
+	}
 
+	@Override
+	public void serialize(Serializer serializer) throws SerializeException {
+
+	}
+
+	@Override
+	public void deserialize(Serializer serializer) throws DeserializeException {
+
+	}
+
+	@Override
+	public byte[] data() {
+		return bodyData;
+	}
 
 }

@@ -4,4 +4,9 @@ public interface RequestMessage extends Message {
 
 	String path();
 
+	@Override
+	default MessageType messageType() {
+		return MessageType.request;
+	}
+
 }

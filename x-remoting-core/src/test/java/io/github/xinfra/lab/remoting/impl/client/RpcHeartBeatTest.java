@@ -56,7 +56,7 @@ public class RpcHeartBeatTest {
 
 		Connection connection = connectionManager.get(remoteAddress);
 
-		Message heartbeatResponseMessage = call.syncCall(heartbeatRequestMessage, connection, 1000);
+		Message heartbeatResponseMessage = call.blockingCall(heartbeatRequestMessage, connection, 1000);
 
 		Assertions.assertNotNull(heartbeatResponseMessage);
 

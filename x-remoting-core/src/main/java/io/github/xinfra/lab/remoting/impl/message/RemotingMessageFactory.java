@@ -1,92 +1,33 @@
 package io.github.xinfra.lab.remoting.impl.message;
 
-import io.github.xinfra.lab.remoting.common.IDGenerator;
-import io.github.xinfra.lab.remoting.exception.ConnectionClosedException;
-import io.github.xinfra.lab.remoting.exception.SendMessageException;
-import io.github.xinfra.lab.remoting.exception.TimeoutException;
-import io.github.xinfra.lab.remoting.message.MessageFactory;
-import io.github.xinfra.lab.remoting.impl.exception.RemotingServerException;
 
-import java.net.SocketAddress;
+import io.github.xinfra.lab.remoting.message.MessageFactory;
+import io.github.xinfra.lab.remoting.message.MessageType;
+import io.github.xinfra.lab.remoting.message.ResponseMessage;
+import io.github.xinfra.lab.remoting.message.ResponseStatus;
+import io.github.xinfra.lab.remoting.serialization.SerializationType;
+
 
 public class RemotingMessageFactory implements MessageFactory {
 
 	@Override
-	public RemotingResponseMessage createSendFailedResponseMessage(int id, Throwable cause, SocketAddress remoteAddress) {
-		RemotingResponseMessage rpcResponseMessage = new RemotingResponseMessage(id);
-		rpcResponseMessage.setStatus(ResponseStatus.CLIENT_SEND_ERROR.getCode());
-		rpcResponseMessage.setCause(new SendMessageException(cause));
-		rpcResponseMessage.setRemoteAddress(remoteAddress);
-		return rpcResponseMessage;
+	public RemotingRequestMessage  createRequest(int id,  SerializationType serializationType) {
+		RemotingRequestMessage remotingRequestMessage = new RemotingRequestMessage(id, serializationType);
+		return remotingRequestMessage;
 	}
 
 	@Override
-	public RemotingResponseMessage createTimeoutResponseMessage(int id, SocketAddress remoteAddress) {
-		RemotingResponseMessage rpcResponseMessage = new RemotingResponseMessage(id);
-		rpcResponseMessage.setStatus(ResponseStatus.TIMEOUT.getCode());
-		rpcResponseMessage.setCause(new TimeoutException());
-		rpcResponseMessage.setRemoteAddress(remoteAddress);
-		return rpcResponseMessage;
+	public RemotingResponseMessage  createResponse(int id, SerializationType serializationType, ResponseStatus status) {
+		RemotingResponseMessage remotingResponseMessage = new RemotingResponseMessage(id, serializationType, status);
+		return remotingResponseMessage;
 	}
 
 	@Override
-	public RemotingRequestMessage createRequestMessage() {
-		return new RemotingRequestMessage(IDGenerator.nextRequestId());
+	public RemotingResponseMessage createResponse(int id, SerializationType serializationType, ResponseStatus status, Throwable t) {
+		RemotingResponseMessage remotingResponseMessage = new RemotingResponseMessage(id,  serializationType, status);
+		RemotingMessageBody remotingMessageBody = new RemotingMessageBody();
+		remotingMessageBody.setValue(t);
+		remotingResponseMessage.setBody(remotingMessageBody);
+		return remotingResponseMessage;
 	}
-
-	@Override
-	public RemotingRequestMessage createHeartbeatRequestMessage() {
-		return new RpcHeartbeatRequestMessage(IDGenerator.nextRequestId());
-	}
-
-	@Override
-	public RemotingResponseMessage createExceptionResponse(int id, Throwable t, ResponseStatus status) {
-		RemotingResponseMessage rpcResponseMessage = new RemotingResponseMessage(id);
-		rpcResponseMessage.setStatus(status.getCode());
-		RemotingServerException remotingServerException = new RemotingServerException(t);
-		rpcResponseMessage.setContent(remotingServerException);
-		rpcResponseMessage.setContentType(RemotingServerException.class.getName());
-		return rpcResponseMessage;
-	}
-
-	@Override
-	public RemotingResponseMessage createExceptionResponse(int id, Throwable t, String errorMsg) {
-		RemotingResponseMessage rpcResponseMessage = new RemotingResponseMessage(id);
-		rpcResponseMessage.setStatus(ResponseStatus.SERVER_EXCEPTION.getCode());
-		RemotingServerException remotingServerException = new RemotingServerException(errorMsg, t);
-		rpcResponseMessage.setContent(remotingServerException);
-		rpcResponseMessage.setContentType(RemotingServerException.class.getName());
-		return rpcResponseMessage;
-	}
-
-	@Override
-	public RemotingResponseMessage createExceptionResponse(int id, String errorMsg) {
-		RemotingResponseMessage rpcResponseMessage = new RemotingResponseMessage(id);
-		rpcResponseMessage.setStatus(ResponseStatus.SERVER_EXCEPTION.getCode());
-		RemotingServerException remotingServerException = new RemotingServerException(errorMsg);
-		rpcResponseMessage.setContent(remotingServerException);
-		rpcResponseMessage.setContentType(RemotingServerException.class.getName());
-		return rpcResponseMessage;
-	}
-
-	@Override
-	public RemotingResponseMessage createResponse(int id, Object responseContent) {
-		RemotingResponseMessage responseMessage = new RemotingResponseMessage(id);
-		responseMessage.setStatus(ResponseStatus.SUCCESS.getCode());
-		if (responseContent != null) {
-			responseMessage.setContent(responseContent);
-			responseMessage.setContentType(responseContent.getClass().getName());
-		}
-		return responseMessage;
-	}
-
-	@Override
-	public RemotingResponseMessage createConnectionClosedMessage(int id, SocketAddress remoteAddress) {
-		RemotingResponseMessage rpcResponseMessage = new RemotingResponseMessage(id);
-		rpcResponseMessage.setStatus(ResponseStatus.CONNECTION_CLOSED.getCode());
-		rpcResponseMessage.setCause(new ConnectionClosedException());
-		rpcResponseMessage.setRemoteAddress(remoteAddress);
-		return rpcResponseMessage;
-	}
-
 }
