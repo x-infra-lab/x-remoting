@@ -8,18 +8,15 @@ import io.github.xinfra.lab.remoting.connection.ConnectionManagerConfig;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.impl.RemotingProtocol;
 import io.github.xinfra.lab.remoting.impl.handler.RequestApi;
+import io.github.xinfra.lab.remoting.impl.handler.RequestHandler;
 import io.github.xinfra.lab.remoting.impl.handler.RequestHandlerRegistry;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.net.SocketAddress;
 
 @Slf4j
 public class RemotingClient extends AbstractLifeCycle {
-
-	private static final Logger log = LoggerFactory.getLogger(RemotingClient.class);
 
 	@Getter
 	private RemotingClientConfig config;
@@ -90,7 +87,11 @@ public class RemotingClient extends AbstractLifeCycle {
 
 	public void oneway(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions)
 			throws RemotingException {
-		clientRemotingCall.oneway(requestApi, request, socketAddress, CallOptions);
+		clientRemotingCall.oneway(requestApi, request, socketAddress, callOptions);
+	}
+
+	public <T, R> void registerRequestHandler(RequestApi requestApi, RequestHandler<T, R> userProcessor) {
+		requestHandlerRegistry.register(requestApi, userProcessor);
 	}
 
 }

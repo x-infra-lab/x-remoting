@@ -12,9 +12,11 @@ import io.github.xinfra.lab.remoting.impl.handler.RequestHandlerRegistry;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.server.AbstractServer;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.net.SocketAddress;
 
+@Slf4j
 public class RemotingServer extends AbstractServer {
 
 	@Getter

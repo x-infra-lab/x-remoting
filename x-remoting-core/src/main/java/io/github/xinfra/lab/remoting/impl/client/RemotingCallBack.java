@@ -18,8 +18,8 @@ public interface RemotingCallBack<R> extends InvokeCallBack {
 	default void complete(ResponseMessage responseMessage) {
 		Runnable task = () -> {
 			try {
-				RemotingResponseMessage rpcResponseMessage = (RemotingResponseMessage) responseMessage;
-				Object responseObject = RemotingResponses.getResponseObject(rpcResponseMessage);
+				RemotingResponseMessage remotingResponseMessage = (RemotingResponseMessage) responseMessage;
+				Object responseObject = RemotingResponses.getResponseObject(remotingResponseMessage);
 				try {
 					onResponse((R) responseObject);
 				}

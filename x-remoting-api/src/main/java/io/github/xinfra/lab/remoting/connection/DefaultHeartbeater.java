@@ -37,20 +37,22 @@ public class DefaultHeartbeater implements Heartbeater {
 		RequestMessage heartbeatRequestMessage = protocol.messageFactory()
 			.createRequest(IDGenerator.nextRequestId(), SerializationType.Hession);
 		Requests.markHeartbeatRequest(heartbeatRequestMessage);
-		call.asyncCall(heartbeatRequestMessage, connection,
-				CallOptions.builder().timeoutMills(connection.getHeartbeatTimeoutMills()).build(), responseMessage -> {
 
-					if (responseMessage.responseStatus() == ResponseStatus.OK) {
-						log.debug("heartbeat success. remote address:{}", connection.remoteAddress());
-						connection.setHeartbeatFailCnt(0);
-					}
-					else {
-						int failCount = connection.getHeartbeatFailCnt() + 1;
-						log.warn("heartbeat fail {} times. remote address:{}", failCount, connection.remoteAddress());
-						connection.setHeartbeatFailCnt(failCount);
-					}
+		CallOptions callOptions = new CallOptions();
+		callOptions.setTimeoutMills(connection.getHeartbeatTimeoutMills());
+		call.asyncCall(heartbeatRequestMessage, connection, callOptions, responseMessage -> {
 
-				});
+			if (responseMessage.responseStatus() == ResponseStatus.OK) {
+				log.debug("heartbeat success. remote address:{}", connection.remoteAddress());
+				connection.setHeartbeatFailCnt(0);
+			}
+			else {
+				int failCount = connection.getHeartbeatFailCnt() + 1;
+				log.warn("heartbeat fail {} times. remote address:{}", failCount, connection.remoteAddress());
+				connection.setHeartbeatFailCnt(failCount);
+			}
+
+		});
 
 	}
 

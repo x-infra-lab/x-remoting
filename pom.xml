@@ -111,7 +111,6 @@
                 <version>${logback.version}</version>
             </dependency>
             <!-- test scope end -->
-
         </dependencies>
     </dependencyManagement>
 

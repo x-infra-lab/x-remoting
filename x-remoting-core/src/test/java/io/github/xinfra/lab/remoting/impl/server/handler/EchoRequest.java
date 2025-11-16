@@ -1,15 +1,15 @@
-package io.github.xinfra.lab.remoting.impl.client;
+package io.github.xinfra.lab.remoting.impl.server.handler;
 
 import java.io.Serializable;
 
-public class SimpleRequest implements Serializable {
+public class EchoRequest implements Serializable {
 
 	private String msg;
 
-	public SimpleRequest() {
+	public EchoRequest() {
 	}
 
-	public SimpleRequest(String msg) {
+	public EchoRequest(String msg) {
 		this.msg = msg;
 	}
 

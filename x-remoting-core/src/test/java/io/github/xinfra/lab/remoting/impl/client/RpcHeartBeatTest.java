@@ -5,6 +5,7 @@ import io.github.xinfra.lab.remoting.connection.ClientConnectionManager;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.connection.ConnectionManager;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
+import io.github.xinfra.lab.remoting.impl.server.handler.EchoRequestHandler;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
@@ -34,7 +35,7 @@ public class RpcHeartBeatTest {
 		defaultRemotingServerConfig.setPort(findAvailableTcpPort());
 		defaultRemotingServer = new RemotingServer(defaultRemotingServerConfig);
 		defaultRemotingServer.startup();
-		defaultRemotingServer.registerUserProcessor(new SimpleUserProcessor());
+		defaultRemotingServer.registerUserProcessor(new EchoRequestHandler());
 	}
 
 	@AfterEach

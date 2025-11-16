@@ -50,7 +50,7 @@ public class CallTest {
 
 	MessageFactory messageFactory;
 
-	CallOptions callOptions = CallOptions.builder().build();
+	CallOptions callOptions = new CallOptions();
 
 	@BeforeEach
 	public void beforeEach() {
