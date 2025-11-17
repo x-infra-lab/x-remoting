@@ -6,7 +6,7 @@ import io.github.xinfra.lab.remoting.impl.RemotingProtocol;
 import io.github.xinfra.lab.remoting.impl.RemotingProtocolIdentifier;
 import io.github.xinfra.lab.remoting.impl.message.RemotingMessage;
 import io.github.xinfra.lab.remoting.impl.message.RemotingMessageBody;
-import io.github.xinfra.lab.remoting.impl.message.RemotingMessageHeader;
+import io.github.xinfra.lab.remoting.impl.message.RemotingMessageHeaders;
 import io.github.xinfra.lab.remoting.impl.message.RemotingRequestMessage;
 import io.github.xinfra.lab.remoting.impl.message.RemotingResponseMessage;
 import io.github.xinfra.lab.remoting.message.MessageType;
@@ -85,7 +85,7 @@ public class RemotingMessageDecoder implements MessageDecoder {
 					if (headerDataLength > 0) {
 						byte[] bytes = new byte[headerDataLength];
 						in.readBytes(bytes);
-						remotingMessage.setHeader(new RemotingMessageHeader(bytes));
+						remotingMessage.setHeaders(new RemotingMessageHeaders(bytes));
 					}
 					if (bodyDataLength > 0) {
 						byte[] bytes = new byte[bodyDataLength];

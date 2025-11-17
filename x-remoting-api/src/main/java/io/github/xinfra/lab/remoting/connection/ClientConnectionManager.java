@@ -26,8 +26,8 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 		this.connectionFactory = new DefaultConnectionFactory(protocol, defaultChannelSuppliers());
 	}
 
-	public ClientConnectionManager(Protocol protocol, ConnectionConfig connectionConfig) {
-		this.connectionFactory = new DefaultConnectionFactory(protocol, defaultChannelSuppliers(), connectionConfig);
+	public ClientConnectionManager(Protocol protocol, ConnectionFactoryConfig connectionFactoryConfig) {
+		this.connectionFactory = new DefaultConnectionFactory(protocol, defaultChannelSuppliers(), connectionFactoryConfig);
 	}
 
 	public ClientConnectionManager(Protocol protocol, ConnectionManagerConfig connectionManagerConfig) {
@@ -35,10 +35,10 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 		this.connectionFactory = new DefaultConnectionFactory(protocol, defaultChannelSuppliers());
 	}
 
-	public ClientConnectionManager(Protocol protocol, ConnectionConfig connectionConfig,
+	public ClientConnectionManager(Protocol protocol, ConnectionFactoryConfig connectionFactoryConfig,
 			ConnectionManagerConfig connectionManagerConfig) {
 		super(connectionManagerConfig);
-		this.connectionFactory = new DefaultConnectionFactory(protocol, defaultChannelSuppliers(), connectionConfig);
+		this.connectionFactory = new DefaultConnectionFactory(protocol, defaultChannelSuppliers(), connectionFactoryConfig);
 	}
 
 	private List<Supplier<ChannelHandler>> defaultChannelSuppliers() {

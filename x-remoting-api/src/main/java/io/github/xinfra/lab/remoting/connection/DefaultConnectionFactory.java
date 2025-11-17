@@ -39,7 +39,7 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 
 	private Bootstrap bootstrap;
 
-	private ConnectionConfig connectionConfig;
+	private ConnectionFactoryConfig connectionFactoryConfig;
 
 	// todo EpollUtils
 	private final EventLoopGroup workerGroup = Epoll.isAvailable()
@@ -97,27 +97,27 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 			: NioSocketChannel.class;
 
 	public DefaultConnectionFactory(Protocol protocol, List<Supplier<ChannelHandler>> channelHandlerSuppliers) {
-		this(protocol, channelHandlerSuppliers, new ConnectionConfig());
+		this(protocol, channelHandlerSuppliers, new ConnectionFactoryConfig());
 	}
 
 	// Q: why use Supplier to get ChannelHandler?
 	// A: some ChannelHandler is not @ChannelHandler.Sharable. need create instance every
 	// time
 	public DefaultConnectionFactory(Protocol protocol, List<Supplier<ChannelHandler>> channelHandlerSuppliers,
-			ConnectionConfig connectionConfig) {
+			ConnectionFactoryConfig connectionFactoryConfig) {
 		Validate.notNull(protocol, "protocol can not be null");
 		Validate.notNull(channelHandlerSuppliers, "channelHandlers can not be null");
-		Validate.notNull(connectionConfig, "connectionConfig can not be null");
+		Validate.notNull(connectionFactoryConfig, "connectionFactoryConfig can not be null");
 		this.protocol = protocol;
-		this.connectionConfig = connectionConfig;
-		if (connectionConfig.getExecutor() != null) {
-			this.executor = connectionConfig.getExecutor();
+		this.connectionFactoryConfig = connectionFactoryConfig;
+		if (connectionFactoryConfig.getExecutor() != null) {
+			this.executor = connectionFactoryConfig.getExecutor();
 		}
 		else {
 			this.executor = defaultExecutorResource.get();
 		}
-		if (connectionConfig.getTimer() != null) {
-			this.timer = connectionConfig.getTimer();
+		if (connectionFactoryConfig.getTimer() != null) {
+			this.timer = connectionFactoryConfig.getTimer();
 		}
 		else {
 			this.timer = defaultTimerResource.get();
@@ -132,10 +132,10 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 				@Override
 				protected void initChannel(SocketChannel ch) throws Exception {
 					ChannelPipeline pipeline = ch.pipeline();
-					if (connectionConfig.isIdleSwitch()) {
+					if (connectionFactoryConfig.isIdleSwitch()) {
 						pipeline.addLast("idleStateHandler",
-								new IdleStateHandler(connectionConfig.getIdleReaderTimeout(),
-										connectionConfig.getIdleWriterTimeout(), connectionConfig.getIdleAllTimeout(),
+								new IdleStateHandler(connectionFactoryConfig.getIdleReaderTimeout(),
+										connectionFactoryConfig.getIdleWriterTimeout(), connectionFactoryConfig.getIdleAllTimeout(),
 										TimeUnit.MILLISECONDS));
 					}
 
@@ -150,7 +150,7 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 
 	@Override
 	public Connection create(SocketAddress socketAddress) throws RemotingException {
-		bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionConfig.getConnectTimeout());
+		bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionFactoryConfig.getConnectTimeout());
 		ChannelFuture future = bootstrap.connect(socketAddress);
 
 		future.awaitUninterruptibly();

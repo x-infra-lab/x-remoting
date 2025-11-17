@@ -15,7 +15,7 @@ public interface Message {
 
 	MessageType messageType();
 
-	MessageHeader header();
+	MessageHeaders headers();
 
 	MessageBody body();
 

@@ -67,15 +67,15 @@ public class RpcMessageHandlerTest {
 		// build a requestMessage
 		String content = "this is rpc content";
 		String contentType = content.getClass().getName();
-		RemotingMessageHeader header = new RemotingMessageHeader();
-		header.addItem(new RemotingMessageHeader.Item("this is header key", "this is header value"));
+		RemotingMessageHeaders header = new RemotingMessageHeaders();
+		header.addItem(new RemotingMessageHeaders.Item("this is header key", "this is header value"));
 		Integer requestId = IDGenerator.nextRequestId();
 		RemotingRequestMessage requestMessage = new RemotingRequestMessage(requestId);
-		requestMessage.setHeader(header);
+		requestMessage.setHeaders(header);
 		requestMessage.setContent(content);
 		requestMessage.setContentType(contentType);
 		requestMessage.serialize();
-		requestMessage.setHeader(null);
+		requestMessage.setHeaders(null);
 		requestMessage.setContentType(null);
 		requestMessage.setContent(null);
 
@@ -128,15 +128,15 @@ public class RpcMessageHandlerTest {
 		// build a requestMessage
 		String content = "this is rpc content";
 		String contentType = content.getClass().getName();
-		RemotingMessageHeader header = new RemotingMessageHeader();
-		header.addItem(new RemotingMessageHeader.Item("this is header key", "this is header value"));
+		RemotingMessageHeaders header = new RemotingMessageHeaders();
+		header.addItem(new RemotingMessageHeaders.Item("this is header key", "this is header value"));
 		Integer requestId = IDGenerator.nextRequestId();
 		RemotingRequestMessage requestMessage = new RemotingRequestMessage(requestId);
-		requestMessage.setHeader(header);
+		requestMessage.setHeaders(header);
 		requestMessage.setContent(content);
 		requestMessage.setContentType(contentType);
 		requestMessage.serialize();
-		requestMessage.setHeader(null);
+		requestMessage.setHeaders(null);
 		requestMessage.setContentType(null);
 		requestMessage.setContent(null);
 
@@ -195,15 +195,15 @@ public class RpcMessageHandlerTest {
 		// build a requestMessage
 		String content = "this is rpc content";
 		String contentType = content.getClass().getName();
-		RemotingMessageHeader header = new RemotingMessageHeader();
-		header.addItem(new RemotingMessageHeader.Item("this is header key", "this is header value"));
+		RemotingMessageHeaders header = new RemotingMessageHeaders();
+		header.addItem(new RemotingMessageHeaders.Item("this is header key", "this is header value"));
 		Integer requestId = IDGenerator.nextRequestId();
 		RemotingRequestMessage requestMessage = new RemotingRequestMessage(requestId);
-		requestMessage.setHeader(header);
+		requestMessage.setHeaders(header);
 		requestMessage.setContent(content);
 		requestMessage.setContentType(contentType);
 		requestMessage.serialize();
-		requestMessage.setHeader(null);
+		requestMessage.setHeaders(null);
 		requestMessage.setContentType(null);
 		requestMessage.setContent(null);
 
@@ -266,15 +266,15 @@ public class RpcMessageHandlerTest {
 		// build a requestMessage
 		String content = "this is rpc content";
 		String contentType = content.getClass().getName();
-		RemotingMessageHeader header = new RemotingMessageHeader();
-		header.addItem(new RemotingMessageHeader.Item("this is header key", "this is header value"));
+		RemotingMessageHeaders header = new RemotingMessageHeaders();
+		header.addItem(new RemotingMessageHeaders.Item("this is header key", "this is header value"));
 		Integer requestId = IDGenerator.nextRequestId();
 		RemotingRequestMessage requestMessage = new RemotingRequestMessage(requestId);
-		requestMessage.setHeader(header);
+		requestMessage.setHeaders(header);
 		requestMessage.setContent(content);
 		requestMessage.setContentType(contentType);
 		requestMessage.serialize();
-		requestMessage.setHeader(null);
+		requestMessage.setHeaders(null);
 		requestMessage.setContentType(null);
 		requestMessage.setContent(null);
 
@@ -379,17 +379,17 @@ public class RpcMessageHandlerTest {
 		// build a response
 		String content = "this is rpc content";
 		String contentType = content.getClass().getName();
-		RemotingMessageHeader header = new RemotingMessageHeader();
-		header.addItem(new RemotingMessageHeader.Item("this is header key", "this is header value"));
+		RemotingMessageHeaders header = new RemotingMessageHeaders();
+		header.addItem(new RemotingMessageHeaders.Item("this is header key", "this is header value"));
 		Integer requestId = IDGenerator.nextRequestId();
 		RemotingResponseMessage responseMessage = new RemotingResponseMessage(requestId);
-		responseMessage.setHeader(header);
+		responseMessage.setHeaders(header);
 		responseMessage.setContent(content);
 		responseMessage.setContentType(contentType);
 		responseMessage.setStatus(ResponseStatus.SUCCESS.getCode());
 		responseMessage.serialize();
 		responseMessage.setContentType(null);
-		responseMessage.setHeader(null);
+		responseMessage.setHeaders(null);
 		responseMessage.setContent(null);
 
 		MessageHandler messageHandler = protocol.messageHandler();
@@ -429,17 +429,17 @@ public class RpcMessageHandlerTest {
 		// build a response
 		String content = "this is rpc content";
 		String contentType = content.getClass().getName();
-		RemotingMessageHeader header = new RemotingMessageHeader();
-		header.addItem(new RemotingMessageHeader.Item("this is header key", "this is header value"));
+		RemotingMessageHeaders header = new RemotingMessageHeaders();
+		header.addItem(new RemotingMessageHeaders.Item("this is header key", "this is header value"));
 		Integer requestId = IDGenerator.nextRequestId();
 		RemotingResponseMessage responseMessage = new RemotingResponseMessage(requestId);
-		responseMessage.setHeader(header);
+		responseMessage.setHeaders(header);
 		responseMessage.setContent(content);
 		responseMessage.setContentType(contentType);
 		responseMessage.setStatus(ResponseStatus.SUCCESS.getCode());
 		responseMessage.serialize();
 		responseMessage.setContentType(null);
-		responseMessage.setHeader(null);
+		responseMessage.setHeaders(null);
 		responseMessage.setContent(null);
 
 		MessageHandler messageHandler = protocol.messageHandler();

@@ -17,7 +17,7 @@ public abstract class RemotingMessage implements Message {
 	private SerializationType serializationType;
 
 	@Setter
-	private RemotingMessageHeader header;
+	private RemotingMessageHeaders headers;
 
 	@Setter
 	private RemotingMessageBody body;
@@ -42,8 +42,8 @@ public abstract class RemotingMessage implements Message {
 	}
 
 	@Override
-	public RemotingMessageHeader header() {
-		return header;
+	public RemotingMessageHeaders headers() {
+		return headers;
 	}
 
 	@Override
@@ -54,8 +54,8 @@ public abstract class RemotingMessage implements Message {
 	@Override
 	public void serialize() throws SerializeException {
 		Serializer serializer = SerializationManager.getSerializer(serializationType);
-		if (header != null) {
-			header.serialize(serializer);
+		if (headers != null) {
+			headers.serialize(serializer);
 		}
 		if (body != null) {
 			body.serialize(serializer);
@@ -65,8 +65,8 @@ public abstract class RemotingMessage implements Message {
 	@Override
 	public void deserialize() throws DeserializeException {
 		Serializer serializer = SerializationManager.getSerializer(serializationType);
-		if (header != null) {
-			header.deserialize(serializer);
+		if (headers != null) {
+			headers.deserialize(serializer);
 		}
 		if (body != null) {
 			body.deserialize(serializer);

@@ -8,7 +8,7 @@ import java.util.concurrent.ExecutorService;
 
 @Getter
 @Setter
-public class ConnectionConfig {
+public class ConnectionFactoryConfig {
 
 	private boolean idleSwitch = true;
 
