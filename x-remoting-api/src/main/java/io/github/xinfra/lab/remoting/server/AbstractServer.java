@@ -93,14 +93,14 @@ public abstract class AbstractServer extends AbstractLifeCycle implements Server
 	private ServerBootstrap serverBootstrap;
 
 	private final EventLoopGroup bossGroup = Epoll.isAvailable()
-			? new EpollEventLoopGroup(1, new NamedThreadFactory("RemotingClient-Server-IO-Boss"))
-			: new NioEventLoopGroup(1, new NamedThreadFactory("RemotingClient-Server-IO-Boss"));
+			? new EpollEventLoopGroup(1, new NamedThreadFactory("RemotingServer-IO-Boss"))
+			: new NioEventLoopGroup(1, new NamedThreadFactory("RemotingServer-IO-Boss"));
 
 	private final EventLoopGroup workerGroup = Epoll.isAvailable()
 			? new EpollEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2,
-					new NamedThreadFactory("RemotingClient-Server-IO-Worker"))
+					new NamedThreadFactory("RemotingServer-IO-Worker"))
 			: new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2,
-					new NamedThreadFactory("RemotingClient-Server-IO-Worker"));
+					new NamedThreadFactory("RemotingServer-IO-Worker"));
 
 	private static final Class<? extends ServerChannel> serverChannelClass = Epoll.isAvailable()
 			? EpollServerSocketChannel.class : NioServerSocketChannel.class;

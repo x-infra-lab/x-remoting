@@ -3,98 +3,107 @@ package io.github.xinfra.lab.remoting.message;
 import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
 import io.github.xinfra.lab.remoting.serialization.SerializableObject;
+import io.github.xinfra.lab.remoting.serialization.SerializationManager;
+import io.github.xinfra.lab.remoting.serialization.SerializationType;
 import io.github.xinfra.lab.remoting.serialization.Serializer;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 public interface MessageHeader extends SerializableObject {
 
-	<T> void put(Key<T> key, T value);
+    <T> void put(Key<T> key, T value);
 
-	<T> T get(Key<T> key);
+    <T> T get(Key<T> key);
 
-	boolean contains(Key<?> key);
+    boolean contains(Key<?> key);
 
-	abstract class Key<T> {
 
-		private final String name;
+    @EqualsAndHashCode(of = "name")
+    abstract class Key<T> {
 
-		private final Marshaller marshaller;
 
-		public Key(String name, Marshaller marshaller) {
-			this.name = name;
-			this.marshaller = marshaller;
-		}
+        private final String name;
 
-		public static StringKey stringKey(String name) {
-			return new StringKey(name);
-		}
 
-		public static <T> BinaryKey<T> binaryKey(String name, Serializer serializer, Class<T> clazz) {
-			return new BinaryKey<>(name, serializer, clazz);
-		}
+        private final Marshaller marshaller;
 
-	}
+        public Key(String name, Marshaller marshaller) {
+            this.name = name;
+            this.marshaller = marshaller;
+        }
 
-	class StringKey extends Key<String> {
+        public static StringKey stringKey(String name) {
+            return new StringKey(name);
+        }
 
-		public StringKey(String name) {
-			super(name, StringMarshaller.INSTANCE);
-		}
+        public static <T> BinaryKey<T> binaryKey(String name, SerializationType serializationType, Class<T> clazz) {
+            return new BinaryKey<>(name, serializationType, clazz);
+        }
 
-	}
 
-	class BinaryKey<T> extends Key<T> {
+    }
 
-		public BinaryKey(String name, Serializer serializer, Class<T> clazz) {
-			super(name, new BinaryMarshaller<>(serializer, clazz));
-		}
+    class StringKey extends Key<String> {
 
-	}
+        public StringKey(String name) {
+            super(name, StringMarshaller.INSTANCE);
+        }
 
-	interface Marshaller<T> {
+    }
 
-		byte[] marshal(T value) throws SerializeException;
+    class BinaryKey<T> extends Key<T> {
 
-		T unmarshal(byte[] bytes) throws DeserializeException;
+        public BinaryKey(String name, SerializationType serializationType, Class<T> clazz) {
+            super(name, new BinaryMarshaller<>(SerializationManager.getSerializer(serializationType), clazz));
+        }
 
-	}
+    }
 
-	class StringMarshaller implements Marshaller<String> {
+    interface Marshaller<T> {
 
-		public static final Marshaller<String> INSTANCE = new StringMarshaller();
+        byte[] marshal(T value) throws SerializeException;
 
-		@Override
-		public byte[] marshal(String value) {
-			return value.getBytes();
-		}
+        T unmarshal(byte[] bytes) throws DeserializeException;
 
-		@Override
-		public String unmarshal(byte[] bytes) {
-			return new String(bytes);
-		}
+    }
 
-	}
+    class StringMarshaller implements Marshaller<String> {
 
-	class BinaryMarshaller<T> implements Marshaller<T> {
+        public static final Marshaller<String> INSTANCE = new StringMarshaller();
 
-		private Serializer serializer;
+        @Override
+        public byte[] marshal(String value) {
+            return value.getBytes();
+        }
 
-		private Class<T> clazz;
+        @Override
+        public String unmarshal(byte[] bytes) {
+            return new String(bytes);
+        }
 
-		public BinaryMarshaller(Serializer serializer, Class<T> clazz) {
-			this.serializer = serializer;
-			this.clazz = clazz;
-		}
+    }
 
-		@Override
-		public byte[] marshal(T value) throws SerializeException {
-			return serializer.serialize(value);
-		}
+    class BinaryMarshaller<T> implements Marshaller<T> {
 
-		@Override
-		public T unmarshal(byte[] bytes) throws DeserializeException {
-			return serializer.deserialize(bytes, clazz);
-		}
+        private Serializer serializer;
 
-	}
+        private Class<T> clazz;
+
+        public BinaryMarshaller(Serializer serializer, Class<T> clazz) {
+            this.serializer = serializer;
+            this.clazz = clazz;
+        }
+
+        @Override
+        public byte[] marshal(T value) throws SerializeException {
+            return serializer.serialize(value);
+        }
+
+        @Override
+        public T unmarshal(byte[] bytes) throws DeserializeException {
+            return serializer.deserialize(bytes, clazz);
+        }
+
+    }
 
 }

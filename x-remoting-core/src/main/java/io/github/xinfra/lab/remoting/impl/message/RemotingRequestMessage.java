@@ -12,7 +12,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * request definition:
  * <p>
- * ｜protocol:bytes|protocol-version:byte|message-type:byte|request-id:int|serialization-type:byte|path-length:short|header-length:short|body-length:int|path|header|content|
+ * ｜protocol-codes:bytes|protocol-version:byte|request-id:int|message-type:byte|serialization-type:byte|path-length:short|header-length:short|body-length:int|path|header|content|
  */
 
 public class RemotingRequestMessage extends RemotingMessage implements RequestMessage {
