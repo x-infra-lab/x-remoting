@@ -34,7 +34,7 @@ public class RemotingServerTest {
 	public static void beforeAll() {
 		remotingClient = new RemotingClient();
 		remotingClient.startup();
-		// remotingClient.registerRequestHandler(echoApi, new EchoRequestHandler());
+        remotingClient.registerRequestHandler(echoApi, new EchoRequestHandler());
 
 		RemotingServerConfig config = new RemotingServerConfig();
 		config.setManageConnection(true);
