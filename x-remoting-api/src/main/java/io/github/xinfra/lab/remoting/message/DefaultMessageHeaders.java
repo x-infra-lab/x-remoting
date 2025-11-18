@@ -13,7 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * per message header
- * |serializationType:byte|key-length:short|value-length:short|key:byte[]|value:byte[]
+ * |key-length:short|value-type-length:short|value-length:short|key:byte[]|value-type:byte[]net|value:byte[]
  */
 public class DefaultMessageHeaders implements MessageHeaders {
 
@@ -33,12 +33,19 @@ public class DefaultMessageHeaders implements MessageHeaders {
     @Override
     public <T> T get(Key<T> key) {
         Pair<Key<?>, ?> pair = headers.get(key.getName());
-        return pair == null ? null : (T) pair.getRight();
+        if (pair != null && pair.getLeft().getType().equals(key.getType())) {
+            return (T) pair.getRight();
+        }
+        return null;
     }
 
     @Override
     public boolean contains(Key<?> key) {
-        return headers.containsKey(key.getName());
+        Pair<Key<?>, ?> pair = headers.get(key.getName());
+        if (pair != null && pair.getLeft().getType().equals(key.getType())) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -70,7 +77,7 @@ public class DefaultMessageHeaders implements MessageHeaders {
     public void deserialize(Serializer serializer) throws DeserializeException {
         if (!deserialized) {
             deserialized = true;
-            if (headerData == null){
+            if (headerData == null) {
                 return;
             }
             // todo
