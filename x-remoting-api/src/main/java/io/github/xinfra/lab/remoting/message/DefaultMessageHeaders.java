@@ -4,11 +4,10 @@ import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
 import io.github.xinfra.lab.remoting.serialization.Serializer;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.CompositeByteBuf;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -17,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DefaultMessageHeaders implements MessageHeaders {
 
-    private ConcurrentHashMap<String, Pair<Key<?>, ?>> headers = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Key<?>, Object> headers = new ConcurrentHashMap<>();
 
     byte[] headerData;
 
@@ -27,25 +26,17 @@ public class DefaultMessageHeaders implements MessageHeaders {
 
     @Override
     public <T> void put(Key<T> key, T value) {
-        headers.put(key.getName(), Pair.of(key, value));
+        headers.put(key, value);
     }
 
     @Override
     public <T> T get(Key<T> key) {
-        Pair<Key<?>, ?> pair = headers.get(key.getName());
-        if (pair != null && pair.getLeft().getType().equals(key.getType())) {
-            return (T) pair.getRight();
-        }
-        return null;
+        return (T) headers.get(key);
     }
 
     @Override
     public boolean contains(Key<?> key) {
-        Pair<Key<?>, ?> pair = headers.get(key.getName());
-        if (pair != null && pair.getLeft().getType().equals(key.getType())) {
-            return true;
-        }
-        return false;
+        return headers.contains(key);
     }
 
     @Override
@@ -56,16 +47,18 @@ public class DefaultMessageHeaders implements MessageHeaders {
                 return;
             }
             CompositeByteBuf buf = ByteBufAllocator.DEFAULT.compositeBuffer();
-            for (Pair<Key<?>, ?> pair : headers.values()) {
-                Key<?> key = pair.getLeft();
-                Object value = pair.getRight();
+            for (Map.Entry<Key<?>, Object> entry : headers.entrySet()) {
+                Key<?> key = entry.getKey();
+                Object value = entry.getValue();
 
-                buf.writeByte(serializer.serializationType().data());
                 byte[] keyData = key.getName().getBytes(StandardCharsets.UTF_8);
+                byte[] valueTypeData = key.getType().getName().getBytes(StandardCharsets.UTF_8);
                 byte[] valueData = serializer.serialize(value);
                 buf.writeShort(keyData.length);
+                buf.writeShort(valueTypeData.length);
                 buf.writeShort(valueData.length);
                 buf.writeBytes(keyData);
+                buf.writeBytes(valueTypeData);
                 buf.writeBytes(valueData);
             }
             headerData = buf.array();
