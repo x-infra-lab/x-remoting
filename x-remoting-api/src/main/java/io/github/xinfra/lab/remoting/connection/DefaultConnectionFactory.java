@@ -135,8 +135,8 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 					if (connectionFactoryConfig.isIdleSwitch()) {
 						pipeline.addLast("idleStateHandler",
 								new IdleStateHandler(connectionFactoryConfig.getIdleReaderTimeout(),
-										connectionFactoryConfig.getIdleWriterTimeout(), connectionFactoryConfig.getIdleAllTimeout(),
-										TimeUnit.MILLISECONDS));
+										connectionFactoryConfig.getIdleWriterTimeout(),
+										connectionFactoryConfig.getIdleAllTimeout(), TimeUnit.MILLISECONDS));
 					}
 
 					for (Supplier<ChannelHandler> supplier : channelHandlerSuppliers) {

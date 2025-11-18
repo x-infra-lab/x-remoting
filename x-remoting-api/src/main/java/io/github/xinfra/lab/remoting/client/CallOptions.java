@@ -9,4 +9,5 @@ public class CallOptions {
 	private int timeoutMills = 3000;
 
 	private SerializationType serializationType = SerializationType.Hession;
+
 }
