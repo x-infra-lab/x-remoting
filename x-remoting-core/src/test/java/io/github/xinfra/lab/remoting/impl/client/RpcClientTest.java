@@ -84,7 +84,8 @@ public class RpcClientTest {
 	public void testFutureCall() throws RemotingException, InterruptedException, TimeoutException {
 		String msg = "hello x-remoting";
 		EchoRequest request = new EchoRequest(msg);
-		RemotingFuture<String> future = remotingClient.asyncCall(echoApi, request, remotingServer.localAddress(), callOptions);
+		RemotingFuture<String> future = remotingClient.asyncCall(echoApi, request, remotingServer.localAddress(),
+				callOptions);
 
 		String result = future.get(3, TimeUnit.SECONDS);
 		Assertions.assertEquals(result, "echo:" + msg);
@@ -97,18 +98,19 @@ public class RpcClientTest {
 
 		CountDownLatch countDownLatch = new CountDownLatch(1);
 		AtomicReference<String> result = new AtomicReference<>();
-		remotingClient.asyncCall(echoApi, request, remotingServer.localAddress(), callOptions, new RemotingCallBack<String>() {
-			@Override
-			public void onException(Throwable t) {
-				countDownLatch.countDown();
-			}
+		remotingClient.asyncCall(echoApi, request, remotingServer.localAddress(), callOptions,
+				new RemotingCallBack<String>() {
+					@Override
+					public void onException(Throwable t) {
+						countDownLatch.countDown();
+					}
 
-			@Override
-			public void onResponse(String response) {
-				result.set(response);
-				countDownLatch.countDown();
-			}
-		});
+					@Override
+					public void onResponse(String response) {
+						result.set(response);
+						countDownLatch.countDown();
+					}
+				});
 
 		countDownLatch.await(3, TimeUnit.SECONDS);
 		Assertions.assertEquals(result.get(), "echo:" + msg);
@@ -122,6 +124,5 @@ public class RpcClientTest {
 		remotingClient.oneway(echoApi, request, remotingServer.localAddress(), callOptions);
 		TimeUnit.SECONDS.sleep(2);
 	}
-
 
 }

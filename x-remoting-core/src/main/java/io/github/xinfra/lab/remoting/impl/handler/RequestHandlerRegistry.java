@@ -7,13 +7,13 @@ import java.util.concurrent.ConcurrentHashMap;
 @Slf4j
 public class RequestHandlerRegistry {
 
-    private ConcurrentHashMap<RequestApi, RequestHandler> registry = new ConcurrentHashMap<>();
+	private ConcurrentHashMap<RequestApi, RequestHandler> registry = new ConcurrentHashMap<>();
 
 	public <T, R> void register(RequestApi requestApi, RequestHandler<T, R> requestHandler) {
-        RequestHandler preRequestHandler = registry.put(requestApi, requestHandler);
-        if (preRequestHandler != null) {
-            log.warn("RequestHandler for {} already registered, overwrite it:{}", requestApi, preRequestHandler);
-        }
-    }
+		RequestHandler preRequestHandler = registry.put(requestApi, requestHandler);
+		if (preRequestHandler != null) {
+			log.warn("RequestHandler for {} already registered, overwrite it:{}", requestApi, preRequestHandler);
+		}
+	}
 
 }

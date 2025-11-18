@@ -34,7 +34,7 @@ public class RemotingServerTest {
 	public static void beforeAll() {
 		remotingClient = new RemotingClient();
 		remotingClient.startup();
-        remotingClient.registerRequestHandler(echoApi, new EchoRequestHandler());
+		remotingClient.registerRequestHandler(echoApi, new EchoRequestHandler());
 
 		RemotingServerConfig config = new RemotingServerConfig();
 		config.setManageConnection(true);
@@ -105,18 +105,19 @@ public class RemotingServerTest {
 		Connection connection = remotingClient.getConnectionManager().get(serverAddress);
 		CountDownLatch countDownLatch2 = new CountDownLatch(1);
 		AtomicReference<String> result2 = new AtomicReference<>();
-		remotingServer.asyncCall(echoApi, request, connection.getChannel().localAddress(), callOptions, new RemotingCallBack<String>() {
-			@Override
-			public void onException(Throwable t) {
-				countDownLatch2.countDown();
-			}
+		remotingServer.asyncCall(echoApi, request, connection.getChannel().localAddress(), callOptions,
+				new RemotingCallBack<String>() {
+					@Override
+					public void onException(Throwable t) {
+						countDownLatch2.countDown();
+					}
 
-			@Override
-			public void onResponse(String response) {
-				result2.set(response);
-				countDownLatch2.countDown();
-			}
-		});
+					@Override
+					public void onResponse(String response) {
+						result2.set(response);
+						countDownLatch2.countDown();
+					}
+				});
 
 		countDownLatch2.await(3, TimeUnit.SECONDS);
 		Assertions.assertEquals(result2.get(), "echo:" + msg);
@@ -137,41 +138,42 @@ public class RemotingServerTest {
 		TimeUnit.SECONDS.sleep(2);
 	}
 
-//	@Test
-//	public void testRegisterUserProcessor() throws RemotingException, InterruptedException, TimeoutException {
-//		testProtocol = spy(testProtocol);
-//		MessageHandler messageHandler = mock(MessageHandler.class);
-//		doReturn(messageHandler).when(testProtocol).messageHandler();
-//
-//		ServerConfig config = new ServerConfig();
-//		config.setPort(findAvailableTcpPort());
-//		config.setManageConnection(true);
-//
-//		AbstractServer server = new AbstractServer(config) {
-//			@Override
-//			public Protocol protocol() {
-//				return testProtocol;
-//			}
-//		};
-//
-//		server.startup();
-//
-//		UserProcessor<String> userProcessor1 = new UserProcessor<String>() {
-//			@Override
-//			public String interest() {
-//				return String.class.getName();
-//			}
-//
-//			@Override
-//			public Object handRequest(String request) {
-//				// do nothing
-//				return null;
-//			}
-//		};
-//
-//		server.registerUserProcessor(userProcessor1);
-//
-//		verify(messageHandler, times(1)).registerUserProcessor(eq(userProcessor1));
-//	}
+	// @Test
+	// public void testRegisterUserProcessor() throws RemotingException,
+	// InterruptedException, TimeoutException {
+	// testProtocol = spy(testProtocol);
+	// MessageHandler messageHandler = mock(MessageHandler.class);
+	// doReturn(messageHandler).when(testProtocol).messageHandler();
+	//
+	// ServerConfig config = new ServerConfig();
+	// config.setPort(findAvailableTcpPort());
+	// config.setManageConnection(true);
+	//
+	// AbstractServer server = new AbstractServer(config) {
+	// @Override
+	// public Protocol protocol() {
+	// return testProtocol;
+	// }
+	// };
+	//
+	// server.startup();
+	//
+	// UserProcessor<String> userProcessor1 = new UserProcessor<String>() {
+	// @Override
+	// public String interest() {
+	// return String.class.getName();
+	// }
+	//
+	// @Override
+	// public Object handRequest(String request) {
+	// // do nothing
+	// return null;
+	// }
+	// };
+	//
+	// server.registerUserProcessor(userProcessor1);
+	//
+	// verify(messageHandler, times(1)).registerUserProcessor(eq(userProcessor1));
+	// }
 
 }

@@ -42,7 +42,8 @@ public class RemotingClient extends AbstractLifeCycle {
 		ConnectionFactoryConfig connectionFactoryConfig = config.getConnectionFactoryConfig();
 		ConnectionManagerConfig connectionManagerConfig = config.getConnectionManagerConfig();
 		if (connectionFactoryConfig != null && connectionManagerConfig != null) {
-			this.connectionManager = new ClientConnectionManager(protocol, connectionFactoryConfig, connectionManagerConfig);
+			this.connectionManager = new ClientConnectionManager(protocol, connectionFactoryConfig,
+					connectionManagerConfig);
 		}
 		else if (connectionFactoryConfig != null) {
 			this.connectionManager = new ClientConnectionManager(protocol, connectionFactoryConfig);
