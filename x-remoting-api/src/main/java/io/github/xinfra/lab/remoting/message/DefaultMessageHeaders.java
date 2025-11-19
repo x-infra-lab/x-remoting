@@ -35,6 +35,13 @@ public class DefaultMessageHeaders implements MessageHeaders {
     private static final int VALUE_LENGTH_SIZE = Short.BYTES;
     private static final int HEADER_SIZE = KEY_LENGTH_SIZE + VALUE_TYPE_LENGTH_SIZE + VALUE_LENGTH_SIZE;
 
+    public DefaultMessageHeaders() {
+    }
+
+    public DefaultMessageHeaders(byte[] headerData) {
+        this.headerData = headerData;
+    }
+
     @Override
     public <T> void put(Key<T> key, T value) {
         headers.put(Pair.of(key.getName(), key.getType().getName()), () -> value);

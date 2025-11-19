@@ -74,11 +74,12 @@ public class RemotingMessageBody implements MessageBody {
     public void deserialize(Serializer serializer) throws DeserializeException {
         if (!deserialized){
             deserialized = true;
+            try {
             ByteBuf byteBuf = Unpooled.wrappedBuffer(bodyData);
             version = byteBuf.readByte();
             short typeLength = byteBuf.readShort();
             String typeName = byteBuf.readCharSequence(typeLength, StandardCharsets.UTF_8).toString();
-            try {
+
                 bodyValue = serializer.deserialize(byteBuf.readBytes(byteBuf.readableBytes()).array(),
                         (Class<?>) Class.forName(typeName));
             } catch (ClassNotFoundException e) {
