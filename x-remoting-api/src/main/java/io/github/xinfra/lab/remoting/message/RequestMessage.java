@@ -2,11 +2,9 @@ package io.github.xinfra.lab.remoting.message;
 
 public interface RequestMessage extends Message {
 
-	String path();
+	String getPath();
 
-	@Override
-	default MessageType messageType() {
-		return MessageType.request;
-	}
+	void setPath(String path);
+
 
 }

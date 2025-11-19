@@ -2,15 +2,21 @@ package io.github.xinfra.lab.remoting.impl.message;
 
 import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.message.MessageType;
-import io.github.xinfra.lab.remoting.message.ResponseMessage;
+import io.github.xinfra.lab.remoting.message.RequestMessage;
 import io.github.xinfra.lab.remoting.message.ResponseStatus;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
 
 public class RemotingMessageFactory implements MessageFactory {
 
 	@Override
-	public RemotingRequestMessage createRequest(int id, SerializationType serializationType) {
-		RemotingRequestMessage remotingRequestMessage = new RemotingRequestMessage(id, serializationType);
+	public RemotingRequestMessage  createRequest(int id, SerializationType serializationType) {
+		RemotingRequestMessage remotingRequestMessage = new RemotingRequestMessage(id, MessageType.request,  serializationType);
+		return remotingRequestMessage;
+	}
+
+	@Override
+	public RemotingRequestMessage  createHeartbeatRequest(int id, SerializationType serializationType) {
+		RemotingRequestMessage remotingRequestMessage = new RemotingRequestMessage(id, MessageType.heartbeatRequest,  serializationType);
 		return remotingRequestMessage;
 	}
 
@@ -29,5 +35,6 @@ public class RemotingMessageFactory implements MessageFactory {
 		remotingResponseMessage.setBody(remotingMessageBody);
 		return remotingResponseMessage;
 	}
+
 
 }

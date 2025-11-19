@@ -1,6 +1,5 @@
 package io.github.xinfra.lab.remoting.message;
 
-import io.github.xinfra.lab.remoting.common.Requests;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import lombok.Getter;
 

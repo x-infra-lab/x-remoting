@@ -14,17 +14,23 @@ import java.nio.charset.StandardCharsets;
 /**
  * request definition:
  * <p>
- * ｜protocol-codes:bytes|protocol-version:byte|message-type:byte|request-id:int|serialization-type:byte|path-length:short|header-length:short|body-length:int|path:bytes|header:bytes|body:bytes|
+ * ｜protocol-codeRemotingRequestMessages:bytes|protocol-version:byte|message-type:byte|request-id:int|serialization-type:byte|path-length:short|header-length:short|body-length:int|path:bytes|header:bytes|body:bytes|
  */
 
 public class RemotingRequestMessage extends RemotingMessage implements RequestMessage {
 
 	@Setter
+	@Getter
 	private String path;
 
 	@Setter
 	@Getter
 	private byte[] pathData;
+
+	private MessageType messageType;
+
+	private boolean serialized;
+	private boolean deserialized;
 
 	private static final Integer protocolCodeLength = RemotingProtocolIdentifier.PROTOCOL_CODE.length;
 
@@ -45,27 +51,34 @@ public class RemotingRequestMessage extends RemotingMessage implements RequestMe
 	public static final Integer REQUEST_HEADER_BYTES = protocolCodeLength + protocolVersionLength + messageTypeLength
 			+ requestIdLength + serializationTypeLength + pathLengthLength + headerLengthLength + bodyLengthLength;
 
-	public RemotingRequestMessage(int id, SerializationType serializationType) {
+	public RemotingRequestMessage(int id, MessageType messageType,  SerializationType serializationType) {
 		super(id, serializationType);
+		this.messageType = messageType;
 	}
 
 	@Override
-	public String path() {
-		return this.path;
+	public MessageType messageType() {
+		return messageType;
 	}
 
 	@Override
 	public void serialize() throws SerializeException {
 		super.serialize();
-		if (pathData == null) {
-			pathData = path.getBytes(StandardCharsets.UTF_8);
+		if (!serialized) {
+			serialized = true;
+			if (path == null) {
+				pathData = new byte[0]; // default: ""
+			} else {
+				pathData = path.getBytes(StandardCharsets.UTF_8);
+			}
 		}
 	}
 
 	@Override
 	public void deserialize() throws DeserializeException {
 		super.deserialize();
-		if (path == null) {
+		if (!deserialized){
+			deserialized = true;
 			path = new String(pathData, StandardCharsets.UTF_8);
 		}
 	}

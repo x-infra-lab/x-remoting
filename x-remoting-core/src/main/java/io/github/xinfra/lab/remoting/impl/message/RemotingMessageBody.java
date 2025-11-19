@@ -41,6 +41,10 @@ public class RemotingMessageBody implements MessageBody {
 	public RemotingMessageBody() {
 	}
 
+	public RemotingMessageBody(Object bodyValue) {
+		this.bodyValue = bodyValue;
+	}
+
 	public RemotingMessageBody(byte[] bodyData) {
 		this.bodyData = bodyData;
 	}
@@ -49,6 +53,10 @@ public class RemotingMessageBody implements MessageBody {
 	public void serialize(Serializer serializer) throws SerializeException {
 		if (!serialized) {
 			serialized = true;
+			if (bodyValue == null) {
+				bodyData = new byte[0];
+				return;
+			}
 
 			CompositeByteBuf buf = null;
 			try {
@@ -77,6 +85,9 @@ public class RemotingMessageBody implements MessageBody {
 	public void deserialize(Serializer serializer) throws DeserializeException {
 		if (!deserialized) {
 			deserialized = true;
+			if (bodyData == null) {
+				return;
+			}
 			try {
 				ByteBuf byteBuf = Unpooled.wrappedBuffer(bodyData);
 				version = byteBuf.readByte();
