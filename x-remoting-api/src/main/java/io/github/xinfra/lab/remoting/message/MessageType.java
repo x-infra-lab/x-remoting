@@ -9,8 +9,14 @@ public interface MessageType {
 	MessageType response = () -> (byte) 1;
 
 	static MessageType valueOf(byte data) {
-		// todo
-		return null;
+		switch (data) {
+			case 0:
+				return request;
+			case 1:
+				return response;
+			default:
+				throw new IllegalArgumentException("Unknown message type: " + data);
+		}
 	}
 
 }

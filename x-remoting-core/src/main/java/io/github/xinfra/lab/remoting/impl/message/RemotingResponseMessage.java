@@ -19,16 +19,24 @@ public class RemotingResponseMessage extends RemotingMessage implements Response
 
 	final ResponseStatus status;
 
-    private static final Integer protocolCodeLength = RemotingProtocolIdentifier.PROTOCOL_CODE.length;
-    private static final Integer protocolVersionLength = Byte.BYTES;
-    private static final Integer messageTypeLength = Byte.BYTES;
-    private static final Integer requestIdLength = Integer.BYTES;
-    private static final Integer serializationTypeLength = Byte.BYTES;
-    private static final Integer statusLength = Short.BYTES;
-    private static final Integer headerLengthLength = Short.BYTES;
-    private static final Integer bodyLengthLength = Integer.BYTES;
+	private static final Integer protocolCodeLength = RemotingProtocolIdentifier.PROTOCOL_CODE.length;
 
-    public static final Integer RESPONSE_HEADER_BYTES = protocolCodeLength + protocolVersionLength + messageTypeLength + requestIdLength + serializationTypeLength + statusLength + headerLengthLength + bodyLengthLength;
+	private static final Integer protocolVersionLength = Byte.BYTES;
+
+	private static final Integer messageTypeLength = Byte.BYTES;
+
+	private static final Integer requestIdLength = Integer.BYTES;
+
+	private static final Integer serializationTypeLength = Byte.BYTES;
+
+	private static final Integer statusLength = Short.BYTES;
+
+	private static final Integer headerLengthLength = Short.BYTES;
+
+	private static final Integer bodyLengthLength = Integer.BYTES;
+
+	public static final Integer RESPONSE_HEADER_BYTES = protocolCodeLength + protocolVersionLength + messageTypeLength
+			+ requestIdLength + serializationTypeLength + statusLength + headerLengthLength + bodyLengthLength;
 
 	public RemotingResponseMessage(int id, SerializationType serializationType, ResponseStatus status) {
 		super(id, serializationType);

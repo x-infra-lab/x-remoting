@@ -19,47 +19,55 @@ import java.nio.charset.StandardCharsets;
 
 public class RemotingRequestMessage extends RemotingMessage implements RequestMessage {
 
-    @Setter
-    private String path;
+	@Setter
+	private String path;
 
-    @Setter
-    @Getter
-    private byte[] pathData;
+	@Setter
+	@Getter
+	private byte[] pathData;
 
-    private static final Integer protocolCodeLength = RemotingProtocolIdentifier.PROTOCOL_CODE.length;
-    private static final Integer protocolVersionLength = Byte.BYTES;
-    private static final Integer messageTypeLength = Byte.BYTES;
-    private static final Integer requestIdLength = Integer.BYTES;
-    private static final Integer serializationTypeLength = Byte.BYTES;
-    private static final Integer pathLengthLength = Short.BYTES;
-    private static final Integer headerLengthLength = Short.BYTES;
-    private static final Integer bodyLengthLength = Integer.BYTES;
+	private static final Integer protocolCodeLength = RemotingProtocolIdentifier.PROTOCOL_CODE.length;
 
-    public static final Integer REQUEST_HEADER_BYTES = protocolCodeLength + protocolVersionLength + messageTypeLength + requestIdLength + serializationTypeLength + pathLengthLength + headerLengthLength + bodyLengthLength;
+	private static final Integer protocolVersionLength = Byte.BYTES;
 
-    public RemotingRequestMessage(int id, SerializationType serializationType) {
-        super(id, serializationType);
-    }
+	private static final Integer messageTypeLength = Byte.BYTES;
 
-    @Override
-    public String path() {
-        return this.path;
-    }
+	private static final Integer requestIdLength = Integer.BYTES;
 
-    @Override
-    public void serialize() throws SerializeException {
-        super.serialize();
-        if (pathData == null) {
-            pathData = path.getBytes(StandardCharsets.UTF_8);
-        }
-    }
+	private static final Integer serializationTypeLength = Byte.BYTES;
 
-    @Override
-    public void deserialize() throws DeserializeException {
-        super.deserialize();
-        if (path == null) {
-            path = new String(pathData, StandardCharsets.UTF_8);
-        }
-    }
+	private static final Integer pathLengthLength = Short.BYTES;
+
+	private static final Integer headerLengthLength = Short.BYTES;
+
+	private static final Integer bodyLengthLength = Integer.BYTES;
+
+	public static final Integer REQUEST_HEADER_BYTES = protocolCodeLength + protocolVersionLength + messageTypeLength
+			+ requestIdLength + serializationTypeLength + pathLengthLength + headerLengthLength + bodyLengthLength;
+
+	public RemotingRequestMessage(int id, SerializationType serializationType) {
+		super(id, serializationType);
+	}
+
+	@Override
+	public String path() {
+		return this.path;
+	}
+
+	@Override
+	public void serialize() throws SerializeException {
+		super.serialize();
+		if (pathData == null) {
+			pathData = path.getBytes(StandardCharsets.UTF_8);
+		}
+	}
+
+	@Override
+	public void deserialize() throws DeserializeException {
+		super.deserialize();
+		if (path == null) {
+			path = new String(pathData, StandardCharsets.UTF_8);
+		}
+	}
 
 }

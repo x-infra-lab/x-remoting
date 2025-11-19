@@ -22,127 +22,131 @@ import java.util.function.Supplier;
 @Slf4j
 public class DefaultMessageHeaders implements MessageHeaders {
 
-    private ConcurrentHashMap<Pair<String, String>, Supplier<?>> headers = new ConcurrentHashMap<>();
+	private ConcurrentHashMap<Pair<String, String>, Supplier<?>> headers = new ConcurrentHashMap<>();
 
-    byte[] headerData;
+	byte[] headerData;
 
-    boolean serialized;
+	boolean serialized;
 
-    boolean deserialized;
+	boolean deserialized;
 
-    private static final int KEY_LENGTH_SIZE = Short.BYTES;
-    private static final int VALUE_TYPE_LENGTH_SIZE = Short.BYTES;
-    private static final int VALUE_LENGTH_SIZE = Short.BYTES;
-    private static final int HEADER_SIZE = KEY_LENGTH_SIZE + VALUE_TYPE_LENGTH_SIZE + VALUE_LENGTH_SIZE;
+	private static final int KEY_LENGTH_SIZE = Short.BYTES;
 
-    public DefaultMessageHeaders() {
-    }
+	private static final int VALUE_TYPE_LENGTH_SIZE = Short.BYTES;
 
-    public DefaultMessageHeaders(byte[] headerData) {
-        this.headerData = headerData;
-    }
+	private static final int VALUE_LENGTH_SIZE = Short.BYTES;
 
-    @Override
-    public <T> void put(Key<T> key, T value) {
-        headers.put(Pair.of(key.getName(), key.getType().getName()), () -> value);
-    }
+	private static final int HEADER_SIZE = KEY_LENGTH_SIZE + VALUE_TYPE_LENGTH_SIZE + VALUE_LENGTH_SIZE;
 
-    @Override
-    public <T> T get(Key<T> key) {
-        Supplier<?> supplier = headers.get(Pair.of(key.getName(), key.getType().getName()));
-        if (supplier != null) {
-            return (T) supplier.get();
-        }
-        return null;
-    }
+	public DefaultMessageHeaders() {
+	}
 
-    @Override
-    public boolean contains(Key<?> key) {
-        return headers.contains(Pair.of(key.getName(), key.getType().getName()));
-    }
+	public DefaultMessageHeaders(byte[] headerData) {
+		this.headerData = headerData;
+	}
 
-    @Override
-    public void serialize(Serializer serializer) throws SerializeException {
-        if (!serialized) {
-            serialized = true;
-            if (headers.isEmpty()) {
-                headerData = new byte[0];
-                return;
-            }
-            CompositeByteBuf buf = null;
-            try {
-                buf = ByteBufAllocator.DEFAULT.compositeBuffer();
-                for (Map.Entry<Pair<String, String>, Supplier<?>> entry : headers.entrySet()) {
-                    Pair<String, String> pair = entry.getKey();
-                    Object value = entry.getValue().get();
+	@Override
+	public <T> void put(Key<T> key, T value) {
+		headers.put(Pair.of(key.getName(), key.getType().getName()), () -> value);
+	}
 
-                    byte[] keyData = pair.getLeft().getBytes(StandardCharsets.UTF_8);
-                    byte[] valueTypeData = pair.getRight().getBytes(StandardCharsets.UTF_8);
-                    byte[] valueData = serializer.serialize(value);
-                    buf.writeShort(keyData.length);
-                    buf.writeShort(valueTypeData.length);
-                    buf.writeShort(valueData.length);
-                    buf.writeBytes(keyData);
-                    buf.writeBytes(valueTypeData);
-                    buf.writeBytes(valueData);
-                }
-                headerData = buf.array();
-            } finally {
-                if (buf != null) {
-                    buf.release();
-                }
-            }
-        }
-    }
+	@Override
+	public <T> T get(Key<T> key) {
+		Supplier<?> supplier = headers.get(Pair.of(key.getName(), key.getType().getName()));
+		if (supplier != null) {
+			return (T) supplier.get();
+		}
+		return null;
+	}
 
-    @Override
-    public void deserialize(Serializer serializer) throws DeserializeException {
-        if (!deserialized) {
-            deserialized = true;
-            if (headerData == null) {
-                return;
-            }
-            ByteBuf byteBuf = null;
-            try {
-                byteBuf = Unpooled.wrappedBuffer(headerData);
+	@Override
+	public boolean contains(Key<?> key) {
+		return headers.contains(Pair.of(key.getName(), key.getType().getName()));
+	}
 
-                while (byteBuf.readableBytes() >= HEADER_SIZE) {
-                    short keyLength = byteBuf.readShort();
-                    short valueTypeLength = byteBuf.readShort();
-                    short valueLength = byteBuf.readShort();
-                    int dataLength = keyLength + valueTypeLength + valueLength;
-                    if (byteBuf.readableBytes() < dataLength) {
-                        log.error("Invalid header data:{}", headerData);
-                        throw new DeserializeException("Invalid header data");
-                    }
+	@Override
+	public void serialize(Serializer serializer) throws SerializeException {
+		if (!serialized) {
+			serialized = true;
+			if (headers.isEmpty()) {
+				headerData = new byte[0];
+				return;
+			}
+			CompositeByteBuf buf = null;
+			try {
+				buf = ByteBufAllocator.DEFAULT.compositeBuffer();
+				for (Map.Entry<Pair<String, String>, Supplier<?>> entry : headers.entrySet()) {
+					Pair<String, String> pair = entry.getKey();
+					Object value = entry.getValue().get();
 
-                    String key =  byteBuf.readCharSequence(keyLength, StandardCharsets.UTF_8).toString();
-                    String valueType = byteBuf.readCharSequence(valueTypeLength, StandardCharsets.UTF_8).toString();
-                    byte[] valueData = byteBuf.readBytes(valueLength).array();
+					byte[] keyData = pair.getLeft().getBytes(StandardCharsets.UTF_8);
+					byte[] valueTypeData = pair.getRight().getBytes(StandardCharsets.UTF_8);
+					byte[] valueData = serializer.serialize(value);
+					buf.writeShort(keyData.length);
+					buf.writeShort(valueTypeData.length);
+					buf.writeShort(valueData.length);
+					buf.writeBytes(keyData);
+					buf.writeBytes(valueTypeData);
+					buf.writeBytes(valueData);
+				}
+				headerData = buf.array();
+			}
+			finally {
+				if (buf != null) {
+					buf.release();
+				}
+			}
+		}
+	}
 
-                    // lazy deserialization
-                    headers.put(Pair.of(key, valueType),
-                            () -> {
-                                try {
-                                    return serializer.deserialize(valueData,
-                                            (Class<?>) Class.forName(valueType));
-                                } catch (Exception e) {
-                                    log.error("Deserialize header value failed", e);
-                                    throw new RuntimeException("Deserialize header value failed", e);
-                                }
-                            });
-                }
-            } finally {
-                if (byteBuf != null) {
-                    byteBuf.release();
-                }
-            }
-        }
-    }
+	@Override
+	public void deserialize(Serializer serializer) throws DeserializeException {
+		if (!deserialized) {
+			deserialized = true;
+			if (headerData == null) {
+				return;
+			}
+			ByteBuf byteBuf = null;
+			try {
+				byteBuf = Unpooled.wrappedBuffer(headerData);
 
-    @Override
-    public byte[] data() {
-        return headerData;
-    }
+				while (byteBuf.readableBytes() >= HEADER_SIZE) {
+					short keyLength = byteBuf.readShort();
+					short valueTypeLength = byteBuf.readShort();
+					short valueLength = byteBuf.readShort();
+					int dataLength = keyLength + valueTypeLength + valueLength;
+					if (byteBuf.readableBytes() < dataLength) {
+						log.error("Invalid header data:{}", headerData);
+						throw new DeserializeException("Invalid header data");
+					}
+
+					String key = byteBuf.readCharSequence(keyLength, StandardCharsets.UTF_8).toString();
+					String valueType = byteBuf.readCharSequence(valueTypeLength, StandardCharsets.UTF_8).toString();
+					byte[] valueData = byteBuf.readBytes(valueLength).array();
+
+					// lazy deserialization
+					headers.put(Pair.of(key, valueType), () -> {
+						try {
+							return serializer.deserialize(valueData, (Class<?>) Class.forName(valueType));
+						}
+						catch (Exception e) {
+							log.error("Deserialize header value failed", e);
+							throw new RuntimeException("Deserialize header value failed", e);
+						}
+					});
+				}
+			}
+			finally {
+				if (byteBuf != null) {
+					byteBuf.release();
+				}
+			}
+		}
+	}
+
+	@Override
+	public byte[] data() {
+		return headerData;
+	}
 
 }

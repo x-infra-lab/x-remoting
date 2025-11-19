@@ -12,18 +12,17 @@ public abstract class RequestMessageTypeHandler implements MessageTypeHandler<Re
 
 	@Override
 	public void handleMessage(Connection connection, RequestMessage requestMessage) {
-		if (Requests.isHeartbeatRequest(requestMessage)) {
-			MessageFactory messageFactory = connection.getProtocol().messageFactory();
-			Responses.sendResponse(connection, messageFactory.createResponse(requestMessage.id(),
-					requestMessage.serializationType(), ResponseStatus.OK));
+        MessageExchange messageExchange = new MessageExchange(requestMessage, connection);
+        if (Requests.isHeartbeatRequest(requestMessage)) {
+            ResponseMessage responseMessage =  connection.getProtocol().messageFactory().createResponse(requestMessage.id(),
+                    requestMessage.serializationType(), ResponseStatus.OK);
+            messageExchange.sendResponse(responseMessage);
 			return;
 		}
-		ResponseMessage responseMessage = handleRequestMessage(requestMessage);
-		if (!Requests.isOnewayRequest(requestMessage)) {
-			Responses.sendResponse(connection, responseMessage);
-		}
+		 handleRequestMessage(messageExchange);
 	}
 
-	public abstract ResponseMessage handleRequestMessage(RequestMessage requestMessage);
+    public abstract void handleRequestMessage(MessageExchange messageExchange);
+
 
 }

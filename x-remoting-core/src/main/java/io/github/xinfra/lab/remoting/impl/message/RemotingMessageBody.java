@@ -19,78 +19,82 @@ import java.nio.charset.StandardCharsets;
  */
 public class RemotingMessageBody implements MessageBody {
 
-    private byte[] bodyData;
+	private byte[] bodyData;
 
-    /**
-     * for upgrades
-     */
-    private  byte version = 0x1;
+	/**
+	 * for upgrades
+	 */
+	private byte version = 0x1;
 
-    @Setter
-    @Getter
-    private Object bodyValue;
+	@Setter
+	@Getter
+	private Object bodyValue;
 
-    private boolean serialized;
-    private boolean deserialized;
+	private boolean serialized;
 
-    private static final int VERSION_SIZE = Byte.BYTES;
-    private static final int TYPE_LENGTH_SIZE = Short.BYTES;
+	private boolean deserialized;
 
-    public RemotingMessageBody() {
-    }
+	private static final int VERSION_SIZE = Byte.BYTES;
 
-    public RemotingMessageBody(byte[] bodyData) {
-        this.bodyData = bodyData;
-    }
+	private static final int TYPE_LENGTH_SIZE = Short.BYTES;
 
-    @Override
-    public void serialize(Serializer serializer) throws SerializeException {
-        if (!serialized) {
-            serialized = true;
+	public RemotingMessageBody() {
+	}
 
-            CompositeByteBuf buf = null;
-            try {
-                buf = ByteBufAllocator.DEFAULT.compositeBuffer();
+	public RemotingMessageBody(byte[] bodyData) {
+		this.bodyData = bodyData;
+	}
 
-                buf.writeByte(version);
+	@Override
+	public void serialize(Serializer serializer) throws SerializeException {
+		if (!serialized) {
+			serialized = true;
 
-                String typeName = bodyValue.getClass().getName();
-                byte[] typeData = typeName.getBytes(StandardCharsets.UTF_8);
-                byte[] valueData = serializer.serialize(bodyValue);
-                buf.writeShort(typeData.length);
-                buf.writeBytes(typeData);
-                buf.writeBytes(valueData);
+			CompositeByteBuf buf = null;
+			try {
+				buf = ByteBufAllocator.DEFAULT.compositeBuffer();
 
-                bodyData = buf.array();
-            } finally {
-                if (buf != null) {
-                    buf.release();
-                }
-            }
-        }
-    }
+				buf.writeByte(version);
 
-    @Override
-    public void deserialize(Serializer serializer) throws DeserializeException {
-        if (!deserialized){
-            deserialized = true;
-            try {
-            ByteBuf byteBuf = Unpooled.wrappedBuffer(bodyData);
-            version = byteBuf.readByte();
-            short typeLength = byteBuf.readShort();
-            String typeName = byteBuf.readCharSequence(typeLength, StandardCharsets.UTF_8).toString();
+				String typeName = bodyValue.getClass().getName();
+				byte[] typeData = typeName.getBytes(StandardCharsets.UTF_8);
+				byte[] valueData = serializer.serialize(bodyValue);
+				buf.writeShort(typeData.length);
+				buf.writeBytes(typeData);
+				buf.writeBytes(valueData);
 
-                bodyValue = serializer.deserialize(byteBuf.readBytes(byteBuf.readableBytes()).array(),
-                        (Class<?>) Class.forName(typeName));
-            } catch (ClassNotFoundException e) {
-                throw new DeserializeException("Deserialize body value failed", e);
-            }
-        }
-    }
+				bodyData = buf.array();
+			}
+			finally {
+				if (buf != null) {
+					buf.release();
+				}
+			}
+		}
+	}
 
-    @Override
-    public byte[] data() {
-        return bodyData;
-    }
+	@Override
+	public void deserialize(Serializer serializer) throws DeserializeException {
+		if (!deserialized) {
+			deserialized = true;
+			try {
+				ByteBuf byteBuf = Unpooled.wrappedBuffer(bodyData);
+				version = byteBuf.readByte();
+				short typeLength = byteBuf.readShort();
+				String typeName = byteBuf.readCharSequence(typeLength, StandardCharsets.UTF_8).toString();
+
+				bodyValue = serializer.deserialize(byteBuf.readBytes(byteBuf.readableBytes()).array(),
+						(Class<?>) Class.forName(typeName));
+			}
+			catch (ClassNotFoundException e) {
+				throw new DeserializeException("Deserialize body value failed", e);
+			}
+		}
+	}
+
+	@Override
+	public byte[] data() {
+		return bodyData;
+	}
 
 }
