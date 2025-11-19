@@ -30,10 +30,10 @@ public class DefaultMessageHeaders implements MessageHeaders {
 
     boolean deserialized;
 
-    static final int KEY_LENGTH_SIZE = Short.BYTES;
-    static final int VALUE_TYPE_LENGTH_SIZE = Short.BYTES;
-    static final int VALUE_LENGTH_SIZE = Short.BYTES;
-    static final int HEADER_SIZE = KEY_LENGTH_SIZE + VALUE_TYPE_LENGTH_SIZE + VALUE_LENGTH_SIZE;
+    private static final int KEY_LENGTH_SIZE = Short.BYTES;
+    private static final int VALUE_TYPE_LENGTH_SIZE = Short.BYTES;
+    private static final int VALUE_LENGTH_SIZE = Short.BYTES;
+    private static final int HEADER_SIZE = KEY_LENGTH_SIZE + VALUE_TYPE_LENGTH_SIZE + VALUE_LENGTH_SIZE;
 
     @Override
     public <T> void put(Key<T> key, T value) {

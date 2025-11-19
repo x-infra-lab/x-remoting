@@ -4,8 +4,10 @@ import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
 import io.github.xinfra.lab.remoting.message.MessageBody;
 import io.github.xinfra.lab.remoting.serialization.Serializer;
+import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.CompositeByteBuf;
+import io.netty.buffer.Unpooled;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,11 +15,16 @@ import lombok.Setter;
 import java.nio.charset.StandardCharsets;
 
 /**
- * |type-length:short|value-length:short|type:bytes|value:bytes|
+ * |version:byte|type-length:short|type:bytes|value:bytes|
  */
 public class RemotingMessageBody implements MessageBody {
 
     private byte[] bodyData;
+
+    /**
+     * for upgrades
+     */
+    private  byte version = 0x1;
 
     @Setter
     @Getter
@@ -25,6 +32,9 @@ public class RemotingMessageBody implements MessageBody {
 
     private boolean serialized;
     private boolean deserialized;
+
+    private static final int VERSION_SIZE = Byte.BYTES;
+    private static final int TYPE_LENGTH_SIZE = Short.BYTES;
 
     public RemotingMessageBody() {
     }
@@ -42,11 +52,12 @@ public class RemotingMessageBody implements MessageBody {
             try {
                 buf = ByteBufAllocator.DEFAULT.compositeBuffer();
 
+                buf.writeByte(version);
+
                 String typeName = bodyValue.getClass().getName();
                 byte[] typeData = typeName.getBytes(StandardCharsets.UTF_8);
                 byte[] valueData = serializer.serialize(bodyValue);
                 buf.writeShort(typeData.length);
-                buf.writeShort(valueData.length);
                 buf.writeBytes(typeData);
                 buf.writeBytes(valueData);
 
@@ -63,7 +74,16 @@ public class RemotingMessageBody implements MessageBody {
     public void deserialize(Serializer serializer) throws DeserializeException {
         if (!deserialized){
             deserialized = true;
-            // todo @joecqupt
+            ByteBuf byteBuf = Unpooled.wrappedBuffer(bodyData);
+            version = byteBuf.readByte();
+            short typeLength = byteBuf.readShort();
+            String typeName = byteBuf.readCharSequence(typeLength, StandardCharsets.UTF_8).toString();
+            try {
+                bodyValue = serializer.deserialize(byteBuf.readBytes(byteBuf.readableBytes()).array(),
+                        (Class<?>) Class.forName(typeName));
+            } catch (ClassNotFoundException e) {
+                throw new DeserializeException("Deserialize body value failed", e);
+            }
         }
     }
 
