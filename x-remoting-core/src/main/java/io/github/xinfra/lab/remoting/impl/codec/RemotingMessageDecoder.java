@@ -5,9 +5,9 @@ import io.github.xinfra.lab.remoting.exception.CodecException;
 import io.github.xinfra.lab.remoting.impl.RemotingProtocolIdentifier;
 import io.github.xinfra.lab.remoting.impl.message.RemotingMessage;
 import io.github.xinfra.lab.remoting.impl.message.RemotingMessageBody;
-import io.github.xinfra.lab.remoting.impl.message.RemotingMessageHeaders;
 import io.github.xinfra.lab.remoting.impl.message.RemotingRequestMessage;
 import io.github.xinfra.lab.remoting.impl.message.RemotingResponseMessage;
+import io.github.xinfra.lab.remoting.message.DefaultMessageHeaders;
 import io.github.xinfra.lab.remoting.message.MessageType;
 import io.github.xinfra.lab.remoting.message.ResponseStatus;
 import io.github.xinfra.lab.remoting.serialization.SerializationManager;
@@ -62,12 +62,14 @@ public class RemotingMessageDecoder implements MessageDecoder {
 				if (remainLength <= in.readableBytes()) {
 					RemotingMessage remotingMessage;
 
-					if (messageType == request) {
+					if (messageType == request || messageType == heartbeatRequest) {
 						RemotingRequestMessage remotingRequestMessage = new RemotingRequestMessage(requestId,
-								serializationType);
-						byte[] bytes = new byte[pathDataLength];
-						in.readBytes(bytes);
-						remotingRequestMessage.setPathData(bytes);
+								messageType, serializationType);
+						if (pathDataLength > 0) {
+							byte[] bytes = new byte[pathDataLength];
+							in.readBytes(bytes);
+							remotingRequestMessage.setPathData(bytes);
+						}
 						remotingMessage = remotingRequestMessage;
 					}
 					else if (messageType == response) {
@@ -81,7 +83,7 @@ public class RemotingMessageDecoder implements MessageDecoder {
 					if (headerDataLength > 0) {
 						byte[] bytes = new byte[headerDataLength];
 						in.readBytes(bytes);
-						remotingMessage.setHeaders(new RemotingMessageHeaders(bytes));
+						remotingMessage.setHeaders(new DefaultMessageHeaders(bytes));
 					}
 					if (bodyDataLength > 0) {
 						byte[] bytes = new byte[bodyDataLength];

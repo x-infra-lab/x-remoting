@@ -1,7 +1,7 @@
 package io.github.xinfra.lab.remoting.message;
 
-import static io.github.xinfra.lab.remoting.message.Headers.onewayRequestKey;
-import static io.github.xinfra.lab.remoting.message.Headers.onewayRequestValue;
+import static io.github.xinfra.lab.remoting.message.HeaderConstants.onewayRequestKey;
+import static io.github.xinfra.lab.remoting.message.HeaderConstants.onewayRequestValue;
 
 public class Requests {
 
@@ -12,6 +12,9 @@ public class Requests {
 
 	public static boolean isOnewayRequest(RequestMessage requestMessage) {
 		MessageHeaders header = requestMessage.headers();
+		if (header == null) {
+			return false;
+		}
 		return header.contains(onewayRequestKey);
 	}
 

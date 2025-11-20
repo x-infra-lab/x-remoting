@@ -33,7 +33,7 @@ public class RemotingMessageFactory implements MessageFactory {
 			Throwable t) {
 		RemotingResponseMessage remotingResponseMessage = new RemotingResponseMessage(id, serializationType, status);
 		RemotingMessageBody remotingMessageBody = new RemotingMessageBody();
-		remotingMessageBody.setValue(t);
+		remotingMessageBody.setBodyValue(t);
 		remotingResponseMessage.setBody(remotingMessageBody);
 		return remotingResponseMessage;
 	}

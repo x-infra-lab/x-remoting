@@ -3,16 +3,19 @@ package io.github.xinfra.lab.remoting.impl.client;
 import io.github.xinfra.lab.remoting.client.Call;
 import io.github.xinfra.lab.remoting.client.CallOptions;
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
+import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.connection.ConnectionManager;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
 import io.github.xinfra.lab.remoting.impl.handler.RequestApi;
-import io.github.xinfra.lab.remoting.message.MessageFactory;
-import io.github.xinfra.lab.remoting.message.RequestMessage;
+import io.github.xinfra.lab.remoting.impl.message.RemotingMessageBody;
 import io.github.xinfra.lab.remoting.impl.message.RemotingRequestMessage;
 import io.github.xinfra.lab.remoting.impl.message.RemotingResponseMessage;
 import io.github.xinfra.lab.remoting.impl.message.RemotingResponses;
+import io.github.xinfra.lab.remoting.message.MessageFactory;
+import io.github.xinfra.lab.remoting.message.RequestMessage;
+import io.github.xinfra.lab.remoting.message.Requests;
 
 import java.net.SocketAddress;
 
@@ -30,7 +33,7 @@ public class RemotingCall implements Call {
 		Connection connection = connectionManager.get(socketAddress);
 		connectionManager.check(connection);
 		MessageFactory messageFactory = connection.getProtocol().messageFactory();
-		RequestMessage requestMessage = buildRequestMessage(messageFactory, request);
+		RequestMessage requestMessage = buildRequestMessage(messageFactory, requestApi, request, callOptions);
 
 		RemotingResponseMessage responseMessage = (RemotingResponseMessage) blockingCall(requestMessage, connection,
 				callOptions);
@@ -44,7 +47,7 @@ public class RemotingCall implements Call {
 		connectionManager.check(connection);
 
 		MessageFactory messageFactory = connection.getProtocol().messageFactory();
-		RequestMessage requestMessage = buildRequestMessage(messageFactory, request);
+		RequestMessage requestMessage = buildRequestMessage(messageFactory, requestApi, request, callOptions);
 
 		InvokeFuture<?> invokeFuture = futureCall(requestMessage, connection, callOptions);
 		return new RemotingFuture<R>(invokeFuture);
@@ -57,7 +60,7 @@ public class RemotingCall implements Call {
 		connectionManager.check(connection);
 
 		MessageFactory messageFactory = connection.getProtocol().messageFactory();
-		RequestMessage requestMessage = buildRequestMessage(messageFactory, request);
+		RequestMessage requestMessage = buildRequestMessage(messageFactory, requestApi, request, callOptions);
 
 		asyncCall(requestMessage, connection, callOptions, remotingCallBack);
 	}
@@ -69,18 +72,18 @@ public class RemotingCall implements Call {
 		connectionManager.check(connection);
 
 		MessageFactory messageFactory = connection.getProtocol().messageFactory();
-		RequestMessage requestMessage = buildRequestMessage(messageFactory, request);
-
+		RequestMessage requestMessage = buildRequestMessage(messageFactory, requestApi, request, callOptions);
+		Requests.markOnewayRequest(requestMessage);
 		oneway(requestMessage, connection, callOptions);
 	}
 
-	private RequestMessage buildRequestMessage(MessageFactory messageFactory, Object request)
-			throws SerializeException {
-		RemotingRequestMessage requestMessage = messageFactory.createRequestMessage();
-		// todo
-		requestMessage.setContent(request);
-		requestMessage.setContentType(request.getClass().getName());
-
+	private RequestMessage buildRequestMessage(MessageFactory messageFactory, RequestApi requestApi, Object request,
+			CallOptions callOptions) throws SerializeException {
+		RemotingRequestMessage requestMessage = messageFactory.createRequest(IDGenerator.nextRequestId(),
+				callOptions.getSerializationType());
+		requestMessage.setPath(requestApi.path());
+		requestMessage.setHeaders(callOptions.getHeaders());
+		requestMessage.setBody(new RemotingMessageBody(request));
 		requestMessage.serialize();
 		return requestMessage;
 	}

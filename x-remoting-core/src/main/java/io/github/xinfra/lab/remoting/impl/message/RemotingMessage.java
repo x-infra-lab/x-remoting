@@ -2,6 +2,7 @@ package io.github.xinfra.lab.remoting.impl.message;
 
 import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
+import io.github.xinfra.lab.remoting.message.DefaultMessageHeaders;
 import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.protocol.ProtocolIdentifier;
 import io.github.xinfra.lab.remoting.impl.RemotingProtocolIdentifier;
@@ -17,7 +18,7 @@ public abstract class RemotingMessage implements Message {
 	private SerializationType serializationType;
 
 	@Setter
-	private RemotingMessageHeaders headers;
+	private DefaultMessageHeaders headers;
 
 	@Setter
 	private RemotingMessageBody body;
@@ -42,7 +43,7 @@ public abstract class RemotingMessage implements Message {
 	}
 
 	@Override
-	public RemotingMessageHeaders headers() {
+	public DefaultMessageHeaders headers() {
 		return headers;
 	}
 

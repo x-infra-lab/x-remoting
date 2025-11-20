@@ -3,6 +3,8 @@ package io.github.xinfra.lab.remoting.impl.message;
 import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
 import io.github.xinfra.lab.remoting.impl.RemotingProtocolIdentifier;
+import io.github.xinfra.lab.remoting.message.MessageBody;
+import io.github.xinfra.lab.remoting.message.MessageHeaders;
 import io.github.xinfra.lab.remoting.message.MessageType;
 import io.github.xinfra.lab.remoting.message.RequestMessage;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
@@ -81,6 +83,9 @@ public class RemotingRequestMessage extends RemotingMessage implements RequestMe
 		super.deserialize();
 		if (!deserialized) {
 			deserialized = true;
+			if (pathData == null) {
+				return;
+			}
 			path = new String(pathData, StandardCharsets.UTF_8);
 		}
 	}

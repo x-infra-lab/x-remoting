@@ -29,26 +29,31 @@ public class RemotingMessageEncoder implements MessageEncoder {
 					RemotingResponseMessage responseMessage = (RemotingResponseMessage) msg;
 					out.writeShort(responseMessage.responseStatus().status());
 				}
+				int pathLength = 0;
 				if (msg instanceof RemotingRequestMessage) {
 					// write request path length
 					RemotingRequestMessage requestMessage = (RemotingRequestMessage) msg;
-					out.writeShort(requestMessage.getPathData().length);
+					pathLength = requestMessage.getPathData().length;
+					out.writeShort(pathLength);
 				}
 
 				// write header and body length
-				out.writeShort(remotingMessage.headers() == null ? 0 : remotingMessage.headers().data().length);
-				out.writeInt(remotingMessage.body() == null ? 0 : remotingMessage.body().data().length);
+				int headerLength = remotingMessage.headers() == null ? 0 : remotingMessage.headers().data().length;
+				int bodyLength = remotingMessage.body() == null ? 0 : remotingMessage.body().data().length;
+
+				out.writeShort(headerLength);
+				out.writeInt(bodyLength);
 
 				// write request path
-				if (msg instanceof RemotingRequestMessage) {
+				if (pathLength > 0) {
 					out.writeBytes(((RemotingRequestMessage) msg).getPathData());
 				}
 
 				// write header and body
-				if (remotingMessage.headers() != null) {
+				if (headerLength > 0) {
 					out.writeBytes(remotingMessage.headers().data());
 				}
-				if (remotingMessage.body() != null) {
+				if (bodyLength > 0) {
 					out.writeBytes(remotingMessage.body().data());
 				}
 			}
