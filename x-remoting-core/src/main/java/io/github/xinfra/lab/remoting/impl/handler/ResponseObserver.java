@@ -10,23 +10,25 @@ import io.github.xinfra.lab.remoting.message.Responses;
 
 public class ResponseObserver<R> {
 
-    private final Connection connection;
-    private final RequestMessage requestMessage;
+	private final Connection connection;
 
-    public ResponseObserver(Connection connection, RequestMessage requestMessage) {
-        this.connection = connection;
-        this.requestMessage = requestMessage;
-    }
+	private final RequestMessage requestMessage;
 
-    public void complete(R result) {
-        if(Requests.isOnewayRequest(requestMessage)){
-            return;
-        }
-        RemotingResponseMessage responseMessage = connection.getProtocol().messageFactory()
-                .createResponse(requestMessage.id(), requestMessage.serializationType(), ResponseStatus.OK);
-        responseMessage.setBody(new RemotingMessageBody(result));
+	public ResponseObserver(Connection connection, RequestMessage requestMessage) {
+		this.connection = connection;
+		this.requestMessage = requestMessage;
+	}
 
-        Responses.sendResponse(connection, responseMessage);
+	public void complete(R result) {
+		if (Requests.isOnewayRequest(requestMessage)) {
+			return;
+		}
+		RemotingResponseMessage responseMessage = connection.getProtocol()
+			.messageFactory()
+			.createResponse(requestMessage.id(), requestMessage.serializationType(), ResponseStatus.OK);
+		responseMessage.setBody(new RemotingMessageBody(result));
+
+		Responses.sendResponse(connection, responseMessage);
 	}
 
 }

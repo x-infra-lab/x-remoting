@@ -14,19 +14,19 @@ public class RemotingMessageHandler extends AbstractMessageHandler {
 		registerMessageTypeHandler(new RemotingRequestMessageTypeHandler(requestHandlerRegistry));
 	}
 
-//	@Override
-//	public void handleMessage(ChannelHandlerContext ctx, Message msg) {
-		// RemotingMessage remotingMessage = (RemotingMessage) msg;
-		// MessageHandlerContext messageHandlerContext = new MessageHandlerContext(ctx);
-		// try {
-		// remotingMessage.setRemoteAddress(messageHandlerContext.getConnection().remoteAddress());
-		// messageProcessors.get(remotingMessage.messageType()).handleMessage(messageHandlerContext,
-		// remotingMessage);
-		// }
-		// catch (Throwable t) {
-		// exceptionForMessage(messageHandlerContext, remotingMessage, t);
-		// }
-//	}
+	// @Override
+	// public void handleMessage(ChannelHandlerContext ctx, Message msg) {
+	// RemotingMessage remotingMessage = (RemotingMessage) msg;
+	// MessageHandlerContext messageHandlerContext = new MessageHandlerContext(ctx);
+	// try {
+	// remotingMessage.setRemoteAddress(messageHandlerContext.getConnection().remoteAddress());
+	// messageProcessors.get(remotingMessage.messageType()).handleMessage(messageHandlerContext,
+	// remotingMessage);
+	// }
+	// catch (Throwable t) {
+	// exceptionForMessage(messageHandlerContext, remotingMessage, t);
+	// }
+	// }
 	//
 	// private void registerMessageProcessor(RpcMessageType rpcMessageType,
 	// MessageProcessor<?> messageProcessor) {

@@ -9,14 +9,16 @@ import io.github.xinfra.lab.remoting.serialization.SerializationType;
 public class RemotingMessageFactory implements MessageFactory {
 
 	@Override
-	public RemotingRequestMessage  createRequest(int id, SerializationType serializationType) {
-		RemotingRequestMessage remotingRequestMessage = new RemotingRequestMessage(id, MessageType.request,  serializationType);
+	public RemotingRequestMessage createRequest(int id, SerializationType serializationType) {
+		RemotingRequestMessage remotingRequestMessage = new RemotingRequestMessage(id, MessageType.request,
+				serializationType);
 		return remotingRequestMessage;
 	}
 
 	@Override
-	public RemotingRequestMessage  createHeartbeatRequest(int id, SerializationType serializationType) {
-		RemotingRequestMessage remotingRequestMessage = new RemotingRequestMessage(id, MessageType.heartbeatRequest,  serializationType);
+	public RemotingRequestMessage createHeartbeatRequest(int id, SerializationType serializationType) {
+		RemotingRequestMessage remotingRequestMessage = new RemotingRequestMessage(id, MessageType.heartbeatRequest,
+				serializationType);
 		return remotingRequestMessage;
 	}
 
@@ -35,6 +37,5 @@ public class RemotingMessageFactory implements MessageFactory {
 		remotingResponseMessage.setBody(remotingMessageBody);
 		return remotingResponseMessage;
 	}
-
 
 }

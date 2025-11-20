@@ -17,7 +17,8 @@ public class RequestHandlerRegistry {
 		}
 	}
 
-    public RequestHandler lookup(String path) {
-        return registry.get(path);
-    }
+	public RequestHandler lookup(String path) {
+		return registry.get(path);
+	}
+
 }

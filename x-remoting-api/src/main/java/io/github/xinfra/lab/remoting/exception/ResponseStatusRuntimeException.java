@@ -5,12 +5,11 @@ import lombok.Getter;
 
 public class ResponseStatusRuntimeException extends RuntimeException {
 
-    @Getter
-    ResponseStatus responseStatus;
+	@Getter
+	ResponseStatus responseStatus;
 
-    public ResponseStatusRuntimeException(ResponseStatus responseStatus) {
-        this.responseStatus = responseStatus;
-    }
-
+	public ResponseStatusRuntimeException(ResponseStatus responseStatus) {
+		this.responseStatus = responseStatus;
+	}
 
 }

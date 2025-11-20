@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class Responses {
 
+
 	public static void sendResponse(Connection connection, ResponseMessage responseMessage) {
 		// todo
 		try {

@@ -36,8 +36,8 @@ public class RemotingMessageEncoder implements MessageEncoder {
 				}
 
 				// write header and body length
-				out.writeShort(remotingMessage.headers() == null? 0:remotingMessage.headers().data().length);
-				out.writeInt(remotingMessage.body() == null? 0: remotingMessage.body().data().length);
+				out.writeShort(remotingMessage.headers() == null ? 0 : remotingMessage.headers().data().length);
+				out.writeInt(remotingMessage.body() == null ? 0 : remotingMessage.body().data().length);
 
 				// write request path
 				if (msg instanceof RemotingRequestMessage) {

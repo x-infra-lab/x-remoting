@@ -14,62 +14,63 @@ import java.net.SocketAddress;
 @Slf4j
 public class DefaultHeartbeater implements Heartbeater {
 
-    private Call call;
+	private Call call;
 
-    public DefaultHeartbeater() {
-        this.call = new Call() {
-        };
-    }
+	public DefaultHeartbeater() {
+		this.call = new Call() {
+		};
+	}
 
-    @Override
-    public void triggerHeartBeat(Connection connection) {
-        int heartbeatFailCount = connection.getHeartbeatFailCnt();
-        if (heartbeatFailCount > connection.getHeartbeatMaxFailCount()) {
-            connection.close();
-            log.error("close connection after heartbeat fail {} times. remote address:{}", heartbeatFailCount,
-                    connection.remoteAddress());
-            return;
-        }
+	@Override
+	public void triggerHeartBeat(Connection connection) {
+		int heartbeatFailCount = connection.getHeartbeatFailCnt();
+		if (heartbeatFailCount > connection.getHeartbeatMaxFailCount()) {
+			connection.close();
+			log.error("close connection after heartbeat fail {} times. remote address:{}", heartbeatFailCount,
+					connection.remoteAddress());
+			return;
+		}
 
-        Protocol protocol = connection.getProtocol();
-        RequestMessage heartbeatRequestMessage = protocol.messageFactory()
-                .createHeartbeatRequest(IDGenerator.nextRequestId(), SerializationType.Hession);
+		Protocol protocol = connection.getProtocol();
+		RequestMessage heartbeatRequestMessage = protocol.messageFactory()
+			.createHeartbeatRequest(IDGenerator.nextRequestId(), SerializationType.Hession);
 
-        CallOptions callOptions = new CallOptions();
-        callOptions.setTimeoutMills(connection.getHeartbeatTimeoutMills());
-        call.asyncCall(heartbeatRequestMessage, connection, callOptions, responseMessage -> {
+		CallOptions callOptions = new CallOptions();
+		callOptions.setTimeoutMills(connection.getHeartbeatTimeoutMills());
+		call.asyncCall(heartbeatRequestMessage, connection, callOptions, responseMessage -> {
 
-            if (responseMessage.responseStatus() == ResponseStatus.OK) {
-                log.debug("heartbeat success. remote address:{}", connection.remoteAddress());
-                connection.setHeartbeatFailCnt(0);
-            } else {
-                int failCount = connection.getHeartbeatFailCnt() + 1;
-                log.warn("heartbeat fail {} times. remote address:{}", failCount, connection.remoteAddress());
-                connection.setHeartbeatFailCnt(failCount);
-            }
+			if (responseMessage.responseStatus() == ResponseStatus.OK) {
+				log.debug("heartbeat success. remote address:{}", connection.remoteAddress());
+				connection.setHeartbeatFailCnt(0);
+			}
+			else {
+				int failCount = connection.getHeartbeatFailCnt() + 1;
+				log.warn("heartbeat fail {} times. remote address:{}", failCount, connection.remoteAddress());
+				connection.setHeartbeatFailCnt(failCount);
+			}
 
-        });
+		});
 
-    }
+	}
 
-    @Override
-    public void disableHeartBeat(Connection connection) {
-        // todo
-    }
+	@Override
+	public void disableHeartBeat(Connection connection) {
+		// todo
+	}
 
-    @Override
-    public void enableHeartBeat(Connection connection) {
-        // todo
-    }
+	@Override
+	public void enableHeartBeat(Connection connection) {
+		// todo
+	}
 
-    @Override
-    public void disableHeartBeat(SocketAddress socketAddress) {
-        // todo
-    }
+	@Override
+	public void disableHeartBeat(SocketAddress socketAddress) {
+		// todo
+	}
 
-    @Override
-    public void enableHeartBeat(SocketAddress socketAddress) {
-        // todo
-    }
+	@Override
+	public void enableHeartBeat(SocketAddress socketAddress) {
+		// todo
+	}
 
 }

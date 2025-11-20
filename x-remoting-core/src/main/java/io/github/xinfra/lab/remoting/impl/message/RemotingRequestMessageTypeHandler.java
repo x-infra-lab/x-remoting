@@ -13,21 +13,21 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RemotingRequestMessageTypeHandler extends AbstractRequestMessageTypeHandler {
 
-    private RequestHandlerRegistry requestHandlerRegistry;
+	private RequestHandlerRegistry requestHandlerRegistry;
 
-    public RemotingRequestMessageTypeHandler(RequestHandlerRegistry requestHandlerRegistry) {
-        this.requestHandlerRegistry = requestHandlerRegistry;
-    }
+	public RemotingRequestMessageTypeHandler(RequestHandlerRegistry requestHandlerRegistry) {
+		this.requestHandlerRegistry = requestHandlerRegistry;
+	}
 
-    @Override
-    public void handleMessage(Connection connection, RequestMessage requestMessage) {
-        ResponseObserver responseObserver = new ResponseObserver(connection, requestMessage);
-        RequestHandler requestHandler = requestHandlerRegistry.lookup(requestMessage.getPath());
-        if (requestHandler == null) {
-            log.warn("RequestHandler not found for path: {}", requestMessage.getPath());
-            throw new ResponseStatusRuntimeException(ResponseStatus.NotFound);
-        }
-        requestHandler.asyncHandle(requestMessage, responseObserver);
-    }
+	@Override
+	public void handleMessage(Connection connection, RequestMessage requestMessage) {
+		ResponseObserver responseObserver = new ResponseObserver(connection, requestMessage);
+		RequestHandler requestHandler = requestHandlerRegistry.lookup(requestMessage.getPath());
+		if (requestHandler == null) {
+			log.warn("RequestHandler not found for path: {}", requestMessage.getPath());
+			throw new ResponseStatusRuntimeException(ResponseStatus.NotFound);
+		}
+		requestHandler.asyncHandle(requestMessage, responseObserver);
+	}
 
 }

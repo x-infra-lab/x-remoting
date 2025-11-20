@@ -30,6 +30,7 @@ public class RemotingRequestMessage extends RemotingMessage implements RequestMe
 	private MessageType messageType;
 
 	private boolean serialized;
+
 	private boolean deserialized;
 
 	private static final Integer protocolCodeLength = RemotingProtocolIdentifier.PROTOCOL_CODE.length;
@@ -51,7 +52,7 @@ public class RemotingRequestMessage extends RemotingMessage implements RequestMe
 	public static final Integer REQUEST_HEADER_BYTES = protocolCodeLength + protocolVersionLength + messageTypeLength
 			+ requestIdLength + serializationTypeLength + pathLengthLength + headerLengthLength + bodyLengthLength;
 
-	public RemotingRequestMessage(int id, MessageType messageType,  SerializationType serializationType) {
+	public RemotingRequestMessage(int id, MessageType messageType, SerializationType serializationType) {
 		super(id, serializationType);
 		this.messageType = messageType;
 	}
@@ -68,7 +69,8 @@ public class RemotingRequestMessage extends RemotingMessage implements RequestMe
 			serialized = true;
 			if (path == null) {
 				pathData = new byte[0]; // default: ""
-			} else {
+			}
+			else {
 				pathData = path.getBytes(StandardCharsets.UTF_8);
 			}
 		}
@@ -77,7 +79,7 @@ public class RemotingRequestMessage extends RemotingMessage implements RequestMe
 	@Override
 	public void deserialize() throws DeserializeException {
 		super.deserialize();
-		if (!deserialized){
+		if (!deserialized) {
 			deserialized = true;
 			path = new String(pathData, StandardCharsets.UTF_8);
 		}

@@ -6,13 +6,12 @@ import org.slf4j.LoggerFactory;
 
 public interface MessageHandler {
 
-    Logger log = LoggerFactory.getLogger(MessageHandler.class);
+	Logger log = LoggerFactory.getLogger(MessageHandler.class);
 
-    void registerMessageTypeHandler(MessageTypeHandler messageTypeHandler);
+	void registerMessageTypeHandler(MessageTypeHandler messageTypeHandler);
 
-    MessageTypeHandler messageTypeHandler(MessageType messageType);
+	MessageTypeHandler messageTypeHandler(MessageType messageType);
 
-
-    void handleMessage(ChannelHandlerContext ctx, Message msg);
+	void handleMessage(ChannelHandlerContext ctx, Message msg);
 
 }
