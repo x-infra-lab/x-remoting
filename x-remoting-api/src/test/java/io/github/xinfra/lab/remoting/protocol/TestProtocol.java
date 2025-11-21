@@ -11,7 +11,6 @@ import java.nio.charset.StandardCharsets;
 
 public class TestProtocol implements Protocol {
 
-	@Setter
 	private byte[] protocolCode = "test-protocol".getBytes(StandardCharsets.UTF_8);
 
 	@Setter

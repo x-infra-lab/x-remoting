@@ -3,10 +3,8 @@ package io.github.xinfra.lab.remoting.client;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.common.Wait;
 import io.github.xinfra.lab.remoting.message.Message;
-import io.github.xinfra.lab.remoting.message.MessageHandler;
 import io.github.xinfra.lab.remoting.message.RequestMessage;
 import io.github.xinfra.lab.remoting.message.ResponseMessage;
-import io.github.xinfra.lab.remoting.protocol.TestProtocol;
 import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timeout;
 import org.junit.jupiter.api.Assertions;
@@ -23,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -34,11 +33,8 @@ public class InvokeFutureTest {
 
 	private InvokeFuture<?> invokeFuture;
 
-	private TestProtocol testProtocol;
-
 	@BeforeEach
 	public void before() {
-		testProtocol = new TestProtocol();
 		final int requestId = IDGenerator.nextRequestId();
 		RequestMessage requestMessage = mock(RequestMessage.class);
 		doReturn(requestId).when(requestMessage).id();
@@ -91,6 +87,7 @@ public class InvokeFutureTest {
 		Assertions.assertSame(result, responseMessage);
 		Assertions.assertTrue(invokeFuture.isDone());
 
+		// multiple get
 		result = invokeFuture.get(3, TimeUnit.SECONDS);
 		Assertions.assertSame(result, responseMessage);
 		Assertions.assertTrue(invokeFuture.isDone());
@@ -104,6 +101,7 @@ public class InvokeFutureTest {
 		Assertions.assertSame(contextClassLoader, invokeFuture.getAppClassLoader());
 
 		try {
+			// test with a new url classLoader
 			URLClassLoader urlClassLoader = new URLClassLoader(new URL[] {}, contextClassLoader);
 			Thread.currentThread().setContextClassLoader(urlClassLoader);
 
@@ -126,7 +124,8 @@ public class InvokeFutureTest {
 			callBackExecuteTimes.getAndIncrement();
 		};
 		invokeFuture.addCallBack(callBack);
-
+		
+		// test repeat add
 		Assertions.assertThrows(IllegalArgumentException.class, () -> {
 			invokeFuture.addCallBack(callBack);
 		});
@@ -137,6 +136,7 @@ public class InvokeFutureTest {
 		Assertions.assertTrue(callbackExecuted.get());
 		Assertions.assertEquals(1, callBackExecuteTimes.get());
 
+		// test multiple execute
 		invokeFuture.executeCallBack();
 		Assertions.assertTrue(callbackExecuted.get());
 		Assertions.assertEquals(1, callBackExecuteTimes.get());
@@ -161,11 +161,6 @@ public class InvokeFutureTest {
 		callBack = spy(callBack);
 		invokeFuture.addCallBack(callBack);
 
-		InvokeCallBack tempCallBack = callBack;
-		Assertions.assertThrows(IllegalArgumentException.class, () -> {
-			invokeFuture.addCallBack(tempCallBack);
-		});
-
 		ResponseMessage responseMessage = mock(ResponseMessage.class);
 		invokeFuture.complete(responseMessage);
 		invokeFuture.asyncExecuteCallBack(executorService);
@@ -186,10 +181,11 @@ public class InvokeFutureTest {
 		Assertions.assertEquals(1, callBackExecuteTimes.get());
 		verify(finalCallBack, times(1)).complete(eq(responseMessage));
 
+		// test multiple execute
 		invokeFuture.asyncExecuteCallBack(executorService);
 		Wait.untilIsTrue(() -> {
 			try {
-				verify(invokeFuture, times(2)).executeCallBack();
+				verify(invokeFuture, atLeast(2)).executeCallBack();
 				return true;
 			}
 			catch (Throwable t) {

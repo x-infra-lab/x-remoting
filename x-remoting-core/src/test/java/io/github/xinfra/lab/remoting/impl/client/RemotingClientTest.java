@@ -67,16 +67,15 @@ public class RemotingClientTest {
 	}
 
 	@Test
-	public void testSyncCallException() throws RemotingException, InterruptedException {
+	public void testSyncCallException()  {
 		String msg = "test UserProcessor throw Exception";
 
 		RemotingException remotingException = Assertions.assertThrows(RemotingException.class, () -> {
 			remotingClient.syncCall(exceptionApi, msg, remotingServer.localAddress(), callOptions);
 		});
 
-		Assertions.assertInstanceOf(RemotingServerException.class, remotingException.getCause());
+		Assertions.assertInstanceOf(IllegalArgumentException.class, remotingException.getCause());
 
-		remotingException.printStackTrace();
 	}
 
 	@Test

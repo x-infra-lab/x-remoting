@@ -1,5 +1,6 @@
 package io.github.xinfra.lab.remoting.impl.message;
 
+import io.github.xinfra.lab.remoting.impl.handler.RequestHandlerRegistry;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
@@ -11,9 +12,8 @@ import io.github.xinfra.lab.remoting.impl.RemotingProtocol;
 import io.github.xinfra.lab.remoting.impl.exception.RemotingServerException;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.embedded.EmbeddedChannel;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatcher;
 
@@ -35,31 +35,12 @@ import static org.mockito.Mockito.verify;
 
 public class RemotingMessageHandlerTest {
 
-	static class EchoProcessor implements UserProcessor<String> {
+	private static RemotingProtocol protocol;
 
-		@Override
-		public String interest() {
-			return String.class.getName();
-		}
-
-		@Override
-		public Object handRequest(String request) {
-			// echo request
-			return "echo:" + request;
-		}
-
-	}
-
-	private RemotingProtocol protocol;
-
-	@BeforeEach
-	public void beforeEach() {
+	@BeforeAll
+	public static void beforeEach() {
+		RequestHandlerRegistry handlerRegistry = new RequestHandlerRegistry();
 		protocol = new RemotingProtocol(handlerRegistry);
-	}
-
-	@AfterEach
-	public void afterEach() throws IOException {
-		protocol.close();
 	}
 
 	@Test

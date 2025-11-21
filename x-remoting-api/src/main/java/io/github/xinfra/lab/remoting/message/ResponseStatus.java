@@ -9,7 +9,7 @@ public interface ResponseStatus {
 
 	ResponseStatus OK = () -> (short) 0;
 
-	ResponseStatus UnKnownError = () -> (short) 1;
+	ResponseStatus Error = () -> (short) 1;
 
 	ResponseStatus SendFailed = () -> (short) 2;
 
@@ -32,7 +32,7 @@ public interface ResponseStatus {
 			case 0:
 				return OK;
 			case 1:
-				return UnKnownError;
+				return Error;
 			case 2:
 				return SendFailed;
 			case 3:

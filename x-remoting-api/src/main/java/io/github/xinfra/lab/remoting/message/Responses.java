@@ -16,7 +16,8 @@ public class Responses {
 			log.error("responseMessage serialize fail.", t);
 			responseMessage = connection.getProtocol()
 				.messageFactory()
-				.createResponse(responseMessage.id(), responseMessage.serializationType(), ResponseStatus.InternalError,
+				.createResponse(responseMessage.id(), responseMessage.serializationType(),
+						ResponseStatus.Error,
 						t);
 			try {
 				responseMessage.serialize();

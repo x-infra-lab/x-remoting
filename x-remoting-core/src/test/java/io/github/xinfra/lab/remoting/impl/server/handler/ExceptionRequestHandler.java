@@ -6,7 +6,7 @@ public class ExceptionRequestHandler implements RequestHandler<String, String> {
 
 	@Override
 	public String handle(String request) {
-		throw new RuntimeException("handle exception");
+		throw new IllegalArgumentException("handle exception");
 	}
 
 }

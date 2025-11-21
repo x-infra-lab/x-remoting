@@ -29,6 +29,13 @@
         </dependency>
         <!-- test scope start -->
         <dependency>
+            <groupId>io.github.x-infra-lab</groupId>
+            <artifactId>x-remoting-api</artifactId>
+            <type>test-jar</type>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>
             <scope>test</scope>

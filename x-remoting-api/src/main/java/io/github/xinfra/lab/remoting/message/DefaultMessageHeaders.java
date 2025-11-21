@@ -125,13 +125,21 @@ public class DefaultMessageHeaders implements MessageHeaders {
 					byte[] valueData = byteBuf.readBytes(valueLength).array();
 
 					// lazy deserialization
-					headers.put(Pair.of(key, valueType), () -> {
-						try {
-							return serializer.deserialize(valueData, (Class<?>) Class.forName(valueType));
-						}
-						catch (Exception e) {
-							log.error("Deserialize header value failed", e);
-							throw new RuntimeException("Deserialize header value failed", e);
+					headers.put(Pair.of(key, valueType), new Supplier<Object>() {
+						private Object value;
+
+						@Override
+						public Object get() {
+							try {
+								if (value != null) {
+									return value;
+								}
+								return serializer.deserialize(valueData, (Class<?>) Class.forName(valueType));
+							}
+							catch (Exception e) {
+								log.error("Deserialize header value failed", e);
+								throw new RuntimeException("Deserialize header value failed", e);
+							}
 						}
 					});
 				}

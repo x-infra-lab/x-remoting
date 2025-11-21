@@ -24,7 +24,6 @@ public class ResponseMessageTypeHandler implements MessageTypeHandler<ResponseMe
 			}
 			catch (Throwable t) {
 				log.error("executeCallBack fail. id:{}", responseMessage.id(), t);
-				throw t;
 			}
 		}
 		else {

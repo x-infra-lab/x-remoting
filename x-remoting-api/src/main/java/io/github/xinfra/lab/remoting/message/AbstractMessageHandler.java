@@ -70,7 +70,7 @@ public abstract class AbstractMessageHandler implements MessageHandler {
 			else {
 				ResponseMessage response = connection.getProtocol()
 					.messageFactory()
-					.createResponse(msg.id(), msg.serializationType(), ResponseStatus.UnKnownError, e);
+					.createResponse(msg.id(), msg.serializationType(), ResponseStatus.Error, e);
 				Responses.sendResponse(connection, response);
 			}
 		}

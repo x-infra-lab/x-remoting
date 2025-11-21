@@ -31,4 +31,16 @@ public class ResponseObserver<R> {
 		Responses.sendResponse(connection, responseMessage);
 	}
 
+	public  void onError(Throwable t) {
+		if (Requests.isOnewayRequest(requestMessage)) {
+			return;
+		}
+		RemotingResponseMessage responseMessage = connection.getProtocol()
+			.messageFactory()
+			.createResponse(requestMessage.id(), requestMessage.serializationType(), ResponseStatus.Error);
+		responseMessage.setBody(new RemotingMessageBody(t));
+
+		Responses.sendResponse(connection, responseMessage);
+	}
+
 }

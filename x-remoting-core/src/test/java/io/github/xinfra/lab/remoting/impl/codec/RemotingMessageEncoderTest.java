@@ -2,15 +2,18 @@ package io.github.xinfra.lab.remoting.impl.codec;
 
 import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.exception.CodecException;
+import io.github.xinfra.lab.remoting.impl.RemotingProtocolIdentifier;
+import io.github.xinfra.lab.remoting.impl.message.RemotingMessageBody;
+import io.github.xinfra.lab.remoting.message.DefaultMessageHeaders;
 import io.github.xinfra.lab.remoting.message.Message;
-import io.github.xinfra.lab.remoting.impl.message.RpcMessageType;
-import io.github.xinfra.lab.remoting.impl.RemotingProtocol;
-import io.github.xinfra.lab.remoting.impl.message.ResponseStatus;
-import io.github.xinfra.lab.remoting.impl.message.RemotingMessageHeaders;
 import io.github.xinfra.lab.remoting.impl.message.RemotingRequestMessage;
 import io.github.xinfra.lab.remoting.impl.message.RemotingResponseMessage;
-import io.netty.buffer.AbstractByteBufAllocator;
+import io.github.xinfra.lab.remoting.message.MessageHeaders;
+import io.github.xinfra.lab.remoting.message.MessageType;
+import io.github.xinfra.lab.remoting.message.ResponseStatus;
+import io.github.xinfra.lab.remoting.serialization.SerializationType;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -23,44 +26,55 @@ public class RemotingMessageEncoderTest {
 	public void testEncodeRequest1() throws Exception {
 		// build a requestMessage
 		String content = "this is rpc content";
-		String contentType = content.getClass().getName();
-		RemotingMessageHeaders header = new RemotingMessageHeaders();
-		header.addItem(new RemotingMessageHeaders.Item("this is header key", "this is header value"));
+		DefaultMessageHeaders header = new DefaultMessageHeaders();
+		header.put(MessageHeaders.Key.stringKey("test-key"), "test-value");
 		Integer requestId = IDGenerator.nextRequestId();
-		RemotingRequestMessage requestMessage = new RemotingRequestMessage(requestId);
+		RemotingRequestMessage requestMessage =
+				new RemotingRequestMessage(requestId, MessageType.request, SerializationType.Hession);
 		requestMessage.setHeaders(header);
-		requestMessage.setContent(content);
-		requestMessage.setContentType(contentType);
+		requestMessage.setPath("/test-encode");
+		requestMessage.setBody(new RemotingMessageBody(content));
 		requestMessage.serialize();
 
 		RemotingMessageEncoder encoder = new RemotingMessageEncoder();
-		ByteBuf byteBuf = AbstractByteBufAllocator.DEFAULT.buffer();
+		ByteBuf byteBuf = Unpooled.buffer();
 		encoder.encode(mock(ChannelHandlerContext.class), requestMessage, byteBuf);
 
 		Assertions.assertTrue(byteBuf.readableBytes() > 0);
 
-		byte[] protocolCodes = RemotingProtocol.PROTOCOL_CODE;
+		// assert protocol code
+		byte[] protocolCodes = RemotingProtocolIdentifier.INSTANCE.code();
 		byte[] dataProtocolCodes = new byte[protocolCodes.length];
 		byteBuf.readBytes(dataProtocolCodes);
 		Assertions.assertArrayEquals(protocolCodes, dataProtocolCodes);
-		Assertions.assertEquals(byteBuf.readByte(), RpcMessageType.request.data());
+		// assert protocol version
+		Assertions.assertEquals(byteBuf.readByte(), RemotingProtocolIdentifier.INSTANCE.version());
+		// assert message type
+		Assertions.assertEquals(byteBuf.readByte(), MessageType.request.data());
+		// assert requestId
 		Assertions.assertEquals(byteBuf.readInt(), requestId);
+		// assert serialization type
 		Assertions.assertEquals(byteBuf.readByte(), requestMessage.serializationType().data());
-		Assertions.assertEquals(byteBuf.readShort(), requestMessage.getContentTypeLength());
-		Assertions.assertEquals(byteBuf.readShort(), requestMessage.getHeaderLength());
-		Assertions.assertEquals(byteBuf.readInt(), requestMessage.getContentLength());
 
-		byte[] dataContentType = new byte[requestMessage.getContentTypeLength()];
-		byteBuf.readBytes(dataContentType);
-		Assertions.assertArrayEquals(requestMessage.getContentTypeData(), dataContentType);
+		int pathDataLength = requestMessage.getPathData().length;
+		int headerDataLength = requestMessage.headers().data().length;
+		int bodyDataLength = requestMessage.body().data().length;
 
-		byte[] dataHeader = new byte[requestMessage.getHeaderLength()];
-		byteBuf.readBytes(dataHeader);
-		Assertions.assertArrayEquals(requestMessage.getHeaderData(), dataHeader);
+		Assertions.assertEquals(byteBuf.readShort(), pathDataLength);
+		Assertions.assertEquals(byteBuf.readShort(), headerDataLength);
+		Assertions.assertEquals(byteBuf.readInt(), bodyDataLength);
 
-		byte[] dataContent = new byte[requestMessage.getContentLength()];
-		byteBuf.readBytes(dataContent);
-		Assertions.assertArrayEquals(requestMessage.getContentData(), dataContent);
+		byte[] pathData = new byte[pathDataLength];
+		byteBuf.readBytes(pathData);
+		Assertions.assertArrayEquals(requestMessage.getPathData(), pathData);
+
+		byte[] headerData = new byte[headerDataLength];
+		byteBuf.readBytes(headerData);
+		Assertions.assertArrayEquals(requestMessage.headers().data(), headerData);
+
+		byte[] bodyData = new byte[bodyDataLength];
+		byteBuf.readBytes(bodyData);
+		Assertions.assertArrayEquals(requestMessage.body().data(), bodyData);
 
 		byteBuf.release();
 	}
@@ -69,48 +83,53 @@ public class RemotingMessageEncoderTest {
 	public void testEncodeResponse2() throws Exception {
 		// build a responseMessage
 		String content = "this is rpc content";
-		String contentType = content.getClass().getName();
-		RemotingMessageHeaders header = new RemotingMessageHeaders();
-		header.addItem(new RemotingMessageHeaders.Item("this is header key", "this is header value"));
+		DefaultMessageHeaders header = new DefaultMessageHeaders();
+		header.put(MessageHeaders.Key.stringKey("test-key"), "test-value");
 
 		Integer requestId = IDGenerator.nextRequestId();
-		RemotingResponseMessage responseMessage = new RemotingResponseMessage(requestId);
-
+		RemotingResponseMessage responseMessage = new RemotingResponseMessage(requestId, SerializationType.Hession, ResponseStatus.OK);
 		responseMessage.setHeaders(header);
-		responseMessage.setContent(content);
-		responseMessage.setContentType(contentType);
-		responseMessage.setStatus(ResponseStatus.SUCCESS.getCode());
+		responseMessage.setBody(new RemotingMessageBody(content));
 		responseMessage.serialize();
 
 		RemotingMessageEncoder encoder = new RemotingMessageEncoder();
-		ByteBuf byteBuf = AbstractByteBufAllocator.DEFAULT.buffer();
+		ByteBuf byteBuf = Unpooled.buffer();
 		encoder.encode(mock(ChannelHandlerContext.class), responseMessage, byteBuf);
 
 		Assertions.assertTrue(byteBuf.readableBytes() > 0);
 
-		byte[] protocolCodes = RemotingProtocol.PROTOCOL_CODE;
+		// assert protocol code
+		byte[] protocolCodes = RemotingProtocolIdentifier.INSTANCE.code();
 		byte[] dataProtocolCodes = new byte[protocolCodes.length];
 		byteBuf.readBytes(dataProtocolCodes);
 		Assertions.assertArrayEquals(protocolCodes, dataProtocolCodes);
-		Assertions.assertEquals(byteBuf.readByte(), RpcMessageType.response.data());
+		// assert protocol version
+		Assertions.assertEquals(byteBuf.readByte(), RemotingProtocolIdentifier.INSTANCE.version());
+		// assert message type
+		Assertions.assertEquals(byteBuf.readByte(), MessageType.response.data());
+		// assert requestId
 		Assertions.assertEquals(byteBuf.readInt(), requestId);
+		// assert serialization type
 		Assertions.assertEquals(byteBuf.readByte(), responseMessage.serializationType().data());
-		Assertions.assertEquals(byteBuf.readShort(), responseMessage.getStatus());
-		Assertions.assertEquals(byteBuf.readShort(), responseMessage.getContentTypeLength());
-		Assertions.assertEquals(byteBuf.readShort(), responseMessage.getHeaderLength());
-		Assertions.assertEquals(byteBuf.readInt(), responseMessage.getContentLength());
+		// assert response status
+		Assertions.assertEquals(byteBuf.readShort(), responseMessage.responseStatus().status());
 
-		byte[] dataContentType = new byte[responseMessage.getContentTypeLength()];
-		byteBuf.readBytes(dataContentType);
-		Assertions.assertArrayEquals(responseMessage.getContentTypeData(), dataContentType);
+		int headerDataLength = responseMessage.headers().data().length;
+		int bodyDataLength = responseMessage.body().data().length;
 
-		byte[] dataHeader = new byte[responseMessage.getHeaderLength()];
-		byteBuf.readBytes(dataHeader);
-		Assertions.assertArrayEquals(responseMessage.getHeaderData(), dataHeader);
+		Assertions.assertEquals(byteBuf.readShort(), headerDataLength);
+		Assertions.assertEquals(byteBuf.readInt(), bodyDataLength);
 
-		byte[] dataContent = new byte[responseMessage.getContentLength()];
-		byteBuf.readBytes(dataContent);
-		Assertions.assertArrayEquals(responseMessage.getContentData(), dataContent);
+
+
+		byte[] headerData = new byte[headerDataLength];
+		byteBuf.readBytes(headerData);
+		Assertions.assertArrayEquals(responseMessage.headers().data(), headerData);
+
+
+		byte[] bodyData = new byte[bodyDataLength];
+		byteBuf.readBytes(bodyData);
+		Assertions.assertArrayEquals(responseMessage.body().data(), bodyData);
 
 		byteBuf.release();
 	}
@@ -119,7 +138,7 @@ public class RemotingMessageEncoderTest {
 	public void testEncodeException1() throws Exception {
 
 		RemotingMessageEncoder encoder = new RemotingMessageEncoder();
-		ByteBuf byteBuf = AbstractByteBufAllocator.DEFAULT.buffer();
+		ByteBuf byteBuf = Unpooled.buffer();
 
 		Assertions.assertThrows(CodecException.class, () -> {
 			encoder.encode(mock(ChannelHandlerContext.class), mock(Message.class), byteBuf);

@@ -24,10 +24,7 @@ public class HessionSerializerTest {
 		User deUser = serializer.deserialize(data, User.class);
 		Assertions.assertEquals(user, deUser);
 
-		deUser = serializer.deserialize(data, User.class);
-		deUser = serializer.deserialize(data, User.class);
-		deUser = serializer.deserialize(data, User.class);
-		deUser = serializer.deserialize(data, User.class);
+		// test deserialize multiple times
 		deUser = serializer.deserialize(data, User.class);
 		deUser = serializer.deserialize(data, User.class);
 		deUser = serializer.deserialize(data, User.class);
