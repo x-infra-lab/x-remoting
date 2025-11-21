@@ -1,6 +1,7 @@
 package io.github.xinfra.lab.remoting.impl.message;
 
 import io.github.xinfra.lab.remoting.connection.Connection;
+import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.ResponseStatusRuntimeException;
 import io.github.xinfra.lab.remoting.impl.handler.RequestHandler;
 import io.github.xinfra.lab.remoting.impl.handler.RequestHandlerRegistry;
@@ -21,6 +22,12 @@ public class RemotingRequestMessageTypeHandler extends AbstractRequestMessageTyp
 
 	@Override
 	public void handleMessage(Connection connection, RequestMessage requestMessage) {
+		try {
+			requestMessage.deserialize();
+		}
+		catch (DeserializeException e) {
+			throw new ResponseStatusRuntimeException(ResponseStatus.DeserializeException, e);
+		}
 		ResponseObserver responseObserver = new ResponseObserver(connection, requestMessage);
 		RequestHandler requestHandler = requestHandlerRegistry.lookup(requestMessage.getPath());
 		if (requestHandler == null) {

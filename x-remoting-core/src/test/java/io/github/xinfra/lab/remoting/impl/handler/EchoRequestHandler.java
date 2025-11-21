@@ -1,6 +1,4 @@
-package io.github.xinfra.lab.remoting.impl.server.handler;
-
-import io.github.xinfra.lab.remoting.impl.handler.RequestHandler;
+package io.github.xinfra.lab.remoting.impl.handler;
 
 public class EchoRequestHandler implements RequestHandler<EchoRequest, String> {
 

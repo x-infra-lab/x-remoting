@@ -29,8 +29,8 @@ public class RemotingMessageEncoderTest {
 		DefaultMessageHeaders header = new DefaultMessageHeaders();
 		header.put(MessageHeaders.Key.stringKey("test-key"), "test-value");
 		Integer requestId = IDGenerator.nextRequestId();
-		RemotingRequestMessage requestMessage =
-				new RemotingRequestMessage(requestId, MessageType.request, SerializationType.Hession);
+		RemotingRequestMessage requestMessage = new RemotingRequestMessage(requestId, MessageType.request,
+				SerializationType.Hession);
 		requestMessage.setHeaders(header);
 		requestMessage.setPath("/test-encode");
 		requestMessage.setBody(new RemotingMessageBody(content));
@@ -87,7 +87,8 @@ public class RemotingMessageEncoderTest {
 		header.put(MessageHeaders.Key.stringKey("test-key"), "test-value");
 
 		Integer requestId = IDGenerator.nextRequestId();
-		RemotingResponseMessage responseMessage = new RemotingResponseMessage(requestId, SerializationType.Hession, ResponseStatus.OK);
+		RemotingResponseMessage responseMessage = new RemotingResponseMessage(requestId, SerializationType.Hession,
+				ResponseStatus.OK);
 		responseMessage.setHeaders(header);
 		responseMessage.setBody(new RemotingMessageBody(content));
 		responseMessage.serialize();
@@ -120,12 +121,9 @@ public class RemotingMessageEncoderTest {
 		Assertions.assertEquals(byteBuf.readShort(), headerDataLength);
 		Assertions.assertEquals(byteBuf.readInt(), bodyDataLength);
 
-
-
 		byte[] headerData = new byte[headerDataLength];
 		byteBuf.readBytes(headerData);
 		Assertions.assertArrayEquals(responseMessage.headers().data(), headerData);
-
 
 		byte[] bodyData = new byte[bodyDataLength];
 		byteBuf.readBytes(bodyData);

@@ -7,8 +7,8 @@ import io.github.xinfra.lab.remoting.impl.handler.RequestApi;
 import io.github.xinfra.lab.remoting.impl.client.RemotingClient;
 import io.github.xinfra.lab.remoting.impl.client.RemotingCallBack;
 import io.github.xinfra.lab.remoting.impl.client.RemotingFuture;
-import io.github.xinfra.lab.remoting.impl.server.handler.EchoRequest;
-import io.github.xinfra.lab.remoting.impl.server.handler.EchoRequestHandler;
+import io.github.xinfra.lab.remoting.impl.handler.EchoRequest;
+import io.github.xinfra.lab.remoting.impl.handler.EchoRequestHandler;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -20,13 +20,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static io.github.xinfra.lab.remoting.impl.handler.RequestApis.echoApi;
+
 public class RemotingServerTest {
 
 	private static RemotingServer remotingServer;
 
 	private static RemotingClient remotingClient;
-
-	private static RequestApi echoApi = RequestApi.of("/echo");
 
 	private static CallOptions callOptions = new CallOptions();
 

@@ -31,7 +31,7 @@ public class ResponseObserver<R> {
 		Responses.sendResponse(connection, responseMessage);
 	}
 
-	public  void onError(Throwable t) {
+	public void onError(Throwable t) {
 		if (Requests.isOnewayRequest(requestMessage)) {
 			return;
 		}

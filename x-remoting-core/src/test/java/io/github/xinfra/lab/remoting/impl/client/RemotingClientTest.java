@@ -2,12 +2,11 @@ package io.github.xinfra.lab.remoting.impl.client;
 
 import io.github.xinfra.lab.remoting.client.CallOptions;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
-import io.github.xinfra.lab.remoting.impl.exception.RemotingServerException;
 import io.github.xinfra.lab.remoting.impl.handler.RequestApi;
 import io.github.xinfra.lab.remoting.impl.server.RemotingServer;
-import io.github.xinfra.lab.remoting.impl.server.handler.EchoRequest;
-import io.github.xinfra.lab.remoting.impl.server.handler.EchoRequestHandler;
-import io.github.xinfra.lab.remoting.impl.server.handler.ExceptionRequestHandler;
+import io.github.xinfra.lab.remoting.impl.handler.EchoRequest;
+import io.github.xinfra.lab.remoting.impl.handler.EchoRequestHandler;
+import io.github.xinfra.lab.remoting.impl.handler.ExceptionRequestHandler;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -20,15 +19,14 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
+import static io.github.xinfra.lab.remoting.impl.handler.RequestApis.echoApi;
+import static io.github.xinfra.lab.remoting.impl.handler.RequestApis.exceptionApi;
+
 public class RemotingClientTest {
 
 	private static RemotingServer remotingServer;
 
 	private static RemotingClient remotingClient;
-
-	private static RequestApi echoApi = RequestApi.of("/echo");
-
-	private static RequestApi exceptionApi = RequestApi.of("/exception");
 
 	private static CallOptions callOptions = new CallOptions();
 
@@ -67,7 +65,7 @@ public class RemotingClientTest {
 	}
 
 	@Test
-	public void testSyncCallException()  {
+	public void testSyncCallException() {
 		String msg = "test UserProcessor throw Exception";
 
 		RemotingException remotingException = Assertions.assertThrows(RemotingException.class, () -> {

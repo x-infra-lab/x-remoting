@@ -1,4 +1,4 @@
-package io.github.xinfra.lab.remoting.impl.server.handler;
+package io.github.xinfra.lab.remoting.impl.handler;
 
 import java.io.Serializable;
 

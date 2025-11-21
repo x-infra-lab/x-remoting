@@ -124,7 +124,7 @@ public class InvokeFutureTest {
 			callBackExecuteTimes.getAndIncrement();
 		};
 		invokeFuture.addCallBack(callBack);
-		
+
 		// test repeat add
 		Assertions.assertThrows(IllegalArgumentException.class, () -> {
 			invokeFuture.addCallBack(callBack);

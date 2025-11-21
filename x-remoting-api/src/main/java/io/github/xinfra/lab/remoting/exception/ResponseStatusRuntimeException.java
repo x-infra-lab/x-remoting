@@ -12,4 +12,9 @@ public class ResponseStatusRuntimeException extends RuntimeException {
 		this.responseStatus = responseStatus;
 	}
 
+	public ResponseStatusRuntimeException(ResponseStatus responseStatus, Throwable cause) {
+		super(cause);
+		this.responseStatus = responseStatus;
+	}
+
 }

@@ -15,15 +15,13 @@ import static org.mockito.Mockito.verify;
 
 public class ProtocolHeartBeatHandlerTest {
 
-
 	@Test
-	public void testHeartBeat(){
+	public void testHeartBeat() {
 		Heartbeater spyHeartbeater = mock(Heartbeater.class);
 		ProtocolHeartBeatHandler protocolHeartBeatHandler = new ProtocolHeartBeatHandler(spyHeartbeater);
 		EmbeddedChannel channel = new EmbeddedChannel();
 		channel.pipeline().addLast(protocolHeartBeatHandler);
 		new Connection(mock(TestProtocol.class), channel, mock(Executor.class), mock(Timer.class));
-
 
 		// simulate IdleStateHandler#fireUserEventTriggered
 		channel.pipeline().fireUserEventTriggered(ALL_IDLE_STATE_EVENT);

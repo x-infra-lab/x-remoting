@@ -23,9 +23,13 @@ public interface ResponseStatus {
 
 	ResponseStatus InternalError = () -> (short) 7;
 
-	ResponseStatus ResourceExhausted = () -> (short) 8;
+	ResponseStatus SerializeException = () -> (short) 8;
 
-	ResponseStatus ServiceUnavailable = () -> (short) 9;
+	ResponseStatus DeserializeException = () -> (short) 9;
+
+	ResponseStatus ResourceExhausted = () -> (short) 10;
+
+	ResponseStatus ServiceUnavailable = () -> (short) 11;
 
 	static ResponseStatus valueOf(short status) {
 		switch (status) {
@@ -46,8 +50,12 @@ public interface ResponseStatus {
 			case 7:
 				return InternalError;
 			case 8:
-				return ResourceExhausted;
+				return SerializeException;
 			case 9:
+				return DeserializeException;
+			case 10:
+				return ResourceExhausted;
+			case 11:
 				return ServiceUnavailable;
 			default:
 				throw new IllegalArgumentException("Unknown status: " + status);
