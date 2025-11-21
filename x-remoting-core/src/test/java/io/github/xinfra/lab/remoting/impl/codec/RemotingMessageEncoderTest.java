@@ -17,7 +17,7 @@ import org.junit.jupiter.api.Test;
 
 import static org.mockito.Mockito.mock;
 
-public class RpcMessageEncoderTest {
+public class RemotingMessageEncoderTest {
 
 	@Test
 	public void testEncodeRequest1() throws Exception {

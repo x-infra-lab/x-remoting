@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
-public class RpcMessageFactoryTest {
+public class RemotingMessageFactoryTest {
 
 	@Test
 	public void testCreateRequestMessage() {

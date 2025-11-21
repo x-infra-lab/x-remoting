@@ -7,7 +7,7 @@ import io.github.xinfra.lab.remoting.impl.exception.RemotingServerException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class RpcMessageTest {
+public class RemotingMessageTest {
 
 	@Test
 	public void testRpcRequest1() throws SerializeException, DeserializeException {

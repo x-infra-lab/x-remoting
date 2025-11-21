@@ -1,8 +1,6 @@
 package io.github.xinfra.lab.remoting.impl.codec;
 
 import io.github.xinfra.lab.remoting.common.IDGenerator;
-import io.github.xinfra.lab.remoting.impl.message.ResponseStatus;
-import io.github.xinfra.lab.remoting.impl.message.RemotingMessageHeaders;
 import io.github.xinfra.lab.remoting.impl.message.RemotingRequestMessage;
 import io.github.xinfra.lab.remoting.impl.message.RemotingResponseMessage;
 import io.netty.buffer.AbstractByteBufAllocator;
@@ -14,10 +12,9 @@ import org.junit.jupiter.api.Test;
 import java.util.ArrayList;
 import java.util.List;
 
-import static io.github.xinfra.lab.remoting.impl.RemotingProtocol.RESPONSE_HEADER_BYTES;
 import static org.mockito.Mockito.mock;
 
-public class RpcMessageDecoderTest {
+public class RemotingMessageDecoderTest {
 
 	@Test
 	public void testDecodeRequest1() throws Exception {
