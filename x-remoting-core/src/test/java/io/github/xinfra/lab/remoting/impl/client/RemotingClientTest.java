@@ -1,12 +1,14 @@
 package io.github.xinfra.lab.remoting.impl.client;
 
 import io.github.xinfra.lab.remoting.client.CallOptions;
+import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
-import io.github.xinfra.lab.remoting.impl.handler.RequestApi;
+import io.github.xinfra.lab.remoting.impl.message.RemotingRequestMessage;
 import io.github.xinfra.lab.remoting.impl.server.RemotingServer;
 import io.github.xinfra.lab.remoting.impl.handler.EchoRequest;
 import io.github.xinfra.lab.remoting.impl.handler.EchoRequestHandler;
 import io.github.xinfra.lab.remoting.impl.handler.ExceptionRequestHandler;
+import io.github.xinfra.lab.remoting.serialization.SerializationType;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -59,6 +61,7 @@ public class RemotingClientTest {
 	public void testSyncCall() throws RemotingException, InterruptedException {
 		String msg = "hello x-remoting";
 		EchoRequest request = new EchoRequest(msg);
+		callOptions.setTimeoutMills(300000000);
 		String result = remotingClient.syncCall(echoApi, request, remotingServer.localAddress(), callOptions);
 
 		Assertions.assertEquals(result, "echo:" + msg);

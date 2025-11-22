@@ -22,19 +22,20 @@ public class RemotingRequestMessageTypeHandler extends AbstractRequestMessageTyp
 
 	@Override
 	public void handleMessage(Connection connection, RequestMessage requestMessage) {
+		RemotingRequestMessage remotingRequestMessage = (RemotingRequestMessage) requestMessage;
 		try {
-			requestMessage.deserialize();
+			remotingRequestMessage.deserialize();
 		}
 		catch (DeserializeException e) {
 			throw new ResponseStatusRuntimeException(ResponseStatus.DeserializeException, e);
 		}
-		ResponseObserver responseObserver = new ResponseObserver(connection, requestMessage);
-		RequestHandler requestHandler = requestHandlerRegistry.lookup(requestMessage.getPath());
+		ResponseObserver responseObserver = new ResponseObserver(connection, remotingRequestMessage);
+		RequestHandler requestHandler = requestHandlerRegistry.lookup(remotingRequestMessage.getPath());
 		if (requestHandler == null) {
-			log.warn("RequestHandler not found for path: {}", requestMessage.getPath());
+			log.warn("RequestHandler not found for path: {}", remotingRequestMessage.getPath());
 			throw new ResponseStatusRuntimeException(ResponseStatus.NotFound);
 		}
-		requestHandler.asyncHandle(requestMessage, responseObserver);
+		requestHandler.asyncHandle(remotingRequestMessage.body().getBodyValue(), responseObserver);
 	}
 
 }

@@ -5,7 +5,6 @@ import io.github.xinfra.lab.remoting.exception.SerializeException;
 import io.github.xinfra.lab.remoting.serialization.Serializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.Unpooled;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -72,9 +71,9 @@ public class DefaultMessageHeaders implements MessageHeaders {
 				headerData = new byte[0];
 				return;
 			}
-			CompositeByteBuf buf = null;
+			ByteBuf buf = null;
 			try {
-				buf = ByteBufAllocator.DEFAULT.compositeBuffer();
+				buf = ByteBufAllocator.DEFAULT.heapBuffer();
 				for (Map.Entry<Pair<String, String>, Supplier<?>> entry : headers.entrySet()) {
 					Pair<String, String> pair = entry.getKey();
 					Object value = entry.getValue().get();
@@ -89,7 +88,9 @@ public class DefaultMessageHeaders implements MessageHeaders {
 					buf.writeBytes(valueTypeData);
 					buf.writeBytes(valueData);
 				}
-				headerData = buf.array();
+
+				headerData = new byte[buf.readableBytes()];
+				buf.readBytes(headerData);
 			}
 			finally {
 				if (buf != null) {
@@ -122,7 +123,8 @@ public class DefaultMessageHeaders implements MessageHeaders {
 
 					String key = byteBuf.readCharSequence(keyLength, StandardCharsets.UTF_8).toString();
 					String valueType = byteBuf.readCharSequence(valueTypeLength, StandardCharsets.UTF_8).toString();
-					byte[] valueData = byteBuf.readBytes(valueLength).array();
+					byte[] valueData = new byte[valueLength];
+					byteBuf.readBytes(valueData);
 
 					// lazy deserialization
 					headers.put(Pair.of(key, valueType), new Supplier<Object>() {

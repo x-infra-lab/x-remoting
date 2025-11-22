@@ -58,9 +58,9 @@ public class RemotingMessageBody implements MessageBody {
 				return;
 			}
 
-			CompositeByteBuf buf = null;
+			ByteBuf buf = null;
 			try {
-				buf = ByteBufAllocator.DEFAULT.compositeBuffer();
+				buf = ByteBufAllocator.DEFAULT.heapBuffer();
 
 				buf.writeByte(version);
 
@@ -71,7 +71,8 @@ public class RemotingMessageBody implements MessageBody {
 				buf.writeBytes(typeData);
 				buf.writeBytes(valueData);
 
-				bodyData = buf.array();
+				bodyData = new byte[buf.readableBytes()];
+				buf.readBytes(bodyData);
 			}
 			finally {
 				if (buf != null) {
@@ -93,8 +94,10 @@ public class RemotingMessageBody implements MessageBody {
 				version = byteBuf.readByte();
 				short typeLength = byteBuf.readShort();
 				String typeName = byteBuf.readCharSequence(typeLength, StandardCharsets.UTF_8).toString();
-
-				bodyValue = serializer.deserialize(byteBuf.readBytes(byteBuf.readableBytes()).array(),
+				int bodyDataLength = byteBuf.readableBytes();
+				byte[] valueData = new byte[bodyDataLength];
+				byteBuf.readBytes(valueData);
+				bodyValue = serializer.deserialize(valueData,
 						(Class<?>) Class.forName(typeName));
 			}
 			catch (ClassNotFoundException e) {

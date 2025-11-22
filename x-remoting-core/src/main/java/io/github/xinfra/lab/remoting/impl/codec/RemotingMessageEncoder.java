@@ -33,7 +33,9 @@ public class RemotingMessageEncoder implements MessageEncoder {
 				if (msg instanceof RemotingRequestMessage) {
 					// write request path length
 					RemotingRequestMessage requestMessage = (RemotingRequestMessage) msg;
-					pathLength = requestMessage.getPathData().length;
+					if (requestMessage.getPathData() != null) {
+						pathLength = requestMessage.getPathData().length;
+					}
 					out.writeShort(pathLength);
 				}
 
