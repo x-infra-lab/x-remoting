@@ -97,8 +97,7 @@ public class RemotingMessageBody implements MessageBody {
 				int bodyDataLength = byteBuf.readableBytes();
 				byte[] valueData = new byte[bodyDataLength];
 				byteBuf.readBytes(valueData);
-				bodyValue = serializer.deserialize(valueData,
-						(Class<?>) Class.forName(typeName));
+				bodyValue = serializer.deserialize(valueData, (Class<?>) Class.forName(typeName));
 			}
 			catch (ClassNotFoundException e) {
 				throw new DeserializeException("Deserialize body value failed", e);

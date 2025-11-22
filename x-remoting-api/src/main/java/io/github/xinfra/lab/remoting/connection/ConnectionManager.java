@@ -23,6 +23,6 @@ public interface ConnectionManager extends LifeCycle {
 
 	ConnectionEventProcessor connectionEventProcessor();
 
-	Heartbeater heartbeatTrigger();
+	Heartbeater heartbeater();
 
 }

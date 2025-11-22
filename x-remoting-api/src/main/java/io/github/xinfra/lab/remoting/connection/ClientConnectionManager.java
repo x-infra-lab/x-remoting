@@ -90,8 +90,8 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 	}
 
 	@Override
-	public Heartbeater heartbeatTrigger() {
-		return null;
+	public Heartbeater heartbeater() {
+		return heartbeater;
 	}
 
 	@Override

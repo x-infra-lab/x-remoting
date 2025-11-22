@@ -61,7 +61,6 @@ public class RemotingClientTest {
 	public void testSyncCall() throws RemotingException, InterruptedException {
 		String msg = "hello x-remoting";
 		EchoRequest request = new EchoRequest(msg);
-		callOptions.setTimeoutMills(300000000);
 		String result = remotingClient.syncCall(echoApi, request, remotingServer.localAddress(), callOptions);
 
 		Assertions.assertEquals(result, "echo:" + msg);

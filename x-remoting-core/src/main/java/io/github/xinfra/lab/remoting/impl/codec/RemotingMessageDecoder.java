@@ -50,7 +50,7 @@ public class RemotingMessageDecoder implements MessageDecoder {
 				}
 
 				short pathDataLength = 0;
-				if (messageType == request) {
+				if (messageType == request || messageType == heartbeatRequest) {
 					pathDataLength = in.readShort();
 				}
 

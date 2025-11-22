@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.connection;
 
-importio.github.xinfra.lab.remoting.client.Call;
+import io.github.xinfra.lab.remoting.client.Call;
 import io.github.xinfra.lab.remoting.client.CallOptions;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.message.RequestMessage;
@@ -10,9 +10,14 @@ import io.github.xinfra.lab.remoting.serialization.SerializationType;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.SocketAddress;
+import java.util.HashSet;
+import java.util.Set;
 
 @Slf4j
 public class DefaultHeartbeater implements Heartbeater {
+
+	private Set<Connection> disabledConnections = new HashSet<>();
+	private Set<SocketAddress> disabledSocketAddresses = new HashSet<>();
 
 	private Call call;
 
@@ -23,6 +28,14 @@ public class DefaultHeartbeater implements Heartbeater {
 
 	@Override
 	public void triggerHeartBeat(Connection connection) {
+		if (disabledConnections.contains(connection)) {
+			log.debug("heartbeat is disabled. connection:{}", connection);
+			return;
+		}
+		if (disabledSocketAddresses.contains(connection.remoteAddress())) {
+			log.debug("heartbeat is disabled for socket address:{}", connection.remoteAddress());
+			return;
+		}
 		int heartbeatFailCount = connection.getHeartbeatFailCnt();
 		if (heartbeatFailCount > connection.getHeartbeatMaxFailCount()) {
 			connection.close();
@@ -55,22 +68,22 @@ public class DefaultHeartbeater implements Heartbeater {
 
 	@Override
 	public void disableHeartBeat(Connection connection) {
-		// todo
+		disabledConnections.add(connection);
 	}
 
 	@Override
 	public void enableHeartBeat(Connection connection) {
-		// todo
+		disabledConnections.remove(connection);
 	}
 
 	@Override
 	public void disableHeartBeat(SocketAddress socketAddress) {
-		// todo
+		disabledSocketAddresses.add(socketAddress);
 	}
 
 	@Override
 	public void enableHeartBeat(SocketAddress socketAddress) {
-		// todo
+		disabledSocketAddresses.remove(socketAddress);
 	}
 
 }

@@ -30,7 +30,7 @@ public class ServerConnectionManager extends AbstractConnectionManager {
 	}
 
 	@Override
-	public Heartbeater heartbeatTrigger() {
+	public Heartbeater heartbeater() {
 		return null;
 	}
 
