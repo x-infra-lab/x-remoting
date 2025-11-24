@@ -28,7 +28,9 @@ public class RemotingMessageDecoderTest {
 		// build a requestMessage data
 		String content = "this is rpc content";
 		DefaultMessageHeaders header = new DefaultMessageHeaders();
-		header.put(MessageHeaders.Key.stringKey("test-key"), "test-value");
+		MessageHeaders.StringKey headerKey = MessageHeaders.Key.stringKey("test-key");
+		String headerValue = "test-value";
+		header.put(headerKey, headerValue);
 		Integer requestId = IDGenerator.nextRequestId();
 		RemotingRequestMessage requestMessage = new RemotingRequestMessage(requestId, MessageType.request,
 				SerializationType.Hession);
@@ -55,9 +57,8 @@ public class RemotingMessageDecoderTest {
 		Assertions.assertEquals(decodedRequestMessage.serializationType(), requestMessage.serializationType());
 		Assertions.assertEquals(decodedRequestMessage.getPath(), requestMessage.getPath());
 
-		// todo @joecqupt
-		Assertions.assertEquals(decodedRequestMessage.headers(), requestMessage.headers());
-		Assertions.assertEquals(decodedRequestMessage.body(), requestMessage.body());
+		Assertions.assertEquals(decodedRequestMessage.headers().get(headerKey), headerValue);
+		Assertions.assertEquals(decodedRequestMessage.body().getBodyValue(), content);
 
 		byteBuf.release();
 
@@ -68,7 +69,9 @@ public class RemotingMessageDecoderTest {
 		// build a responseMessage data
 		String content = "this is rpc content";
 		DefaultMessageHeaders header = new DefaultMessageHeaders();
-		header.put(MessageHeaders.Key.stringKey("test-key"), "test-value");
+		MessageHeaders.StringKey headerKey = MessageHeaders.Key.stringKey("test-key");
+		String headerValue = "test-value";
+		header.put(headerKey, headerValue);
 		Integer requestId = IDGenerator.nextRequestId();
 		RemotingResponseMessage responseMessage = new RemotingResponseMessage(requestId, SerializationType.Hession,
 				ResponseStatus.OK);
@@ -91,10 +94,9 @@ public class RemotingMessageDecoderTest {
 		Assertions.assertEquals(decodedResponseMessage.messageType(), responseMessage.messageType());
 		Assertions.assertEquals(decodedResponseMessage.id(), responseMessage.id());
 		Assertions.assertEquals(decodedResponseMessage.serializationType(), decodedResponseMessage.serializationType());
-		// todo @joecqupt
 		Assertions.assertEquals(decodedResponseMessage.responseStatus(), responseMessage.responseStatus());
-		Assertions.assertEquals(decodedResponseMessage.headers(), responseMessage.headers());
-		Assertions.assertEquals(decodedResponseMessage.body(), responseMessage.body());
+		Assertions.assertEquals(decodedResponseMessage.headers().get(headerKey), headerValue);
+		Assertions.assertEquals(decodedResponseMessage.body().getBodyValue(), content);
 		byteBuf.release();
 	}
 

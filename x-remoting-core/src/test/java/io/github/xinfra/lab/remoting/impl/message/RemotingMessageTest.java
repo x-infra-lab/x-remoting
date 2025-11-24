@@ -17,7 +17,10 @@ public class RemotingMessageTest {
 	public void testRpcRequestSerialize() throws SerializeException, DeserializeException {
 		String content = "this is rpc content";
 		DefaultMessageHeaders header = new DefaultMessageHeaders();
-		header.put(MessageHeaders.Key.stringKey("test-key"), "test-value");
+
+		MessageHeaders.StringKey headerKey = MessageHeaders.Key.stringKey("test-key");
+		String headerValue = "test-value";
+		header.put(headerKey, headerValue);
 		Integer requestId = IDGenerator.nextRequestId();
 		RemotingRequestMessage requestMessage = new RemotingRequestMessage(requestId, MessageType.request,
 				SerializationType.Hession);
@@ -38,17 +41,18 @@ public class RemotingMessageTest {
 		requestMessage2.setBody(new RemotingMessageBody(requestMessage.body().data()));
 		requestMessage2.deserialize();
 
-		// todo @joecqupt
 		Assertions.assertEquals(requestMessage2.getPath(), requestMessage.getPath());
-		Assertions.assertEquals(requestMessage2.headers(), requestMessage.headers());
-		Assertions.assertEquals(requestMessage2.body(), requestMessage.body());
+		Assertions.assertEquals(requestMessage2.headers().get(headerKey), headerValue);
+		Assertions.assertEquals(requestMessage2.body().getBodyValue(), content);
 	}
 
 	@Test
 	public void testRpcResponse1() throws SerializeException, DeserializeException {
 		String content = "this is rpc content";
 		DefaultMessageHeaders header = new DefaultMessageHeaders();
-		header.put(MessageHeaders.Key.stringKey("test-key"), "test-value");
+		MessageHeaders.StringKey headerKey = MessageHeaders.Key.stringKey("test-key");
+		String headerValue = "test-value";
+		header.put(headerKey, headerValue);
 
 		Integer requestId = IDGenerator.nextRequestId();
 		RemotingResponseMessage responseMessage = new RemotingResponseMessage(requestId, SerializationType.Hession,
@@ -67,9 +71,8 @@ public class RemotingMessageTest {
 		responseMessage2.setBody(new RemotingMessageBody(responseMessage.body().data()));
 		responseMessage2.deserialize();
 
-		// todo @joecqupt
-		Assertions.assertEquals(responseMessage2.headers(), responseMessage.headers());
-		Assertions.assertEquals(responseMessage2.body(), responseMessage.body());
+		Assertions.assertEquals(responseMessage2.headers().get(headerKey), headerValue);
+		Assertions.assertEquals(responseMessage2.body().getBodyValue(), content);
 	}
 
 	@Test
@@ -80,18 +83,14 @@ public class RemotingMessageTest {
 				SerializationType.Hession, ResponseStatus.Error, new RuntimeException("testCreateExceptionResponse1"));
 		responseMessage.serialize();
 
-		Assertions.assertNotNull(responseMessage.headers().data());
+		Assertions.assertNull(responseMessage.headers());
 		Assertions.assertNotNull(responseMessage.body().data());
 
 		RemotingResponseMessage responseMessage2 = new RemotingResponseMessage(requestId, SerializationType.Hession,
 				ResponseStatus.OK);
-		responseMessage2.setHeaders(new DefaultMessageHeaders(responseMessage.headers().data()));
 		responseMessage2.setBody(new RemotingMessageBody(responseMessage.body().data()));
 		responseMessage2.deserialize();
 
-		// todo @joecqupt
-		Assertions.assertEquals(responseMessage2.headers(), responseMessage.headers());
-		Assertions.assertEquals(responseMessage2.body(), responseMessage.body());
 		Assertions.assertTrue(responseMessage2.body().getBodyValue() instanceof RuntimeException);
 	}
 

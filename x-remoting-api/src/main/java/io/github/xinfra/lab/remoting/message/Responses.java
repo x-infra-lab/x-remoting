@@ -37,7 +37,7 @@ public class Responses {
 			public void operationComplete(ChannelFuture channelFuture) throws Exception {
 				if (channelFuture.isSuccess()) {
 					if (log.isDebugEnabled()) {
-						log.info("write response success, id={}, status={}", id, status);
+						log.debug("write response success, id={}, status={}", id, status);
 					}
 				}
 				else {

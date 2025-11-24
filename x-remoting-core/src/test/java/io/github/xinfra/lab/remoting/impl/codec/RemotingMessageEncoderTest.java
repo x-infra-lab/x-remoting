@@ -3,9 +3,9 @@ package io.github.xinfra.lab.remoting.impl.codec;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.exception.CodecException;
 import io.github.xinfra.lab.remoting.impl.RemotingProtocolIdentifier;
+import io.github.xinfra.lab.remoting.impl.message.RemotingMessage;
 import io.github.xinfra.lab.remoting.impl.message.RemotingMessageBody;
 import io.github.xinfra.lab.remoting.message.DefaultMessageHeaders;
-import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.impl.message.RemotingRequestMessage;
 import io.github.xinfra.lab.remoting.impl.message.RemotingResponseMessage;
 import io.github.xinfra.lab.remoting.message.MessageHeaders;
@@ -76,6 +76,8 @@ public class RemotingMessageEncoderTest {
 		byteBuf.readBytes(bodyData);
 		Assertions.assertArrayEquals(requestMessage.body().data(), bodyData);
 
+		Assertions.assertEquals(byteBuf.readableBytes(), 0);
+
 		byteBuf.release();
 	}
 
@@ -129,6 +131,8 @@ public class RemotingMessageEncoderTest {
 		byteBuf.readBytes(bodyData);
 		Assertions.assertArrayEquals(responseMessage.body().data(), bodyData);
 
+		Assertions.assertEquals(byteBuf.readableBytes(), 0);
+
 		byteBuf.release();
 	}
 
@@ -139,7 +143,7 @@ public class RemotingMessageEncoderTest {
 		ByteBuf byteBuf = Unpooled.buffer();
 
 		Assertions.assertThrows(CodecException.class, () -> {
-			encoder.encode(mock(ChannelHandlerContext.class), mock(Message.class), byteBuf);
+			encoder.encode(mock(ChannelHandlerContext.class), mock(RemotingMessage.class), byteBuf);
 		});
 
 		byteBuf.release();

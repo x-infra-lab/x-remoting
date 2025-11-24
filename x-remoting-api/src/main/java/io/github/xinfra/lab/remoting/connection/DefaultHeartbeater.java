@@ -17,6 +17,7 @@ import java.util.Set;
 public class DefaultHeartbeater implements Heartbeater {
 
 	private Set<Connection> disabledConnections = new HashSet<>();
+
 	private Set<SocketAddress> disabledSocketAddresses = new HashSet<>();
 
 	private Call call;

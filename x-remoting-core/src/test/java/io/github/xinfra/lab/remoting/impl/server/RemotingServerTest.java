@@ -138,42 +138,4 @@ public class RemotingServerTest {
 		TimeUnit.SECONDS.sleep(2);
 	}
 
-	// @Test
-	// public void testRegisterUserProcessor() throws RemotingException,
-	// InterruptedException, TimeoutException {
-	// testProtocol = spy(testProtocol);
-	// MessageHandler messageHandler = mock(MessageHandler.class);
-	// doReturn(messageHandler).when(testProtocol).messageHandler();
-	//
-	// ServerConfig config = new ServerConfig();
-	// config.setPort(findAvailableTcpPort());
-	// config.setManageConnection(true);
-	//
-	// AbstractServer server = new AbstractServer(config) {
-	// @Override
-	// public Protocol protocol() {
-	// return testProtocol;
-	// }
-	// };
-	//
-	// server.startup();
-	//
-	// UserProcessor<String> userProcessor1 = new UserProcessor<String>() {
-	// @Override
-	// public String interest() {
-	// return String.class.getName();
-	// }
-	//
-	// @Override
-	// public Object handRequest(String request) {
-	// // do nothing
-	// return null;
-	// }
-	// };
-	//
-	// server.registerUserProcessor(userProcessor1);
-	//
-	// verify(messageHandler, times(1)).registerUserProcessor(eq(userProcessor1));
-	// }
-
 }
