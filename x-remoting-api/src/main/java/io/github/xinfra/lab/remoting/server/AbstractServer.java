@@ -13,6 +13,7 @@ import io.github.xinfra.lab.remoting.connection.ProtocolEncoder;
 import io.github.xinfra.lab.remoting.connection.ProtocolHandler;
 import io.github.xinfra.lab.remoting.connection.ServerConnectionManager;
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelInitializer;
@@ -91,6 +92,8 @@ public abstract class AbstractServer extends AbstractLifeCycle implements Server
 	private Timer timer;
 
 	private ServerBootstrap serverBootstrap;
+
+	private Channel serverChannel;
 
 	private final EventLoopGroup bossGroup = Epoll.isAvailable()
 			? new EpollEventLoopGroup(1, new NamedThreadFactory("RemotingServer-IO-Boss"))
@@ -189,6 +192,7 @@ public abstract class AbstractServer extends AbstractLifeCycle implements Server
 			if (config.getPort() == 0) {
 				this.localAddress = channelFuture.channel().localAddress();
 			}
+			serverChannel = channelFuture.channel();
 		}
 		catch (Throwable throwable) {
 			throw new RuntimeException("serverBootstrap bind fail. ", throwable);
@@ -206,6 +210,9 @@ public abstract class AbstractServer extends AbstractLifeCycle implements Server
 	@Override
 	public void shutdown() {
 		super.shutdown();
+		if (serverChannel != null) {
+			serverChannel.close();
+		}
 		bossGroup.shutdownGracefully();
 		workerGroup.shutdownGracefully();
 		if (connectionManager != null) {
