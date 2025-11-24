@@ -337,12 +337,13 @@ public class CallTest {
 			callbackMessage.set(msg);
 		});
 
+		// ps: let attempt time > timeout time
 		Wait.untilIsTrue(() -> {
 			if (callbackMessage.get() != null) {
 				return true;
 			}
 			return false;
-		}, 30, 100);
+		}, 40, 100);
 
 		Assertions.assertTrue(callbackMessage.get() == mockTimeoutresponseMessage);
 	}
