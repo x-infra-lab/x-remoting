@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>io.github.x-infra-lab</groupId>
-        <artifactId>x-remoting</artifactId>
+        <artifactId>x-remoting-parent</artifactId>
         <version>0.0.2-RC1</version>
     </parent>
 
@@ -12,9 +12,6 @@
 
     <name>x-remoting-core</name>
     <url>https://github.com/x-infra-lab/x-remoting</url>
-
-    <properties>
-    </properties>
 
     <dependencies>
         <dependency>
@@ -25,14 +22,12 @@
         <dependency>
             <groupId>io.github.x-infra-lab</groupId>
             <artifactId>x-remoting-api</artifactId>
-            <version>${project.version}</version>
         </dependency>
         <!-- test scope start -->
         <dependency>
             <groupId>io.github.x-infra-lab</groupId>
             <artifactId>x-remoting-api</artifactId>
             <type>test-jar</type>
-            <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -52,4 +47,15 @@
         </dependency>
         <!-- test scope end -->
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
