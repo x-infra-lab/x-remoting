@@ -58,7 +58,7 @@ public class RemotingClientTest {
 	public void testSyncCall() throws RemotingException, InterruptedException {
 		String msg = "hello x-remoting";
 		EchoRequest request = new EchoRequest(msg);
-		String result = remotingClient.syncCall(echoApi, request, remotingServer.localAddress(), callOptions);
+		String result = remotingClient.syncCall(echoApi, request, remotingServer.getLocalAddress(), callOptions);
 
 		Assertions.assertEquals(result, "echo:" + msg);
 	}
@@ -68,7 +68,7 @@ public class RemotingClientTest {
 		String msg = "test UserProcessor throw Exception";
 
 		RemotingException remotingException = Assertions.assertThrows(RemotingException.class, () -> {
-			remotingClient.syncCall(exceptionApi, msg, remotingServer.localAddress(), callOptions);
+			remotingClient.syncCall(exceptionApi, msg, remotingServer.getLocalAddress(), callOptions);
 		});
 
 		Assertions.assertInstanceOf(IllegalArgumentException.class, remotingException.getCause());
@@ -79,7 +79,7 @@ public class RemotingClientTest {
 	public void testFutureCall() throws RemotingException, InterruptedException, TimeoutException {
 		String msg = "hello x-remoting";
 		EchoRequest request = new EchoRequest(msg);
-		RemotingFuture<String> future = remotingClient.asyncCall(echoApi, request, remotingServer.localAddress(),
+		RemotingFuture<String> future = remotingClient.asyncCall(echoApi, request, remotingServer.getLocalAddress(),
 				callOptions);
 
 		String result = future.get(3, TimeUnit.SECONDS);
@@ -93,7 +93,7 @@ public class RemotingClientTest {
 
 		CountDownLatch countDownLatch = new CountDownLatch(1);
 		AtomicReference<String> result = new AtomicReference<>();
-		remotingClient.asyncCall(echoApi, request, remotingServer.localAddress(), callOptions,
+		remotingClient.asyncCall(echoApi, request, remotingServer.getLocalAddress(), callOptions,
 				new RemotingCallBack<String>() {
 					@Override
 					public void onException(Throwable t) {
@@ -116,7 +116,7 @@ public class RemotingClientTest {
 		String msg = "hello x-remoting";
 		EchoRequest request = new EchoRequest(msg);
 
-		remotingClient.oneway(echoApi, request, remotingServer.localAddress(), callOptions);
+		remotingClient.oneway(echoApi, request, remotingServer.getLocalAddress(), callOptions);
 		TimeUnit.SECONDS.sleep(2);
 	}
 

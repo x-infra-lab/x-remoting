@@ -106,7 +106,7 @@ public class RemotingMessageBody implements MessageBody {
 	}
 
 	@Override
-	public byte[] data() {
+	public byte[] getData() {
 		return bodyData;
 	}
 

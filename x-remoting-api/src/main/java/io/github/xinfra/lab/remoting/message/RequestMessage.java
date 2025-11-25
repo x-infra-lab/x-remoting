@@ -4,6 +4,4 @@ public interface RequestMessage extends Message {
 
 	String getPath();
 
-	void setPath(String path);
-
 }

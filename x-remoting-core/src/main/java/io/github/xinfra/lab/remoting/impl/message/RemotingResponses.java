@@ -15,8 +15,8 @@ public class RemotingResponses {
 	public static <R> R getResponseObject(RemotingResponseMessage remotingResponseMessage) throws RemotingException {
 		// todo: fix classloader problem
 		remotingResponseMessage.deserialize();
-		ResponseStatus responseStatus = remotingResponseMessage.responseStatus();
-		RemotingMessageBody body = remotingResponseMessage.body();
+		ResponseStatus responseStatus = remotingResponseMessage.getResponseStatus();
+		RemotingMessageBody body = remotingResponseMessage.getBody();
 		Object bodyValue = body == null ? null : body.getBodyValue();
 		if (Objects.equals(responseStatus, ResponseStatus.OK)) {
 			return (R) bodyValue;

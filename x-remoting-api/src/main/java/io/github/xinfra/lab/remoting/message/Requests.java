@@ -6,12 +6,12 @@ import static io.github.xinfra.lab.remoting.message.HeaderConstants.onewayReques
 public class Requests {
 
 	public static void markOnewayRequest(RequestMessage requestMessage) {
-		MessageHeaders header = requestMessage.headers();
+		MessageHeaders header = requestMessage.getHeaders();
 		header.put(onewayRequestKey, onewayRequestValue);
 	}
 
 	public static boolean isOnewayRequest(RequestMessage requestMessage) {
-		MessageHeaders header = requestMessage.headers();
+		MessageHeaders header = requestMessage.getHeaders();
 		if (header == null) {
 			return false;
 		}

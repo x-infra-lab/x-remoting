@@ -24,8 +24,8 @@ public class ResponseObserver<R> {
 			return;
 		}
 		RemotingResponseMessage responseMessage = connection.getProtocol()
-			.messageFactory()
-			.createResponse(requestMessage.id(), requestMessage.serializationType(), ResponseStatus.OK);
+			.getMessageFactory()
+			.createResponse(requestMessage.getId(), requestMessage.getSerializationType(), ResponseStatus.OK);
 		responseMessage.setBody(new RemotingMessageBody(result));
 
 		Responses.sendResponse(connection, responseMessage);
@@ -36,8 +36,8 @@ public class ResponseObserver<R> {
 			return;
 		}
 		RemotingResponseMessage responseMessage = connection.getProtocol()
-			.messageFactory()
-			.createResponse(requestMessage.id(), requestMessage.serializationType(), ResponseStatus.Error);
+			.getMessageFactory()
+			.createResponse(requestMessage.getId(), requestMessage.getSerializationType(), ResponseStatus.Error);
 		responseMessage.setBody(new RemotingMessageBody(t));
 
 		Responses.sendResponse(connection, responseMessage);

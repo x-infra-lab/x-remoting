@@ -15,7 +15,7 @@ public interface RemotingCallBack<R> extends InvokeCallBack {
 	Logger LOGGER = LoggerFactory.getLogger(RemotingCallBack.class);
 
 	@Override
-	default void complete(ResponseMessage responseMessage) {
+	default void onMessage(ResponseMessage responseMessage) {
 		Runnable task = () -> {
 			try {
 				RemotingResponseMessage remotingResponseMessage = (RemotingResponseMessage) responseMessage;
@@ -37,14 +37,14 @@ public interface RemotingCallBack<R> extends InvokeCallBack {
 			}
 		};
 
-		Executor executor = this.executor();
+		Executor executor = this.getExecutor();
 
 		if (executor != null) {
 			try {
 				executor.execute(task);
 			}
 			catch (RejectedExecutionException re) {
-				LOGGER.error("fail execute callback. id:{}", responseMessage.id(), re);
+				LOGGER.error("fail execute callback. id:{}", responseMessage.getId(), re);
 			}
 		}
 		else {

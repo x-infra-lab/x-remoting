@@ -6,9 +6,9 @@ import java.util.concurrent.Executor;
 
 public interface InvokeCallBack {
 
-	void complete(ResponseMessage responseMessage);
+	void onMessage(ResponseMessage responseMessage);
 
-	default Executor executor() {
+	default Executor getExecutor() {
 		return null;
 	}
 

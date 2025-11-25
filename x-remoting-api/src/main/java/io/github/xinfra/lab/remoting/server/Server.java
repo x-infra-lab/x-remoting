@@ -7,8 +7,8 @@ import java.net.SocketAddress;
 
 public interface Server extends LifeCycle {
 
-	SocketAddress localAddress();
+	SocketAddress getLocalAddress();
 
-	Protocol protocol();
+	Protocol getProtocol();
 
 }

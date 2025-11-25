@@ -1,8 +1,8 @@
 package io.github.xinfra.lab.remoting.protocol;
 
-public interface ProtocolIdentifier {
+public interface ProtocolId {
 
-	byte[] code();
+	byte[] getCodes();
 
 	default byte version() {
 		return 0x01;

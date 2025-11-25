@@ -37,7 +37,7 @@ public class InvokeFutureTest {
 	public void before() {
 		final int requestId = IDGenerator.nextRequestId();
 		RequestMessage requestMessage = mock(RequestMessage.class);
-		doReturn(requestId).when(requestMessage).id();
+		doReturn(requestId).when(requestMessage).getId();
 		invokeFuture = new InvokeFuture<>(requestMessage);
 	}
 
@@ -152,7 +152,7 @@ public class InvokeFutureTest {
 		AtomicInteger callBackExecuteTimes = new AtomicInteger(0);
 		InvokeCallBack callBack = new InvokeCallBack() {
 			@Override
-			public void complete(ResponseMessage message) {
+			public void onMessage(ResponseMessage message) {
 				callbackExecuted.set(true);
 				callBackExecuteTimes.getAndIncrement();
 			}
@@ -169,7 +169,7 @@ public class InvokeFutureTest {
 		Wait.untilIsTrue(() -> {
 			try {
 				verify(invokeFuture, atLeastOnce()).executeCallBack();
-				verify(finalCallBack, atLeastOnce()).complete(eq(responseMessage));
+				verify(finalCallBack, atLeastOnce()).onMessage(eq(responseMessage));
 				return true;
 			}
 			catch (Throwable t) {
@@ -179,7 +179,7 @@ public class InvokeFutureTest {
 
 		Assertions.assertTrue(callbackExecuted.get());
 		Assertions.assertEquals(1, callBackExecuteTimes.get());
-		verify(finalCallBack, times(1)).complete(eq(responseMessage));
+		verify(finalCallBack, times(1)).onMessage(eq(responseMessage));
 
 		// test multiple execute
 		invokeFuture.asyncExecuteCallBack(executorService);

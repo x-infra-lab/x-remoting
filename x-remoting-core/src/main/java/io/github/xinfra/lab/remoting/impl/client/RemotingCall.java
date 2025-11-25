@@ -32,7 +32,7 @@ public class RemotingCall implements Call {
 
 		Connection connection = connectionManager.get(socketAddress);
 		connectionManager.check(connection);
-		MessageFactory messageFactory = connection.getProtocol().messageFactory();
+		MessageFactory messageFactory = connection.getProtocol().getMessageFactory();
 		RequestMessage requestMessage = buildRequestMessage(messageFactory, requestApi, request, callOptions);
 
 		RemotingResponseMessage responseMessage = (RemotingResponseMessage) blockingCall(requestMessage, connection,
@@ -46,7 +46,7 @@ public class RemotingCall implements Call {
 		Connection connection = connectionManager.get(socketAddress);
 		connectionManager.check(connection);
 
-		MessageFactory messageFactory = connection.getProtocol().messageFactory();
+		MessageFactory messageFactory = connection.getProtocol().getMessageFactory();
 		RequestMessage requestMessage = buildRequestMessage(messageFactory, requestApi, request, callOptions);
 
 		InvokeFuture<?> invokeFuture = futureCall(requestMessage, connection, callOptions);
@@ -59,7 +59,7 @@ public class RemotingCall implements Call {
 		Connection connection = connectionManager.get(socketAddress);
 		connectionManager.check(connection);
 
-		MessageFactory messageFactory = connection.getProtocol().messageFactory();
+		MessageFactory messageFactory = connection.getProtocol().getMessageFactory();
 		RequestMessage requestMessage = buildRequestMessage(messageFactory, requestApi, request, callOptions);
 
 		asyncCall(requestMessage, connection, callOptions, remotingCallBack);
@@ -71,7 +71,7 @@ public class RemotingCall implements Call {
 		Connection connection = connectionManager.get(socketAddress);
 		connectionManager.check(connection);
 
-		MessageFactory messageFactory = connection.getProtocol().messageFactory();
+		MessageFactory messageFactory = connection.getProtocol().getMessageFactory();
 		RequestMessage requestMessage = buildRequestMessage(messageFactory, requestApi, request, callOptions);
 		Requests.markOnewayRequest(requestMessage);
 		oneway(requestMessage, connection, callOptions);

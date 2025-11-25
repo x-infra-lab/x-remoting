@@ -23,7 +23,7 @@ public abstract class AbstractMessageHandler implements MessageHandler {
 
 	@Override
 	public void registerMessageTypeHandler(MessageTypeHandler messageTypeHandler) {
-		MessageTypeHandler prev = messageTypeHandlers.put(messageTypeHandler.messageType(), messageTypeHandler);
+		MessageTypeHandler prev = messageTypeHandlers.put(messageTypeHandler.getMessageType(), messageTypeHandler);
 		if (prev != null) {
 			log.warn("messageTypeHandler {} is overridden by {}", prev, messageTypeHandler);
 		}
@@ -38,7 +38,7 @@ public abstract class AbstractMessageHandler implements MessageHandler {
 	public void handleMessage(ChannelHandlerContext ctx, Message msg) {
 		Connection connection = ctx.channel().attr(CONNECTION).get();
 		try {
-			MessageTypeHandler messageTypeHandler = messageTypeHandler(msg.messageType());
+			MessageTypeHandler messageTypeHandler = messageTypeHandler(msg.getMessageType());
 			Executor executor = connection.getExecutor();
 
 			Runnable task = () -> {
@@ -63,14 +63,14 @@ public abstract class AbstractMessageHandler implements MessageHandler {
 			if (e instanceof ResponseStatusRuntimeException) {
 				ResponseStatusRuntimeException statusException = (ResponseStatusRuntimeException) e;
 				ResponseMessage response = connection.getProtocol()
-					.messageFactory()
-					.createResponse(msg.id(), msg.serializationType(), statusException.getResponseStatus());
+					.getMessageFactory()
+					.createResponse(msg.getId(), msg.getSerializationType(), statusException.getResponseStatus());
 				Responses.sendResponse(connection, response);
 			}
 			else {
 				ResponseMessage response = connection.getProtocol()
-					.messageFactory()
-					.createResponse(msg.id(), msg.serializationType(), ResponseStatus.Error, e);
+					.getMessageFactory()
+					.createResponse(msg.getId(), msg.getSerializationType(), ResponseStatus.Error, e);
 				Responses.sendResponse(connection, response);
 			}
 		}

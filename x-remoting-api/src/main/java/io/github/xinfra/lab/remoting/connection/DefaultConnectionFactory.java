@@ -105,7 +105,7 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 	// time
 	public DefaultConnectionFactory(Protocol protocol, List<Supplier<ChannelHandler>> channelHandlerSuppliers,
 			ConnectionFactoryConfig connectionFactoryConfig) {
-		Validate.notNull(protocol, "protocol can not be null");
+		Validate.notNull(protocol, "getProtocol can not be null");
 		Validate.notNull(channelHandlerSuppliers, "channelHandlers can not be null");
 		Validate.notNull(connectionFactoryConfig, "connectionFactoryConfig can not be null");
 		this.protocol = protocol;

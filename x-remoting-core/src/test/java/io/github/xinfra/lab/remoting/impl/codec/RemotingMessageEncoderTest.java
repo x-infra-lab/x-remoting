@@ -2,7 +2,7 @@ package io.github.xinfra.lab.remoting.impl.codec;
 
 import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.exception.CodecException;
-import io.github.xinfra.lab.remoting.impl.RemotingProtocolIdentifier;
+import io.github.xinfra.lab.remoting.impl.RemotingProtocolId;
 import io.github.xinfra.lab.remoting.impl.message.RemotingMessage;
 import io.github.xinfra.lab.remoting.impl.message.RemotingMessageBody;
 import io.github.xinfra.lab.remoting.message.DefaultMessageHeaders;
@@ -42,23 +42,23 @@ public class RemotingMessageEncoderTest {
 
 		Assertions.assertTrue(byteBuf.readableBytes() > 0);
 
-		// assert protocol code
-		byte[] protocolCodes = RemotingProtocolIdentifier.INSTANCE.code();
+		// assert getProtocol getCodes
+		byte[] protocolCodes = RemotingProtocolId.INSTANCE.getCodes();
 		byte[] dataProtocolCodes = new byte[protocolCodes.length];
 		byteBuf.readBytes(dataProtocolCodes);
 		Assertions.assertArrayEquals(protocolCodes, dataProtocolCodes);
-		// assert protocol version
-		Assertions.assertEquals(byteBuf.readByte(), RemotingProtocolIdentifier.INSTANCE.version());
+		// assert getProtocol version
+		Assertions.assertEquals(byteBuf.readByte(), RemotingProtocolId.INSTANCE.version());
 		// assert message type
-		Assertions.assertEquals(byteBuf.readByte(), MessageType.request.data());
+		Assertions.assertEquals(byteBuf.readByte(), MessageType.request.getCode());
 		// assert requestId
 		Assertions.assertEquals(byteBuf.readInt(), requestId);
 		// assert serialization type
-		Assertions.assertEquals(byteBuf.readByte(), requestMessage.serializationType().data());
+		Assertions.assertEquals(byteBuf.readByte(), requestMessage.getSerializationType().getCode());
 
 		int pathDataLength = requestMessage.getPathData().length;
-		int headerDataLength = requestMessage.headers().data().length;
-		int bodyDataLength = requestMessage.body().data().length;
+		int headerDataLength = requestMessage.getHeaders().getData().length;
+		int bodyDataLength = requestMessage.getBody().getData().length;
 
 		Assertions.assertEquals(byteBuf.readShort(), pathDataLength);
 		Assertions.assertEquals(byteBuf.readShort(), headerDataLength);
@@ -70,11 +70,11 @@ public class RemotingMessageEncoderTest {
 
 		byte[] headerData = new byte[headerDataLength];
 		byteBuf.readBytes(headerData);
-		Assertions.assertArrayEquals(requestMessage.headers().data(), headerData);
+		Assertions.assertArrayEquals(requestMessage.getHeaders().getData(), headerData);
 
 		byte[] bodyData = new byte[bodyDataLength];
 		byteBuf.readBytes(bodyData);
-		Assertions.assertArrayEquals(requestMessage.body().data(), bodyData);
+		Assertions.assertArrayEquals(requestMessage.getBody().getData(), bodyData);
 
 		Assertions.assertEquals(byteBuf.readableBytes(), 0);
 
@@ -101,35 +101,35 @@ public class RemotingMessageEncoderTest {
 
 		Assertions.assertTrue(byteBuf.readableBytes() > 0);
 
-		// assert protocol code
-		byte[] protocolCodes = RemotingProtocolIdentifier.INSTANCE.code();
+		// assert getProtocol getCodes
+		byte[] protocolCodes = RemotingProtocolId.INSTANCE.getCodes();
 		byte[] dataProtocolCodes = new byte[protocolCodes.length];
 		byteBuf.readBytes(dataProtocolCodes);
 		Assertions.assertArrayEquals(protocolCodes, dataProtocolCodes);
-		// assert protocol version
-		Assertions.assertEquals(byteBuf.readByte(), RemotingProtocolIdentifier.INSTANCE.version());
+		// assert getProtocol version
+		Assertions.assertEquals(byteBuf.readByte(), RemotingProtocolId.INSTANCE.version());
 		// assert message type
-		Assertions.assertEquals(byteBuf.readByte(), MessageType.response.data());
+		Assertions.assertEquals(byteBuf.readByte(), MessageType.response.getCode());
 		// assert requestId
 		Assertions.assertEquals(byteBuf.readInt(), requestId);
 		// assert serialization type
-		Assertions.assertEquals(byteBuf.readByte(), responseMessage.serializationType().data());
+		Assertions.assertEquals(byteBuf.readByte(), responseMessage.getSerializationType().getCode());
 		// assert response status
-		Assertions.assertEquals(byteBuf.readShort(), responseMessage.responseStatus().status());
+		Assertions.assertEquals(byteBuf.readShort(), responseMessage.getResponseStatus().status());
 
-		int headerDataLength = responseMessage.headers().data().length;
-		int bodyDataLength = responseMessage.body().data().length;
+		int headerDataLength = responseMessage.getHeaders().getData().length;
+		int bodyDataLength = responseMessage.getBody().getData().length;
 
 		Assertions.assertEquals(byteBuf.readShort(), headerDataLength);
 		Assertions.assertEquals(byteBuf.readInt(), bodyDataLength);
 
 		byte[] headerData = new byte[headerDataLength];
 		byteBuf.readBytes(headerData);
-		Assertions.assertArrayEquals(responseMessage.headers().data(), headerData);
+		Assertions.assertArrayEquals(responseMessage.getHeaders().getData(), headerData);
 
 		byte[] bodyData = new byte[bodyDataLength];
 		byteBuf.readBytes(bodyData);
-		Assertions.assertArrayEquals(responseMessage.body().data(), bodyData);
+		Assertions.assertArrayEquals(responseMessage.getBody().getData(), bodyData);
 
 		Assertions.assertEquals(byteBuf.readableBytes(), 0);
 

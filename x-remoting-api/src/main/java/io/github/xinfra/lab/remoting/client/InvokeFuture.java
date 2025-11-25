@@ -39,7 +39,7 @@ public class InvokeFuture<T extends ResponseMessage> implements Future<ResponseM
 	private final ClassLoader classLoader;
 
 	public InvokeFuture(RequestMessage requestMessage) {
-		this.requestId = requestMessage.id();
+		this.requestId = requestMessage.getId();
 		this.requestMessage = requestMessage;
 		this.countDownLatch = new CountDownLatch(1);
 		this.classLoader = Thread.currentThread().getContextClassLoader();
@@ -62,12 +62,12 @@ public class InvokeFuture<T extends ResponseMessage> implements Future<ResponseM
 					executeCallBack();
 				}
 				catch (Throwable t) {
-					log.error("executeCallBack fail. id:{}", responseMessage.id(), t);
+					log.error("executeCallBack fail. getId:{}", responseMessage.getId(), t);
 				}
 			});
 		}
 		catch (Exception e) {
-			log.error("asyncExecuteCallBack fail. id:{}", responseMessage.id(), e);
+			log.error("asyncExecuteCallBack fail. getId:{}", responseMessage.getId(), e);
 		}
 	}
 
@@ -82,7 +82,7 @@ public class InvokeFuture<T extends ResponseMessage> implements Future<ResponseM
 							contextClassLoader = Thread.currentThread().getContextClassLoader();
 							Thread.currentThread().setContextClassLoader(appClassLoader);
 						}
-						invokeCallBack.complete(responseMessage);
+						invokeCallBack.onMessage(responseMessage);
 					}
 					finally {
 						if (contextClassLoader != null) {

@@ -2,8 +2,8 @@ package io.github.xinfra.lab.remoting.codec;
 
 public interface MessageCodec {
 
-	MessageEncoder encoder();
+	MessageEncoder getEncoder();
 
-	MessageDecoder decoder();
+	MessageDecoder getDecoder();
 
 }

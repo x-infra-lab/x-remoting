@@ -10,7 +10,7 @@ public class ProtocolEncoder extends MessageToByteEncoder<Message> {
 	@Override
 	protected void encode(ChannelHandlerContext ctx, Message msg, ByteBuf out) throws Exception {
 		Connection connection = ctx.channel().attr(Connection.CONNECTION).get();
-		connection.getProtocol().messageCodec().encoder().encode(ctx, msg, out);
+		connection.getProtocol().getMessageCodec().getEncoder().encode(ctx, msg, out);
 	}
 
 }

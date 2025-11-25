@@ -9,6 +9,6 @@ public interface SerializableObject {
 
 	void deserialize(Serializer serializer) throws DeserializeException;
 
-	byte[] data();
+	byte[] getData();
 
 }

@@ -35,7 +35,7 @@ public class RemotingRequestMessageTypeHandler extends AbstractRequestMessageTyp
 			log.warn("RequestHandler not found for path: {}", remotingRequestMessage.getPath());
 			throw new ResponseStatusRuntimeException(ResponseStatus.NotFound);
 		}
-		requestHandler.asyncHandle(remotingRequestMessage.body().getBodyValue(), responseObserver);
+		requestHandler.asyncHandle(remotingRequestMessage.getBody().getBodyValue(), responseObserver);
 	}
 
 }

@@ -22,9 +22,9 @@ public interface Call {
 	default ResponseMessage blockingCall(RequestMessage requestMessage, Connection connection, CallOptions callOptions)
 			throws InterruptedException {
 		Protocol protocol = connection.getProtocol();
-		MessageFactory messageFactory = protocol.messageFactory();
+		MessageFactory messageFactory = protocol.getMessageFactory();
 
-		int requestId = requestMessage.id();
+		int requestId = requestMessage.getId();
 		InvokeFuture<?> invokeFuture = new InvokeFuture<>(requestMessage);
 		try {
 			connection.addInvokeFuture(invokeFuture);
@@ -34,7 +34,7 @@ public interface Call {
 							connection.remoteAddress(), channelFuture.cause());
 					InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
 					if (future != null) {
-						future.complete(messageFactory.createResponse(requestId, requestMessage.serializationType(),
+						future.complete(messageFactory.createResponse(requestId, requestMessage.getSerializationType(),
 								ResponseStatus.SendFailed, channelFuture.cause()));
 					}
 				}
@@ -45,7 +45,7 @@ public interface Call {
 					connection.remoteAddress(), t);
 			InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
 			if (future != null) {
-				future.complete(messageFactory.createResponse(requestId, requestMessage.serializationType(),
+				future.complete(messageFactory.createResponse(requestId, requestMessage.getSerializationType(),
 						ResponseStatus.SendFailed, t));
 			}
 		}
@@ -57,7 +57,7 @@ public interface Call {
 			log.warn("Wait responseMessage timeout. requestId:{} remoteAddress:{}", requestId,
 					connection.remoteAddress());
 			connection.removeInvokeFuture(requestId);
-			responseMessage = messageFactory.createResponse(requestId, requestMessage.serializationType(),
+			responseMessage = messageFactory.createResponse(requestId, requestMessage.getSerializationType(),
 					ResponseStatus.Timeout);
 		}
 		return responseMessage;
@@ -67,9 +67,9 @@ public interface Call {
 			CallOptions callOptions) {
 		Protocol protocol = connection.getProtocol();
 		Timer timer = connection.getTimer();
-		MessageFactory messageFactory = protocol.messageFactory();
+		MessageFactory messageFactory = protocol.getMessageFactory();
 
-		int requestId = requestMessage.id();
+		int requestId = requestMessage.getId();
 		InvokeFuture<?> invokeFuture = new InvokeFuture<>(requestMessage);
 		Timeout timeout = timer.newTimeout((t) -> {
 			log.warn("Wait responseMessage timeout. requestId:{} remoteAddress:{}", requestId,
@@ -77,7 +77,7 @@ public interface Call {
 			InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
 			if (future != null) {
 				ResponseMessage responseMessage = messageFactory.createResponse(requestId,
-						requestMessage.serializationType(), ResponseStatus.Timeout);
+						requestMessage.getSerializationType(), ResponseStatus.Timeout);
 				future.complete(responseMessage);
 			}
 		}, callOptions.getTimeoutMills(), TimeUnit.MILLISECONDS);
@@ -92,7 +92,7 @@ public interface Call {
 					InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
 					if (future != null) {
 						future.cancelTimeout();
-						future.complete(messageFactory.createResponse(requestId, requestMessage.serializationType(),
+						future.complete(messageFactory.createResponse(requestId, requestMessage.getSerializationType(),
 								ResponseStatus.SendFailed, channelFuture.cause()));
 					}
 				}
@@ -104,7 +104,7 @@ public interface Call {
 			InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
 			if (future != null) {
 				future.cancelTimeout();
-				future.complete(messageFactory.createResponse(requestId, requestMessage.serializationType(),
+				future.complete(messageFactory.createResponse(requestId, requestMessage.getSerializationType(),
 						ResponseStatus.SendFailed, t));
 			}
 		}
@@ -115,10 +115,10 @@ public interface Call {
 	default void asyncCall(RequestMessage requestMessage, Connection connection, CallOptions callOptions,
 			InvokeCallBack invokeCallBack) {
 		Protocol protocol = connection.getProtocol();
-		MessageFactory messageFactory = protocol.messageFactory();
+		MessageFactory messageFactory = protocol.getMessageFactory();
 		Timer timer = connection.getTimer();
 
-		int requestId = requestMessage.id();
+		int requestId = requestMessage.getId();
 		InvokeFuture<?> invokeFuture = new InvokeFuture<>(requestMessage);
 		Timeout timeout = timer.newTimeout((t) -> {
 			log.warn("Wait responseMessage timeout. requestId:{} remoteAddress:{}", requestId,
@@ -126,7 +126,7 @@ public interface Call {
 			InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
 			if (future != null) {
 				ResponseMessage responseMessage = messageFactory.createResponse(requestId,
-						requestMessage.serializationType(), ResponseStatus.Timeout);
+						requestMessage.getSerializationType(), ResponseStatus.Timeout);
 				future.complete(responseMessage);
 				future.asyncExecuteCallBack(connection.getExecutor());
 			}
@@ -144,7 +144,8 @@ public interface Call {
 					if (future != null) {
 						future.cancelTimeout();
 						ResponseMessage responseMessage = messageFactory.createResponse(requestId,
-								requestMessage.serializationType(), ResponseStatus.SendFailed, channelFuture.cause());
+								requestMessage.getSerializationType(), ResponseStatus.SendFailed,
+								channelFuture.cause());
 						future.complete(responseMessage);
 						future.asyncExecuteCallBack(connection.getExecutor());
 					}
@@ -159,7 +160,7 @@ public interface Call {
 			if (future != null) {
 				future.cancelTimeout();
 				ResponseMessage responseMessage = messageFactory.createResponse(requestId,
-						requestMessage.serializationType(), ResponseStatus.SendFailed, t);
+						requestMessage.getSerializationType(), ResponseStatus.SendFailed, t);
 				future.complete(responseMessage);
 				future.asyncExecuteCallBack(connection.getExecutor());
 			}
@@ -168,7 +169,7 @@ public interface Call {
 	}
 
 	default void oneway(RequestMessage requestMessage, Connection connection, CallOptions callOptions) {
-		int requestId = requestMessage.id();
+		int requestId = requestMessage.getId();
 		try {
 			connection.getChannel().writeAndFlush(requestMessage).addListener((ChannelFuture future) -> {
 				if (!future.isSuccess()) {

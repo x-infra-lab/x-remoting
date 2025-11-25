@@ -5,7 +5,7 @@
 //
 // public class DefaultHeartbeaterTest {
 //
-// private RemotingProtocol protocol;
+// private RemotingProtocol getProtocol;
 //
 //
 // @Test
@@ -17,7 +17,7 @@
 // channel = spy(channel);
 // doReturn(channel).when(context).channel();
 // doReturn(channel.newSucceededFuture()).when(channel).writeAndFlush(any());
-// new Connection(protocol, channel);
+// new Connection(getProtocol, channel);
 //
 // trigger.triggerHeartBeat(context);
 //
@@ -47,7 +47,7 @@
 //
 // @Test
 // public void testHeartbeatFailed() throws InterruptedException, TimeoutException {
-// DefaultHeartbeater trigger = protocol.heartbeatTrigger();
+// DefaultHeartbeater trigger = getProtocol.heartbeatTrigger();
 //
 // ChannelHandlerContext context = mock(ChannelHandlerContext.class);
 // EmbeddedChannel channel = new EmbeddedChannel();
@@ -56,7 +56,7 @@
 // doReturn(channel.newFailedFuture(new
 // RuntimeException("testHeartbeatFailed"))).when(channel)
 // .writeAndFlush(any());
-// Connection connection = new Connection(protocol, channel);
+// Connection connection = new Connection(getProtocol, channel);
 // connection = spy(connection);
 // channel.attr(CONNECTION).set(connection);
 //
@@ -116,14 +116,14 @@
 // @Test
 // public void testHeartbeatOverThreshold() throws InterruptedException, TimeoutException
 // {
-// DefaultHeartbeater trigger = protocol.heartbeatTrigger();
+// DefaultHeartbeater trigger = getProtocol.heartbeatTrigger();
 //
 // ChannelHandlerContext context = mock(ChannelHandlerContext.class);
 // EmbeddedChannel channel = new EmbeddedChannel();
 // channel = spy(channel);
 // doReturn(channel).when(context).channel();
 // doReturn(channel.newSucceededFuture()).when(channel).writeAndFlush(any());
-// Connection connection = new Connection(protocol, channel);
+// Connection connection = new Connection(getProtocol, channel);
 // connection = spy(connection);
 // channel.attr(CONNECTION).set(connection);
 //

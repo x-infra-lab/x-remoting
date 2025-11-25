@@ -8,13 +8,13 @@ import lombok.extern.slf4j.Slf4j;
 public class ResponseMessageTypeHandler implements MessageTypeHandler<ResponseMessage> {
 
 	@Override
-	public MessageType messageType() {
+	public MessageType getMessageType() {
 		return MessageType.response;
 	}
 
 	@Override
 	public void handleMessage(Connection connection, ResponseMessage responseMessage) {
-		int id = responseMessage.id();
+		int id = responseMessage.getId();
 		InvokeFuture<?> future = connection.removeInvokeFuture(id);
 		if (future != null) {
 			future.cancelTimeout();
@@ -23,11 +23,11 @@ public class ResponseMessageTypeHandler implements MessageTypeHandler<ResponseMe
 				future.executeCallBack();
 			}
 			catch (Throwable t) {
-				log.error("executeCallBack fail. id:{}", responseMessage.id(), t);
+				log.error("executeCallBack fail. getId:{}", responseMessage.getId(), t);
 			}
 		}
 		else {
-			log.warn("can not find InvokeFuture maybe timeout. id:{} message:{} from:{}", responseMessage.id(),
+			log.warn("can not find InvokeFuture maybe timeout. getId:{} message:{} from:{}", responseMessage.getId(),
 					responseMessage, connection.remoteAddress());
 		}
 	}

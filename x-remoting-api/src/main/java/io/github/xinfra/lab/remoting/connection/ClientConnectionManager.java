@@ -49,7 +49,7 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 		ConnectionEventHandler connectionEventHandler = new ConnectionEventHandler(this);
 
 		List<Supplier<ChannelHandler>> channelHandlerSuppliers = new ArrayList<>();
-		// encoder and decoder not @ChannelHandler.Sharable marked. it need create
+		// getEncoder and getDecoder not @ChannelHandler.Sharable marked. it need create
 		// instance everytime
 		channelHandlerSuppliers.add(ProtocolEncoder::new);
 		channelHandlerSuppliers.add(ProtocolDecoder::new);

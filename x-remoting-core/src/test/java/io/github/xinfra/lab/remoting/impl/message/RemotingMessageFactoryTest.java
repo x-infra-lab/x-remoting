@@ -1,7 +1,7 @@
 package io.github.xinfra.lab.remoting.impl.message;
 
 import io.github.xinfra.lab.remoting.common.IDGenerator;
-import io.github.xinfra.lab.remoting.impl.RemotingProtocolIdentifier;
+import io.github.xinfra.lab.remoting.impl.RemotingProtocolId;
 import io.github.xinfra.lab.remoting.message.MessageType;
 import io.github.xinfra.lab.remoting.message.ResponseStatus;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
@@ -19,13 +19,13 @@ public class RemotingMessageFactoryTest {
 		RemotingRequestMessage requestMessage = remotingMessageFactory.createRequest(IDGenerator.nextRequestId(),
 				SerializationType.Hession);
 		Assertions.assertNotNull(requestMessage);
-		Assertions.assertEquals(requestMessage.messageType(), MessageType.request);
-		Assertions.assertArrayEquals(requestMessage.protocolIdentifier().code(),
-				RemotingProtocolIdentifier.PROTOCOL_CODE);
-		Assertions.assertEquals(requestMessage.serializationType(), SerializationType.Hession);
+		Assertions.assertEquals(requestMessage.getMessageType(), MessageType.request);
+		Assertions.assertArrayEquals(requestMessage.getProtocolIdentifier().getCodes(),
+				RemotingProtocolId.PROTOCOL_CODE);
+		Assertions.assertEquals(requestMessage.getSerializationType(), SerializationType.Hession);
 		Assertions.assertNull(requestMessage.getPath());
-		Assertions.assertNull(requestMessage.headers());
-		Assertions.assertNull(requestMessage.body());
+		Assertions.assertNull(requestMessage.getHeaders());
+		Assertions.assertNull(requestMessage.getBody());
 	}
 
 	@Test
@@ -37,14 +37,14 @@ public class RemotingMessageFactoryTest {
 				new UnknownHostException("testCreateSendFailResponseMessage"));
 
 		Assertions.assertNotNull(responseMessage);
-		Assertions.assertEquals(responseMessage.messageType(), MessageType.response);
-		Assertions.assertEquals(responseMessage.responseStatus(), ResponseStatus.SendFailed);
-		Assertions.assertEquals(responseMessage.serializationType(), SerializationType.Hession);
-		Assertions.assertArrayEquals(responseMessage.protocolIdentifier().code(),
-				RemotingProtocolIdentifier.PROTOCOL_CODE);
+		Assertions.assertEquals(responseMessage.getMessageType(), MessageType.response);
+		Assertions.assertEquals(responseMessage.getResponseStatus(), ResponseStatus.SendFailed);
+		Assertions.assertEquals(responseMessage.getSerializationType(), SerializationType.Hession);
+		Assertions.assertArrayEquals(responseMessage.getProtocolIdentifier().getCodes(),
+				RemotingProtocolId.PROTOCOL_CODE);
 
-		Assertions.assertNull(responseMessage.headers());
-		Assertions.assertTrue(responseMessage.body().getBodyValue() instanceof UnknownHostException);
+		Assertions.assertNull(responseMessage.getHeaders());
+		Assertions.assertTrue(responseMessage.getBody().getBodyValue() instanceof UnknownHostException);
 	}
 
 	@Test
@@ -54,8 +54,8 @@ public class RemotingMessageFactoryTest {
 		RemotingResponseMessage responseMessage = remotingMessageFactory.createResponse(IDGenerator.nextRequestId(),
 				SerializationType.Hession, ResponseStatus.Timeout);
 		Assertions.assertNotNull(responseMessage);
-		Assertions.assertEquals(responseMessage.responseStatus(), ResponseStatus.Timeout);
-		Assertions.assertEquals(responseMessage.body(), null);
+		Assertions.assertEquals(responseMessage.getResponseStatus(), ResponseStatus.Timeout);
+		Assertions.assertEquals(responseMessage.getBody(), null);
 
 	}
 
@@ -66,8 +66,8 @@ public class RemotingMessageFactoryTest {
 		RemotingResponseMessage responseMessage = remotingMessageFactory.createResponse(IDGenerator.nextRequestId(),
 				SerializationType.Hession, ResponseStatus.ConnectionClosed);
 		Assertions.assertNotNull(responseMessage);
-		Assertions.assertEquals(responseMessage.responseStatus(), ResponseStatus.ConnectionClosed);
-		Assertions.assertEquals(responseMessage.body(), null);
+		Assertions.assertEquals(responseMessage.getResponseStatus(), ResponseStatus.ConnectionClosed);
+		Assertions.assertEquals(responseMessage.getBody(), null);
 	}
 
 	@Test
@@ -77,12 +77,12 @@ public class RemotingMessageFactoryTest {
 		RemotingRequestMessage requestMessage = remotingMessageFactory
 			.createHeartbeatRequest(IDGenerator.nextRequestId(), SerializationType.Hession);
 		Assertions.assertNotNull(requestMessage);
-		Assertions.assertEquals(requestMessage.messageType(), MessageType.heartbeatRequest);
-		Assertions.assertArrayEquals(requestMessage.protocolIdentifier().code(),
-				RemotingProtocolIdentifier.PROTOCOL_CODE);
+		Assertions.assertEquals(requestMessage.getMessageType(), MessageType.heartbeatRequest);
+		Assertions.assertArrayEquals(requestMessage.getProtocolIdentifier().getCodes(),
+				RemotingProtocolId.PROTOCOL_CODE);
 		Assertions.assertNull(requestMessage.getPath());
-		Assertions.assertNull(requestMessage.headers());
-		Assertions.assertNull(requestMessage.body());
+		Assertions.assertNull(requestMessage.getHeaders());
+		Assertions.assertNull(requestMessage.getBody());
 	}
 
 }

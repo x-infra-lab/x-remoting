@@ -9,7 +9,6 @@ import io.github.xinfra.lab.remoting.impl.client.RemotingFuture;
 import io.github.xinfra.lab.remoting.impl.handler.RequestApi;
 import io.github.xinfra.lab.remoting.impl.handler.RequestHandler;
 import io.github.xinfra.lab.remoting.impl.handler.RequestHandlerRegistry;
-import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.server.AbstractServer;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -72,11 +71,6 @@ public class RemotingServer extends AbstractServer {
 		ensureStarted();
 
 		serverRemotingCall.oneway(requestApi, request, socketAddress, callOptions);
-	}
-
-	@Override
-	public Protocol protocol() {
-		return protocol;
 	}
 
 	public <T, R> void registerRequestHandler(RequestApi requestApi, RequestHandler<T, R> userProcessor) {

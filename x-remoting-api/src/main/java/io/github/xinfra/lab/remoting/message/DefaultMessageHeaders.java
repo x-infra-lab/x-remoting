@@ -117,8 +117,8 @@ public class DefaultMessageHeaders implements MessageHeaders {
 					short valueLength = byteBuf.readShort();
 					int dataLength = keyLength + valueTypeLength + valueLength;
 					if (byteBuf.readableBytes() < dataLength) {
-						log.error("Invalid header data:{}", headerData);
-						throw new DeserializeException("Invalid header data");
+						log.error("Invalid header getData:{}", headerData);
+						throw new DeserializeException("Invalid header getData");
 					}
 
 					String key = byteBuf.readCharSequence(keyLength, StandardCharsets.UTF_8).toString();
@@ -155,7 +155,7 @@ public class DefaultMessageHeaders implements MessageHeaders {
 	}
 
 	@Override
-	public byte[] data() {
+	public byte[] getData() {
 		return headerData;
 	}
 

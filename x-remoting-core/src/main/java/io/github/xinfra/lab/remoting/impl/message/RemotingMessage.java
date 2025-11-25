@@ -4,8 +4,8 @@ import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
 import io.github.xinfra.lab.remoting.message.DefaultMessageHeaders;
 import io.github.xinfra.lab.remoting.message.Message;
-import io.github.xinfra.lab.remoting.protocol.ProtocolIdentifier;
-import io.github.xinfra.lab.remoting.impl.RemotingProtocolIdentifier;
+import io.github.xinfra.lab.remoting.protocol.ProtocolId;
+import io.github.xinfra.lab.remoting.impl.RemotingProtocolId;
 import io.github.xinfra.lab.remoting.serialization.SerializationManager;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
 import io.github.xinfra.lab.remoting.serialization.Serializer;
@@ -29,26 +29,27 @@ public abstract class RemotingMessage implements Message {
 	}
 
 	@Override
-	public ProtocolIdentifier protocolIdentifier() {
-		return RemotingProtocolIdentifier.INSTANCE;
+	public ProtocolId getProtocolIdentifier() {
+		return RemotingProtocolId.INSTANCE;
 	}
 
 	@Override
-	public int id() {
+	public int getId() {
 		return id;
 	}
 
-	public SerializationType serializationType() {
+	@Override
+	public SerializationType getSerializationType() {
 		return serializationType;
 	}
 
 	@Override
-	public DefaultMessageHeaders headers() {
+	public DefaultMessageHeaders getHeaders() {
 		return headers;
 	}
 
 	@Override
-	public RemotingMessageBody body() {
+	public RemotingMessageBody getBody() {
 		return body;
 	}
 

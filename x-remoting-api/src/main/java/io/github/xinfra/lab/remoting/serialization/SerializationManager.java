@@ -17,14 +17,15 @@ public class SerializationManager {
 	}
 
 	public static void registerSerializer(Serializer serializer) {
-		SerializationType serializationType = serializer.serializationType();
+		SerializationType serializationType = serializer.getSerializationType();
 		Serializer oldSerializer = serializerMap.put(serializationType, serializer);
 		if (oldSerializer != serializer) {
-			log.warn("replace serializationType:{} old:{} to new:{}", serializationType, oldSerializer, serializer);
+			log.warn("replace getSerializationType:{} old:{} to new:{}", serializationType, oldSerializer, serializer);
 		}
-		SerializationType oldSerializationType = serializationTypeMap.put(serializationType.data(), serializationType);
+		SerializationType oldSerializationType = serializationTypeMap.put(serializationType.getCode(),
+				serializationType);
 		if (oldSerializationType != serializationType) {
-			log.warn("replace serializationType data:{} old:{} to new:{}", serializationType.data(),
+			log.warn("replace getSerializationType getData:{} old:{} to new:{}", serializationType.getCode(),
 					oldSerializationType, serializationType);
 		}
 	}

@@ -25,7 +25,7 @@ public class RemotingMessageDecoderTest {
 
 	@Test
 	public void testDecodeRequest1() throws Exception {
-		// build a requestMessage data
+		// build a requestMessage getData
 		String content = "this is rpc content";
 		DefaultMessageHeaders header = new DefaultMessageHeaders();
 		MessageHeaders.StringKey headerKey = MessageHeaders.Key.stringKey("test-key");
@@ -51,14 +51,14 @@ public class RemotingMessageDecoderTest {
 		RemotingRequestMessage decodedRequestMessage = (RemotingRequestMessage) out.get(0);
 		decodedRequestMessage.deserialize();
 
-		Assertions.assertEquals(decodedRequestMessage.messageType(), requestMessage.messageType());
+		Assertions.assertEquals(decodedRequestMessage.getMessageType(), requestMessage.getMessageType());
 
-		Assertions.assertEquals(decodedRequestMessage.id(), requestMessage.id());
-		Assertions.assertEquals(decodedRequestMessage.serializationType(), requestMessage.serializationType());
+		Assertions.assertEquals(decodedRequestMessage.getId(), requestMessage.getId());
+		Assertions.assertEquals(decodedRequestMessage.getSerializationType(), requestMessage.getSerializationType());
 		Assertions.assertEquals(decodedRequestMessage.getPath(), requestMessage.getPath());
 
-		Assertions.assertEquals(decodedRequestMessage.headers().get(headerKey), headerValue);
-		Assertions.assertEquals(decodedRequestMessage.body().getBodyValue(), content);
+		Assertions.assertEquals(decodedRequestMessage.getHeaders().get(headerKey), headerValue);
+		Assertions.assertEquals(decodedRequestMessage.getBody().getBodyValue(), content);
 
 		byteBuf.release();
 
@@ -66,7 +66,7 @@ public class RemotingMessageDecoderTest {
 
 	@Test
 	public void testDecodeResponse1() throws Exception {
-		// build a responseMessage data
+		// build a responseMessage getData
 		String content = "this is rpc content";
 		DefaultMessageHeaders header = new DefaultMessageHeaders();
 		MessageHeaders.StringKey headerKey = MessageHeaders.Key.stringKey("test-key");
@@ -91,18 +91,19 @@ public class RemotingMessageDecoderTest {
 		RemotingResponseMessage decodedResponseMessage = (RemotingResponseMessage) out.get(0);
 		decodedResponseMessage.deserialize();
 
-		Assertions.assertEquals(decodedResponseMessage.messageType(), responseMessage.messageType());
-		Assertions.assertEquals(decodedResponseMessage.id(), responseMessage.id());
-		Assertions.assertEquals(decodedResponseMessage.serializationType(), decodedResponseMessage.serializationType());
-		Assertions.assertEquals(decodedResponseMessage.responseStatus(), responseMessage.responseStatus());
-		Assertions.assertEquals(decodedResponseMessage.headers().get(headerKey), headerValue);
-		Assertions.assertEquals(decodedResponseMessage.body().getBodyValue(), content);
+		Assertions.assertEquals(decodedResponseMessage.getMessageType(), responseMessage.getMessageType());
+		Assertions.assertEquals(decodedResponseMessage.getId(), responseMessage.getId());
+		Assertions.assertEquals(decodedResponseMessage.getSerializationType(),
+				decodedResponseMessage.getSerializationType());
+		Assertions.assertEquals(decodedResponseMessage.getResponseStatus(), responseMessage.getResponseStatus());
+		Assertions.assertEquals(decodedResponseMessage.getHeaders().get(headerKey), headerValue);
+		Assertions.assertEquals(decodedResponseMessage.getBody().getBodyValue(), content);
 		byteBuf.release();
 	}
 
 	@Test
 	public void testDecodeRequestFailed1() throws Exception {
-		// build a requestMessage data
+		// build a requestMessage getData
 		String content = "this is rpc content";
 		DefaultMessageHeaders header = new DefaultMessageHeaders();
 		header.put(MessageHeaders.Key.stringKey("test-key"), "test-value");
@@ -118,7 +119,7 @@ public class RemotingMessageDecoderTest {
 		ByteBuf byteBuf = Unpooled.buffer();
 		encoder.encode(mock(ChannelHandlerContext.class), requestMessage, byteBuf);
 
-		// half of data
+		// half of getData
 		int mid = byteBuf.readableBytes() / 2;
 		int readerIndex = byteBuf.readerIndex();
 		byteBuf.setIndex(readerIndex, readerIndex + mid);
@@ -137,7 +138,7 @@ public class RemotingMessageDecoderTest {
 
 	@Test
 	public void testDecodeResponseFailed1() throws Exception {
-		// build a responseMessage data
+		// build a responseMessage getData
 		String content = "this is rpc content";
 		DefaultMessageHeaders header = new DefaultMessageHeaders();
 		header.put(MessageHeaders.Key.stringKey("test-key"), "test-value");
@@ -152,7 +153,7 @@ public class RemotingMessageDecoderTest {
 		ByteBuf byteBuf = Unpooled.buffer();
 		encoder.encode(mock(ChannelHandlerContext.class), responseMessage, byteBuf);
 
-		// half of data
+		// half of getData
 		int mid = byteBuf.readableBytes() / 2;
 		int readerIndex = byteBuf.readerIndex();
 		byteBuf.setIndex(readerIndex, readerIndex + mid);
@@ -171,7 +172,7 @@ public class RemotingMessageDecoderTest {
 
 	@Test
 	public void testDecodeResponseFailed2() throws Exception {
-		// build a responseMessage data
+		// build a responseMessage getData
 		String content = "this is rpc content";
 		DefaultMessageHeaders header = new DefaultMessageHeaders();
 		header.put(MessageHeaders.Key.stringKey("test-key"), "test-value");
@@ -186,7 +187,7 @@ public class RemotingMessageDecoderTest {
 		ByteBuf byteBuf = Unpooled.buffer();
 		encoder.encode(mock(ChannelHandlerContext.class), responseMessage, byteBuf);
 
-		// less than response data header length
+		// less than response getData header length
 		int readerIndex = byteBuf.readerIndex();
 		byteBuf.setIndex(readerIndex, RESPONSE_HEADER_BYTES - 1);
 
