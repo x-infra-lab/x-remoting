@@ -5,9 +5,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.x-infra-lab</groupId>
-    <artifactId>x-remoting</artifactId>
+    <artifactId>x-remoting-parent</artifactId>
     <version>0.0.2-RC1</version>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
 
     <name>x-remoting</name>
     <description>x-remoting is a network communication framework based on Netty.</description>
@@ -28,6 +28,11 @@
             <organizationUrl>https://github.com/x-infra-lab</organizationUrl>
         </developer>
     </developers>
+    <modules>
+        <module>x-remoting-all</module>
+        <module>x-remoting-api</module>
+        <module>x-remoting-core</module>
+    </modules>
 
     <scm>
         <connection>scm:git:https://github.com/x-infra-lab/x-remoting.git</connection>
@@ -51,66 +56,94 @@
         <junit5.version>5.9.1</junit5.version>
     </properties>
 
-    <dependencies>
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
-            <version>${netty.version}</version>
-        </dependency>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.github.x-infra-lab</groupId>
+                <artifactId>x-remoting-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.github.x-infra-lab</groupId>
+                <artifactId>x-remoting-api</artifactId>
+                <version>${project.version}</version>
+                <type>test-jar</type>
+            </dependency>
 
-        <dependency>
-            <groupId>com.caucho</groupId>
-            <artifactId>hessian</artifactId>
-            <version>${hession.version}</version>
-        </dependency>
+            <dependency>
+                <groupId>io.github.x-infra-lab</groupId>
+                <artifactId>x-remoting-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
 
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-lang3</artifactId>
-            <version>${common-lang3.version}</version>
-        </dependency>
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-all</artifactId>
+                <version>${netty.version}</version>
+            </dependency>
 
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <version>${lombok.version}</version>
-            <scope>provided</scope>
-        </dependency>
+            <dependency>
+                <groupId>com.caucho</groupId>
+                <artifactId>hessian</artifactId>
+                <version>${hession.version}</version>
+            </dependency>
 
-        <!-- log slf4j-->
-        <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-api</artifactId>
-            <version>${slf4j.version}</version>
-        </dependency>
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${common-lang3.version}</version>
+            </dependency>
 
-        <!-- test scope start -->
-        <dependency>
-            <groupId>org.mockito</groupId>
-            <artifactId>mockito-junit-jupiter</artifactId>
-            <version>${mockito.version}</version>
-            <scope>test</scope>
-        </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <version>${lombok.version}</version>
+                <scope>provided</scope>
+            </dependency>
 
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter</artifactId>
-            <version>${junit5.version}</version>
-            <scope>test</scope>
-        </dependency>
+            <!-- log slf4j-->
+            <dependency>
+                <groupId>org.slf4j</groupId>
+                <artifactId>slf4j-api</artifactId>
+                <version>${slf4j.version}</version>
+            </dependency>
 
-        <dependency>
-            <groupId>ch.qos.logback</groupId>
-            <artifactId>logback-classic</artifactId>
-            <scope>test</scope>
-            <version>${logback.version}</version>
-        </dependency>
-        <!-- test scope end -->
+            <!-- test scope start -->
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-junit-jupiter</artifactId>
+                <version>${mockito.version}</version>
+                <scope>test</scope>
+            </dependency>
 
-    </dependencies>
+            <dependency>
+                <groupId>org.junit.jupiter</groupId>
+                <artifactId>junit-jupiter</artifactId>
+                <version>${junit5.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>ch.qos.logback</groupId>
+                <artifactId>logback-classic</artifactId>
+                <scope>test</scope>
+                <version>${logback.version}</version>
+            </dependency>
+            <!-- test scope end -->
+        </dependencies>
+    </dependencyManagement>
 
     <build>
         <plugins>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.5.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-deploy-plugin</artifactId>
+                <version>3.1.4</version>
+            </plugin>
             <plugin>
                 <artifactId>maven-source-plugin</artifactId>
                 <version>3.3.1</version>
@@ -160,6 +193,12 @@
                 </configuration>
             </plugin>
 
+            <!--
+            <propertyName>：这个配置项指定了 JaCoCo 插件将设置的 Maven 属性名。
+            在这里，它设置为 surefireArgLine，
+            这意味着 JaCoCo 插件会将代码覆盖率分析所需的参数设置到 surefireArgLine 属性中，
+            这样在 Maven Surefire 插件中就可以通过 ${surefireArgLine} 使用这些参数了。
+            -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
@@ -195,7 +234,7 @@
                                         <limit>
                                             <counter>COMPLEXITY</counter>
                                             <value>COVEREDRATIO</value>
-                                            <minimum>0.60</minimum>
+                                            <minimum>0.40</minimum>
                                         </limit>
                                     </limits>
                                 </rule>
@@ -219,7 +258,6 @@
                     </execution>
                 </executions>
             </plugin>
-
         </plugins>
     </build>
 

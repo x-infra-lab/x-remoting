@@ -1,0 +1,14 @@
+package io.github.xinfra.lab.remoting.server;
+
+import io.github.xinfra.lab.remoting.common.LifeCycle;
+import io.github.xinfra.lab.remoting.protocol.Protocol;
+
+import java.net.SocketAddress;
+
+public interface Server extends LifeCycle {
+
+	SocketAddress localAddress();
+
+	Protocol protocol();
+
+}

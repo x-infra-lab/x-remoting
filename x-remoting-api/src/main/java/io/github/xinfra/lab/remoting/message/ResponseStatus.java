@@ -1,0 +1,65 @@
+package io.github.xinfra.lab.remoting.message;
+
+/**
+ *
+ */
+public interface ResponseStatus {
+
+	short status();
+
+	ResponseStatus OK = () -> (short) 0;
+
+	ResponseStatus Error = () -> (short) 1;
+
+	ResponseStatus SendFailed = () -> (short) 2;
+
+	ResponseStatus Timeout = () -> (short) 3;
+
+	ResponseStatus ConnectionClosed = () -> (short) 4;
+
+	ResponseStatus Cancelled = () -> (short) 5;
+
+	ResponseStatus NotFound = () -> (short) 6;
+
+	ResponseStatus InternalError = () -> (short) 7;
+
+	ResponseStatus SerializeException = () -> (short) 8;
+
+	ResponseStatus DeserializeException = () -> (short) 9;
+
+	ResponseStatus ResourceExhausted = () -> (short) 10;
+
+	ResponseStatus ServiceUnavailable = () -> (short) 11;
+
+	static ResponseStatus valueOf(short status) {
+		switch (status) {
+			case 0:
+				return OK;
+			case 1:
+				return Error;
+			case 2:
+				return SendFailed;
+			case 3:
+				return Timeout;
+			case 4:
+				return ConnectionClosed;
+			case 5:
+				return Cancelled;
+			case 6:
+				return NotFound;
+			case 7:
+				return InternalError;
+			case 8:
+				return SerializeException;
+			case 9:
+				return DeserializeException;
+			case 10:
+				return ResourceExhausted;
+			case 11:
+				return ServiceUnavailable;
+			default:
+				throw new IllegalArgumentException("Unknown status: " + status);
+		}
+	}
+
+}
