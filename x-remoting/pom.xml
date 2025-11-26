@@ -1,0 +1,49 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>io.github.x-infra-lab</groupId>
+        <artifactId>x-remoting-parent</artifactId>
+        <version>0.0.3-RC1</version>
+    </parent>
+    <artifactId>x-remoting</artifactId>
+    <packaging>jar</packaging>
+
+    <name>x-remoting</name>
+    <description>x-remoting is a network communication framework based on Netty.</description>
+    <url>https://github.com/x-infra-lab/x-remoting</url>
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <name>JoeCqupt</name>
+            <email>joe469391363@gmail.com</email>
+            <organization>x-infra-lab</organization>
+            <organizationUrl>https://github.com/x-infra-lab</organizationUrl>
+        </developer>
+    </developers>
+    <scm>
+        <connection>scm:git:https://github.com/x-infra-lab/x-remoting.git</connection>
+        <developerConnection>scm:git:https://github.com/x-infra-lab/x-remoting.git</developerConnection>
+        <url>https://github.com/x-infra-lab/x-remoting/tree/main</url>
+    </scm>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.github.x-infra-lab</groupId>
+            <artifactId>x-remoting-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.github.x-infra-lab</groupId>
+            <artifactId>x-remoting-api</artifactId>
+        </dependency>
+    </dependencies>
+</project>

@@ -3,6 +3,9 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 
+# exclude file created by the flatten plugin
+.flattened-pom.xml
+
 ### IntelliJ IDEA ###
 .idea/
 *.iws
