@@ -8,6 +8,7 @@ import io.github.xinfra.lab.remoting.message.MessageHeaders;
 import io.github.xinfra.lab.remoting.message.MessageType;
 import io.github.xinfra.lab.remoting.message.ResponseStatus;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -37,8 +38,14 @@ public class RemotingMessageTest {
 		RemotingRequestMessage requestMessage2 = new RemotingRequestMessage(requestId, MessageType.request,
 				SerializationType.Hession);
 		requestMessage2.setPathData(requestMessage.getPathData());
-		requestMessage2.setHeaders(new DefaultMessageHeaders(requestMessage.getHeaders().getData()));
-		requestMessage2.setBody(new RemotingMessageBody(requestMessage.getBody().getData()));
+
+		byte[] headerBytes = new byte[0];
+		requestMessage.getHeaders().getData().forEach(data -> ArrayUtils.addAll(headerBytes, data));
+		requestMessage2.setHeaders(new DefaultMessageHeaders(headerBytes));
+
+		byte[] bodyBytes = new byte[0];
+		requestMessage.getBody().getData().forEach(data -> ArrayUtils.addAll(bodyBytes, data));
+		requestMessage2.setBody(new RemotingMessageBody(bodyBytes));
 		requestMessage2.deserialize();
 
 		Assertions.assertEquals(requestMessage2.getPath(), requestMessage.getPath());
@@ -67,8 +74,14 @@ public class RemotingMessageTest {
 
 		RemotingResponseMessage responseMessage2 = new RemotingResponseMessage(requestId, SerializationType.Hession,
 				ResponseStatus.OK);
-		responseMessage2.setHeaders(new DefaultMessageHeaders(responseMessage.getHeaders().getData()));
-		responseMessage2.setBody(new RemotingMessageBody(responseMessage.getBody().getData()));
+
+		byte[] headerBytes = new byte[0];
+		responseMessage.getHeaders().getData().forEach(data -> ArrayUtils.addAll(headerBytes, data));
+		responseMessage2.setHeaders(new DefaultMessageHeaders(headerBytes));
+
+		byte[] bodyBytes = new byte[0];
+		responseMessage.getBody().getData().forEach(data -> ArrayUtils.addAll(bodyBytes, data));
+		responseMessage2.setBody(new RemotingMessageBody(bodyBytes));
 		responseMessage2.deserialize();
 
 		Assertions.assertEquals(responseMessage2.getHeaders().get(headerKey), headerValue);

@@ -15,6 +15,7 @@ import io.github.xinfra.lab.remoting.serialization.SerializationType;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -57,8 +58,8 @@ public class RemotingMessageEncoderTest {
 		Assertions.assertEquals(byteBuf.readByte(), requestMessage.getSerializationType().getCode());
 
 		int pathDataLength = requestMessage.getPathData().length;
-		int headerDataLength = requestMessage.getHeaders().getData().length;
-		int bodyDataLength = requestMessage.getBody().getData().length;
+		int headerDataLength = requestMessage.getHeaders().getDataTotalLength();
+		int bodyDataLength = requestMessage.getBody().getDataTotalLength();
 
 		Assertions.assertEquals(byteBuf.readShort(), pathDataLength);
 		Assertions.assertEquals(byteBuf.readShort(), headerDataLength);
@@ -70,11 +71,15 @@ public class RemotingMessageEncoderTest {
 
 		byte[] headerData = new byte[headerDataLength];
 		byteBuf.readBytes(headerData);
-		Assertions.assertArrayEquals(requestMessage.getHeaders().getData(), headerData);
+		byte[] headerBytes = new byte[0];
+		requestMessage.getHeaders().getData().forEach(data -> ArrayUtils.addAll(headerBytes, data));
+		Assertions.assertArrayEquals(headerBytes, headerData);
 
 		byte[] bodyData = new byte[bodyDataLength];
 		byteBuf.readBytes(bodyData);
-		Assertions.assertArrayEquals(requestMessage.getBody().getData(), bodyData);
+		byte[] bodyBytes = new byte[0];
+		requestMessage.getBody().getData().forEach(data -> ArrayUtils.addAll(bodyBytes, data));
+		Assertions.assertArrayEquals(bodyBytes, bodyData);
 
 		Assertions.assertEquals(byteBuf.readableBytes(), 0);
 
@@ -117,19 +122,25 @@ public class RemotingMessageEncoderTest {
 		// assert response status
 		Assertions.assertEquals(byteBuf.readShort(), responseMessage.getResponseStatus().status());
 
-		int headerDataLength = responseMessage.getHeaders().getData().length;
-		int bodyDataLength = responseMessage.getBody().getData().length;
+		int headerDataLength = responseMessage.getHeaders().getDataTotalLength();
+		int bodyDataLength = responseMessage.getBody().getDataTotalLength();
 
 		Assertions.assertEquals(byteBuf.readShort(), headerDataLength);
 		Assertions.assertEquals(byteBuf.readInt(), bodyDataLength);
 
 		byte[] headerData = new byte[headerDataLength];
 		byteBuf.readBytes(headerData);
-		Assertions.assertArrayEquals(responseMessage.getHeaders().getData(), headerData);
+
+		byte[] headerBytes = new byte[0];
+		responseMessage.getHeaders().getData().forEach(data -> ArrayUtils.addAll(headerBytes, data));
+		Assertions.assertArrayEquals(headerBytes, headerData);
 
 		byte[] bodyData = new byte[bodyDataLength];
 		byteBuf.readBytes(bodyData);
-		Assertions.assertArrayEquals(responseMessage.getBody().getData(), bodyData);
+
+		byte[] bodyBytes = new byte[0];
+		responseMessage.getBody().getData().forEach(data -> ArrayUtils.addAll(bodyBytes, data));
+		Assertions.assertArrayEquals(bodyBytes, bodyData);
 
 		Assertions.assertEquals(byteBuf.readableBytes(), 0);
 

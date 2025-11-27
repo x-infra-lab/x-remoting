@@ -41,8 +41,8 @@ public class RemotingMessageEncoder implements MessageEncoder {
 
 				// write header and body length
 				int headerLength = remotingMessage.getHeaders() == null ? 0
-						: remotingMessage.getHeaders().getData().length;
-				int bodyLength = remotingMessage.getBody() == null ? 0 : remotingMessage.getBody().getData().length;
+						: remotingMessage.getHeaders().getDataTotalLength();
+				int bodyLength = remotingMessage.getBody() == null ? 0 : remotingMessage.getBody().getDataTotalLength();
 
 				out.writeShort(headerLength);
 				out.writeInt(bodyLength);
@@ -54,10 +54,10 @@ public class RemotingMessageEncoder implements MessageEncoder {
 
 				// write header and body
 				if (headerLength > 0) {
-					out.writeBytes(remotingMessage.getHeaders().getData());
+					remotingMessage.getHeaders().getData().forEach(data -> out.writeBytes(data));
 				}
 				if (bodyLength > 0) {
-					out.writeBytes(remotingMessage.getBody().getData());
+					remotingMessage.getBody().getData().forEach(data -> out.writeBytes(data));
 				}
 			}
 		}

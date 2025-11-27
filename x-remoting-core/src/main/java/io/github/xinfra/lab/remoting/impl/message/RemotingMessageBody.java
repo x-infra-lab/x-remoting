@@ -5,14 +5,13 @@ import io.github.xinfra.lab.remoting.exception.SerializeException;
 import io.github.xinfra.lab.remoting.message.MessageBody;
 import io.github.xinfra.lab.remoting.serialization.Serializer;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
-import io.netty.buffer.CompositeByteBuf;
 import io.netty.buffer.Unpooled;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * |version:byte|type-length:short|type:bytes|value:bytes|
@@ -20,6 +19,10 @@ import java.nio.charset.StandardCharsets;
 public class RemotingMessageBody implements MessageBody {
 
 	private byte[] bodyData;
+
+	private int bodyDataTotalLength;
+
+	private List<byte[]> bodyDataList;
 
 	/**
 	 * for upgrades
@@ -54,31 +57,27 @@ public class RemotingMessageBody implements MessageBody {
 		if (!serialized) {
 			serialized = true;
 			if (bodyValue == null) {
-				bodyData = new byte[0];
 				return;
 			}
 
-			ByteBuf buf = null;
-			try {
-				buf = ByteBufAllocator.DEFAULT.heapBuffer();
+			bodyDataList = new ArrayList<>(1);
 
-				buf.writeByte(version);
+			String typeName = bodyValue.getClass().getName();
+			byte[] typeData = typeName.getBytes(StandardCharsets.UTF_8);
+			byte[] valueData = serializer.serialize(bodyValue);
 
-				String typeName = bodyValue.getClass().getName();
-				byte[] typeData = typeName.getBytes(StandardCharsets.UTF_8);
-				byte[] valueData = serializer.serialize(bodyValue);
-				buf.writeShort(typeData.length);
-				buf.writeBytes(typeData);
-				buf.writeBytes(valueData);
+			int dataLength = VERSION_SIZE + TYPE_LENGTH_SIZE + typeData.length + valueData.length;
+			byte[] data = new byte[dataLength];
+			ByteBuf buf = Unpooled.wrappedBuffer(data);
+			buf.writerIndex(0);
 
-				bodyData = new byte[buf.readableBytes()];
-				buf.readBytes(bodyData);
-			}
-			finally {
-				if (buf != null) {
-					buf.release();
-				}
-			}
+			buf.writeByte(version);
+			buf.writeShort(typeData.length);
+			buf.writeBytes(typeData);
+			buf.writeBytes(valueData);
+
+			bodyDataList.add(data);
+			bodyDataTotalLength += dataLength;
 		}
 	}
 
@@ -106,8 +105,13 @@ public class RemotingMessageBody implements MessageBody {
 	}
 
 	@Override
-	public byte[] getData() {
-		return bodyData;
+	public List<byte[]> getData() {
+		return bodyDataList;
+	}
+
+	@Override
+	public int getDataTotalLength() {
+		return bodyDataTotalLength;
 	}
 
 }

@@ -4,12 +4,13 @@ import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
 import io.github.xinfra.lab.remoting.serialization.Serializer;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufAllocator;
 import io.netty.buffer.Unpooled;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
@@ -28,6 +29,10 @@ public class DefaultMessageHeaders implements MessageHeaders {
 	boolean serialized;
 
 	boolean deserialized;
+
+	private int headerDataTotalLength;
+
+	private List<byte[]> headerDataList;
 
 	private static final int KEY_LENGTH_SIZE = Short.BYTES;
 
@@ -68,34 +73,31 @@ public class DefaultMessageHeaders implements MessageHeaders {
 		if (!serialized) {
 			serialized = true;
 			if (headers.isEmpty()) {
-				headerData = new byte[0];
 				return;
 			}
-			ByteBuf buf = null;
-			try {
-				buf = ByteBufAllocator.DEFAULT.heapBuffer();
-				for (Map.Entry<Pair<String, String>, Supplier<?>> entry : headers.entrySet()) {
-					Pair<String, String> pair = entry.getKey();
-					Object value = entry.getValue().get();
+			headerDataList = new ArrayList<>(headers.size());
 
-					byte[] keyData = pair.getLeft().getBytes(StandardCharsets.UTF_8);
-					byte[] valueTypeData = pair.getRight().getBytes(StandardCharsets.UTF_8);
-					byte[] valueData = serializer.serialize(value);
-					buf.writeShort(keyData.length);
-					buf.writeShort(valueTypeData.length);
-					buf.writeShort(valueData.length);
-					buf.writeBytes(keyData);
-					buf.writeBytes(valueTypeData);
-					buf.writeBytes(valueData);
-				}
+			for (Map.Entry<Pair<String, String>, Supplier<?>> entry : headers.entrySet()) {
+				Pair<String, String> pair = entry.getKey();
+				Object value = entry.getValue().get();
 
-				headerData = new byte[buf.readableBytes()];
-				buf.readBytes(headerData);
-			}
-			finally {
-				if (buf != null) {
-					buf.release();
-				}
+				byte[] keyData = pair.getLeft().getBytes(StandardCharsets.UTF_8);
+				byte[] valueTypeData = pair.getRight().getBytes(StandardCharsets.UTF_8);
+				byte[] valueData = serializer.serialize(value);
+
+				int headerDataLength = HEADER_SIZE + keyData.length + valueTypeData.length + valueData.length;
+				byte[] data = new byte[headerDataLength];
+				ByteBuf buf = Unpooled.wrappedBuffer(data);
+				buf.writerIndex(0);
+
+				buf.writeShort(keyData.length);
+				buf.writeShort(valueTypeData.length);
+				buf.writeShort(valueData.length);
+				buf.writeBytes(keyData);
+				buf.writeBytes(valueTypeData);
+				buf.writeBytes(valueData);
+				headerDataList.add(data);
+				headerDataTotalLength += headerDataLength;
 			}
 		}
 	}
@@ -110,6 +112,11 @@ public class DefaultMessageHeaders implements MessageHeaders {
 			ByteBuf byteBuf = null;
 			try {
 				byteBuf = Unpooled.wrappedBuffer(headerData);
+
+				if (headerData.length < HEADER_SIZE) {
+					log.error("Invalid header getData:{}", headerData);
+					throw new DeserializeException("Invalid header getData");
+				}
 
 				while (byteBuf.readableBytes() >= HEADER_SIZE) {
 					short keyLength = byteBuf.readShort();
@@ -155,8 +162,13 @@ public class DefaultMessageHeaders implements MessageHeaders {
 	}
 
 	@Override
-	public byte[] getData() {
-		return headerData;
+	public List<byte[]> getData() {
+		return headerDataList;
+	}
+
+	@Override
+	public int getDataTotalLength() {
+		return headerDataTotalLength;
 	}
 
 }
