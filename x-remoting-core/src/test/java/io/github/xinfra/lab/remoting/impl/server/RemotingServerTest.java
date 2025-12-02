@@ -3,7 +3,6 @@ package io.github.xinfra.lab.remoting.impl.server;
 import io.github.xinfra.lab.remoting.client.CallOptions;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
-import io.github.xinfra.lab.remoting.impl.handler.RequestApi;
 import io.github.xinfra.lab.remoting.impl.client.RemotingClient;
 import io.github.xinfra.lab.remoting.impl.client.RemotingCallBack;
 import io.github.xinfra.lab.remoting.impl.client.RemotingFuture;
@@ -51,7 +50,7 @@ public class RemotingServerTest {
 
 	@Test
 	public void testSyncCall() throws RemotingException, InterruptedException {
-		SocketAddress serverAddress = remotingServer.localAddress();
+		SocketAddress serverAddress = remotingServer.getLocalAddress();
 		String msg = "hello x-remoting";
 		EchoRequest request = new EchoRequest(msg);
 		String result = remotingClient.syncCall(echoApi, request, serverAddress, callOptions);
@@ -64,7 +63,7 @@ public class RemotingServerTest {
 
 	@Test
 	public void testFutureCall() throws RemotingException, InterruptedException, TimeoutException {
-		SocketAddress serverAddress = remotingServer.localAddress();
+		SocketAddress serverAddress = remotingServer.getLocalAddress();
 		String msg = "hello x-remoting";
 		EchoRequest request = new EchoRequest(msg);
 		RemotingFuture<String> future = remotingClient.asyncCall(echoApi, request, serverAddress, callOptions);
@@ -80,7 +79,7 @@ public class RemotingServerTest {
 
 	@Test
 	public void testAsyncCall() throws RemotingException, InterruptedException, TimeoutException {
-		SocketAddress serverAddress = remotingServer.localAddress();
+		SocketAddress serverAddress = remotingServer.getLocalAddress();
 		String msg = "hello x-remoting";
 		EchoRequest request = new EchoRequest(msg);
 
@@ -125,7 +124,7 @@ public class RemotingServerTest {
 
 	@Test
 	public void testOnewayCall() throws RemotingException, InterruptedException {
-		SocketAddress serverAddress = remotingServer.localAddress();
+		SocketAddress serverAddress = remotingServer.getLocalAddress();
 
 		String msg = "hello x-remoting";
 		EchoRequest request = new EchoRequest(msg);

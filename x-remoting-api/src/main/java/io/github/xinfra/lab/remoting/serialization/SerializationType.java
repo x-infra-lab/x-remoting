@@ -2,7 +2,7 @@ package io.github.xinfra.lab.remoting.serialization;
 
 public interface SerializationType {
 
-	byte data();
+	byte getCode();
 
 	SerializationType Hession = () -> (byte) -1;
 

@@ -4,7 +4,7 @@
     <parent>
         <groupId>io.github.x-infra-lab</groupId>
         <artifactId>x-remoting-parent</artifactId>
-        <version>0.0.2-RC1</version>
+        <version>0.0.3-RC1</version>
     </parent>
 
     <artifactId>x-remoting-core</artifactId>
@@ -47,15 +47,4 @@
         </dependency>
         <!-- test scope end -->
     </dependencies>
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-deploy-plugin</artifactId>
-                <configuration>
-                    <skip>true</skip>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>
 </project>

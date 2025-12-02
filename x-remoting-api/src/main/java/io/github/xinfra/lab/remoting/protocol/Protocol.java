@@ -6,12 +6,12 @@ import io.github.xinfra.lab.remoting.message.MessageHandler;
 
 public interface Protocol {
 
-	ProtocolIdentifier protocolCode();
+	ProtocolId getProtocolId();
 
-	MessageCodec messageCodec();
+	MessageCodec getMessageCodec();
 
-	MessageHandler messageHandler();
+	MessageHandler getMessageHandler();
 
-	MessageFactory messageFactory();
+	MessageFactory getMessageFactory();
 
 }

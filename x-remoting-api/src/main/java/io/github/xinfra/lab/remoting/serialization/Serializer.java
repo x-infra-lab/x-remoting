@@ -5,7 +5,7 @@ import io.github.xinfra.lab.remoting.exception.SerializeException;
 
 public interface Serializer {
 
-	SerializationType serializationType();
+	SerializationType getSerializationType();
 
 	byte[] serialize(Object obj) throws SerializeException;
 

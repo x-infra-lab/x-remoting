@@ -11,7 +11,7 @@ import java.nio.charset.StandardCharsets;
 
 public class TestProtocol implements Protocol {
 
-	private byte[] protocolCode = "test-protocol".getBytes(StandardCharsets.UTF_8);
+	private byte[] protocolCode = "test-getProtocol".getBytes(StandardCharsets.UTF_8);
 
 	@Setter
 	private MessageEncoder messageEncoder;
@@ -26,37 +26,37 @@ public class TestProtocol implements Protocol {
 	private MessageFactory messageFactory;
 
 	@Override
-	public ProtocolIdentifier protocolCode() {
-		return new ProtocolIdentifier() {
+	public ProtocolId getProtocolId() {
+		return new ProtocolId() {
 			@Override
-			public byte[] code() {
+			public byte[] getCodes() {
 				return protocolCode;
 			}
 		};
 	}
 
 	@Override
-	public MessageCodec messageCodec() {
+	public MessageCodec getMessageCodec() {
 		return new MessageCodec() {
 			@Override
-			public MessageEncoder encoder() {
+			public MessageEncoder getEncoder() {
 				return messageEncoder;
 			}
 
 			@Override
-			public MessageDecoder decoder() {
+			public MessageDecoder getDecoder() {
 				return messageDecoder;
 			}
 		};
 	}
 
 	@Override
-	public MessageHandler messageHandler() {
+	public MessageHandler getMessageHandler() {
 		return messageHandler;
 	}
 
 	@Override
-	public MessageFactory messageFactory() {
+	public MessageFactory getMessageFactory() {
 		return messageFactory;
 	}
 

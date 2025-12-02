@@ -21,22 +21,22 @@ public class RemotingProtocol implements Protocol {
 	}
 
 	@Override
-	public RemotingProtocolIdentifier protocolCode() {
-		return RemotingProtocolIdentifier.INSTANCE;
+	public RemotingProtocolId getProtocolId() {
+		return RemotingProtocolId.INSTANCE;
 	}
 
 	@Override
-	public RemotingMessageCodec messageCodec() {
+	public RemotingMessageCodec getMessageCodec() {
 		return remotingMessageCodec;
 	}
 
 	@Override
-	public RemotingMessageHandler messageHandler() {
+	public RemotingMessageHandler getMessageHandler() {
 		return this.remotingMessageHandler;
 	}
 
 	@Override
-	public RemotingMessageFactory messageFactory() {
+	public RemotingMessageFactory getMessageFactory() {
 		return this.remotingMessageFactory;
 	}
 

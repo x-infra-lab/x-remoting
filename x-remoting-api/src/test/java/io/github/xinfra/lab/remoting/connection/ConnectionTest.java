@@ -2,10 +2,7 @@ package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
-import io.github.xinfra.lab.remoting.message.Message;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
-import io.github.xinfra.lab.remoting.message.MessageHandler;
-import io.github.xinfra.lab.remoting.message.MessageTypeHandler;
 import io.github.xinfra.lab.remoting.message.RequestMessage;
 import io.github.xinfra.lab.remoting.message.ResponseMessage;
 import io.github.xinfra.lab.remoting.message.ResponseStatus;
@@ -64,7 +61,7 @@ public class ConnectionTest {
 		Assertions.assertNull(connection.removeInvokeFuture(requestId1));
 
 		RequestMessage requestMessage1 = mock(RequestMessage.class);
-		doReturn(requestId1).when(requestMessage1).id();
+		doReturn(requestId1).when(requestMessage1).getId();
 
 		connection.addInvokeFuture(new InvokeFuture<>(requestMessage1));
 		Assertions.assertThrows(IllegalArgumentException.class, () -> {
@@ -75,7 +72,7 @@ public class ConnectionTest {
 		final int requestId2 = IDGenerator.nextRequestId();
 
 		RequestMessage requestMessage2 = mock(RequestMessage.class);
-		doReturn(requestId2).when(requestMessage2).id();
+		doReturn(requestId2).when(requestMessage2).getId();
 
 		InvokeFuture<?> invokeFuture = new InvokeFuture<>(requestMessage2);
 		connection.addInvokeFuture(invokeFuture);
@@ -115,7 +112,7 @@ public class ConnectionTest {
 		for (int i = 0; i < times; i++) {
 			Integer requestId = IDGenerator.nextRequestId();
 			RequestMessage requestMessage = mock(RequestMessage.class);
-			doReturn(requestId).when(requestMessage).id();
+			doReturn(requestId).when(requestMessage).getId();
 			InvokeFuture<ResponseMessage> invokeFuture = new InvokeFuture<>(requestMessage);
 			invokeFutures.add(invokeFuture);
 			connection.addInvokeFuture(invokeFuture);

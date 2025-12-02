@@ -33,7 +33,7 @@ public class ProtocolDecoderTest {
 		MessageDecoder messageDecoder = new MessageDecoder() {
 			@Override
 			public void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
-				// simulate read all data
+				// simulate read all getData
 				in.readerIndex(in.readableBytes());
 				// sumulate decode one message
 				out.add(decodeMockMessage);
@@ -41,8 +41,8 @@ public class ProtocolDecoderTest {
 		};
 		testProtocol.setMessageDecoder(messageDecoder);
 
-		ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer(testProtocol.protocolCode().code().length);
-		byteBuf.writeBytes(testProtocol.protocolCode().code());
+		ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer(testProtocol.getProtocolId().getCodes().length);
+		byteBuf.writeBytes(testProtocol.getProtocolId().getCodes());
 		channel.writeInbound(byteBuf);
 		Assertions.assertTrue(channel.finish());
 		Message message = (Message) channel.inboundMessages().poll();
@@ -61,7 +61,7 @@ public class ProtocolDecoderTest {
 		MessageDecoder messageDecoder = new MessageDecoder() {
 			@Override
 			public void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) {
-				// simulate read all data
+				// simulate read all getData
 				in.readerIndex(in.readableBytes());
 				// sumulate decode one message
 				out.add(decodeMockMessage);
@@ -69,8 +69,8 @@ public class ProtocolDecoderTest {
 		};
 		testProtocol.setMessageDecoder(messageDecoder);
 
-		// split data
-		byte[] bytes = testProtocol.protocolCode().code();
+		// split getData
+		byte[] bytes = testProtocol.getProtocolId().getCodes();
 		int length = bytes.length;
 
 		int part1Length = length / 2;
@@ -81,13 +81,13 @@ public class ProtocolDecoderTest {
 		System.arraycopy(bytes, 0, part1, 0, part1Length);
 		System.arraycopy(bytes, part1Length, part2, 0, part2Length);
 
-		// write partial data
+		// write partial getData
 		ByteBuf part1ByteBuf = ByteBufAllocator.DEFAULT.buffer(part1Length);
 		part1ByteBuf.writeBytes(part1);
 		channel.writeInbound(part1ByteBuf);
 		Assertions.assertTrue(channel.inboundMessages().isEmpty());
 
-		// write whole data
+		// write whole getData
 		ByteBuf part2ByteBuf = ByteBufAllocator.DEFAULT.buffer(part2Length);
 		part2ByteBuf.writeBytes(part2);
 		channel.writeInbound(part2ByteBuf);
@@ -106,8 +106,8 @@ public class ProtocolDecoderTest {
 		channel.pipeline().addLast(protocolDecoder);
 		new Connection(testProtocol, channel, mock(Executor.class), mock(Timer.class));
 
-		ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer(testProtocol.protocolCode().code().length);
-		byteBuf.writeBytes(testProtocol.protocolCode().code());
+		ByteBuf byteBuf = ByteBufAllocator.DEFAULT.buffer(testProtocol.getProtocolId().getCodes().length);
+		byteBuf.writeBytes(testProtocol.getProtocolId().getCodes());
 		// Bad header
 		ByteBuf invalidByteBuf = byteBuf.copy();
 		invalidByteBuf.setByte(0, byteBuf.getByte(0) + 1);

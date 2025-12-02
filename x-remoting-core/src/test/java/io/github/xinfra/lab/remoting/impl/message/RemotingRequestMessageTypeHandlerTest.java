@@ -82,7 +82,7 @@ public class RemotingRequestMessageTypeHandlerTest {
 		requestMessage.setBody(new RemotingMessageBody(echoRequest));
 		requestMessage.serialize();
 
-		MessageHandler messageHandler = protocol.messageHandler();
+		MessageHandler messageHandler = protocol.getMessageHandler();
 		EchoRequestHandler echoRequestHandler = new EchoRequestHandler();
 		echoRequestHandler = spy(echoRequestHandler);
 		handlerRegistry.register(echoApi, echoRequestHandler);
@@ -110,10 +110,10 @@ public class RemotingRequestMessageTypeHandlerTest {
 		verify(channel, times(1)).writeAndFlush(argThat(new ArgumentMatcher<RemotingResponseMessage>() {
 			@Override
 			public boolean matches(RemotingResponseMessage responseMessage) {
-				if (responseMessage.responseStatus() != ResponseStatus.OK) {
+				if (responseMessage.getResponseStatus() != ResponseStatus.OK) {
 					return false;
 				}
-				if (!responseMessage.body().getBodyValue().equals("echo:" + content)) {
+				if (!responseMessage.getBody().getBodyValue().equals("echo:" + content)) {
 					return false;
 				}
 				return true;
@@ -139,7 +139,7 @@ public class RemotingRequestMessageTypeHandlerTest {
 		requestMessage = spy(requestMessage);
 		doThrow(new DeserializeException("deserialize exception")).when(requestMessage).deserialize();
 
-		MessageHandler messageHandler = protocol.messageHandler();
+		MessageHandler messageHandler = protocol.getMessageHandler();
 		EchoRequestHandler echoRequestHandler = new EchoRequestHandler();
 		echoRequestHandler = spy(echoRequestHandler);
 		handlerRegistry.register(echoApi, echoRequestHandler);
@@ -167,7 +167,7 @@ public class RemotingRequestMessageTypeHandlerTest {
 		verify(channel, times(1)).writeAndFlush(argThat(new ArgumentMatcher<RemotingResponseMessage>() {
 			@Override
 			public boolean matches(RemotingResponseMessage responseMessage) {
-				if (responseMessage.responseStatus() != ResponseStatus.DeserializeException) {
+				if (responseMessage.getResponseStatus() != ResponseStatus.DeserializeException) {
 					return false;
 				}
 				// todo: check response body
@@ -191,7 +191,7 @@ public class RemotingRequestMessageTypeHandlerTest {
 		requestMessage.setBody(new RemotingMessageBody(echoRequest));
 		requestMessage.serialize();
 
-		MessageHandler messageHandler = protocol.messageHandler();
+		MessageHandler messageHandler = protocol.getMessageHandler();
 		EchoRequestHandler echoRequestHandler = new EchoRequestHandler();
 		echoRequestHandler = spy(echoRequestHandler);
 		handlerRegistry.register(echoApi, echoRequestHandler);
@@ -219,7 +219,7 @@ public class RemotingRequestMessageTypeHandlerTest {
 		verify(channel, times(1)).writeAndFlush(argThat(new ArgumentMatcher<RemotingResponseMessage>() {
 			@Override
 			public boolean matches(RemotingResponseMessage responseMessage) {
-				if (responseMessage.responseStatus() != ResponseStatus.NotFound) {
+				if (responseMessage.getResponseStatus() != ResponseStatus.NotFound) {
 					return false;
 				}
 				// todo: check response body
@@ -243,7 +243,7 @@ public class RemotingRequestMessageTypeHandlerTest {
 		requestMessage.setBody(new RemotingMessageBody(echoRequest));
 		requestMessage.serialize();
 
-		MessageHandler messageHandler = protocol.messageHandler();
+		MessageHandler messageHandler = protocol.getMessageHandler();
 		EchoRequestHandler echoRequestHandler = new EchoRequestHandler();
 		echoRequestHandler = spy(echoRequestHandler);
 		handlerRegistry.register(echoApi, echoRequestHandler);
@@ -272,11 +272,11 @@ public class RemotingRequestMessageTypeHandlerTest {
 		verify(channel, times(1)).writeAndFlush(argThat(new ArgumentMatcher<RemotingResponseMessage>() {
 			@Override
 			public boolean matches(RemotingResponseMessage responseMessage) {
-				if (responseMessage.responseStatus() != ResponseStatus.Error) {
+				if (responseMessage.getResponseStatus() != ResponseStatus.Error) {
 					return false;
 				}
 				// todo: check response body
-				if (!(responseMessage.body().getBodyValue() instanceof IllegalArgumentException)) {
+				if (!(responseMessage.getBody().getBodyValue() instanceof IllegalArgumentException)) {
 					return false;
 				}
 				return true;
@@ -293,7 +293,7 @@ public class RemotingRequestMessageTypeHandlerTest {
 
 		requestMessage.serialize();
 
-		MessageHandler messageHandler = protocol.messageHandler();
+		MessageHandler messageHandler = protocol.getMessageHandler();
 
 		ChannelHandlerContext context = mock(ChannelHandlerContext.class);
 		EmbeddedChannel channel = spy(new EmbeddedChannel());
@@ -318,7 +318,7 @@ public class RemotingRequestMessageTypeHandlerTest {
 		verify(channel, times(1)).writeAndFlush(argThat(new ArgumentMatcher<RemotingResponseMessage>() {
 			@Override
 			public boolean matches(RemotingResponseMessage responseMessage) {
-				if (responseMessage.responseStatus() != ResponseStatus.OK) {
+				if (responseMessage.getResponseStatus() != ResponseStatus.OK) {
 					return false;
 				}
 				// todo: check response body
@@ -337,7 +337,7 @@ public class RemotingRequestMessageTypeHandlerTest {
 		responseMessage.setBody(new RemotingMessageBody(content));
 		responseMessage.serialize();
 
-		MessageHandler messageHandler = protocol.messageHandler();
+		MessageHandler messageHandler = protocol.getMessageHandler();
 
 		ChannelHandlerContext context = mock(ChannelHandlerContext.class);
 		EmbeddedChannel channel = new EmbeddedChannel();
@@ -378,7 +378,7 @@ public class RemotingRequestMessageTypeHandlerTest {
 		responseMessage.setBody(new RemotingMessageBody(content));
 		responseMessage.serialize();
 
-		MessageHandler messageHandler = protocol.messageHandler();
+		MessageHandler messageHandler = protocol.getMessageHandler();
 
 		ChannelHandlerContext context = mock(ChannelHandlerContext.class);
 		EmbeddedChannel channel = new EmbeddedChannel();

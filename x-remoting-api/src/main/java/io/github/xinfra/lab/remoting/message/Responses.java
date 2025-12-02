@@ -20,28 +20,28 @@ public class Responses {
 					: ResponseStatus.Error;
 
 			responseMessage = connection.getProtocol()
-				.messageFactory()
-				.createResponse(responseMessage.id(), responseMessage.serializationType(), status, t);
+				.getMessageFactory()
+				.createResponse(responseMessage.getId(), responseMessage.getSerializationType(), status, t);
 			try {
 				responseMessage.serialize();
 			}
 			catch (Throwable te) {
-				log.error("serialize exception response fail. id: {}", responseMessage.id(), te);
+				log.error("serialize exception response fail. getId: {}", responseMessage.getId(), te);
 				return;
 			}
 		}
-		final int id = responseMessage.id();
-		final ResponseStatus status = responseMessage.responseStatus();
+		final int id = responseMessage.getId();
+		final ResponseStatus status = responseMessage.getResponseStatus();
 		connection.getChannel().writeAndFlush(responseMessage).addListener(new ChannelFutureListener() {
 			@Override
 			public void operationComplete(ChannelFuture channelFuture) throws Exception {
 				if (channelFuture.isSuccess()) {
 					if (log.isDebugEnabled()) {
-						log.debug("write response success, id={}, status={}", id, status);
+						log.debug("write response success, getId={}, status={}", id, status);
 					}
 				}
 				else {
-					log.error("write response fail, id={}, status={}", id, status, channelFuture.cause());
+					log.error("write response fail, getId={}, status={}", id, status, channelFuture.cause());
 				}
 			}
 		});

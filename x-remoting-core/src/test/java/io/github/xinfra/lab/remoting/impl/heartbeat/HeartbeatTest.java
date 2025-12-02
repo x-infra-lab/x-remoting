@@ -42,19 +42,19 @@ public class HeartbeatTest {
 
 	@Test
 	public void testHeartbeat() throws RemotingException, InterruptedException {
-		Connection connection = remotingClient.getConnectionManager().connect(remotingServer.localAddress());
+		Connection connection = remotingClient.getConnectionManager().connect(remotingServer.getLocalAddress());
 		remotingClient.getConnectionManager().heartbeater().disableHeartBeat(connection);
 
 		Call call = new Call() {
 		};
 
 		Protocol protocol = connection.getProtocol();
-		RequestMessage heartbeatRequestMessage = protocol.messageFactory()
+		RequestMessage heartbeatRequestMessage = protocol.getMessageFactory()
 			.createHeartbeatRequest(IDGenerator.nextRequestId(), SerializationType.Hession);
 
 		CallOptions callOptions = new CallOptions();
 		ResponseMessage responseMessage = call.blockingCall(heartbeatRequestMessage, connection, callOptions);
-		Assertions.assertEquals(responseMessage.responseStatus(), ResponseStatus.OK);
+		Assertions.assertEquals(responseMessage.getResponseStatus(), ResponseStatus.OK);
 	}
 
 }

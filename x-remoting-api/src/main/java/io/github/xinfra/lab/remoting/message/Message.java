@@ -2,22 +2,22 @@ package io.github.xinfra.lab.remoting.message;
 
 import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
-import io.github.xinfra.lab.remoting.protocol.ProtocolIdentifier;
+import io.github.xinfra.lab.remoting.protocol.ProtocolId;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
 
 public interface Message {
 
-	ProtocolIdentifier protocolIdentifier();
+	ProtocolId getProtocolIdentifier();
 
-	int id();
+	int getId();
 
-	SerializationType serializationType();
+	SerializationType getSerializationType();
 
-	MessageType messageType();
+	MessageType getMessageType();
 
-	MessageHeaders headers();
+	MessageHeaders getHeaders();
 
-	MessageBody body();
+	MessageBody getBody();
 
 	void serialize() throws SerializeException;
 

@@ -2,9 +2,7 @@ package io.github.xinfra.lab.remoting.impl.message;
 
 import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
-import io.github.xinfra.lab.remoting.impl.RemotingProtocolIdentifier;
-import io.github.xinfra.lab.remoting.message.MessageBody;
-import io.github.xinfra.lab.remoting.message.MessageHeaders;
+import io.github.xinfra.lab.remoting.impl.RemotingProtocolId;
 import io.github.xinfra.lab.remoting.message.MessageType;
 import io.github.xinfra.lab.remoting.message.RequestMessage;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
@@ -16,7 +14,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * request definition:
  * <p>
- * ｜protocol-codeRemotingRequestMessages:bytes|protocol-version:byte|message-type:byte|request-id:int|serialization-type:byte|path-length:short|header-length:short|body-length:int|path:bytes|header:bytes|body:bytes|
+ * ｜getProtocol-codeRemotingRequestMessages:bytes|getProtocol-version:byte|message-type:byte|request-id:int|serialization-type:byte|path-length:short|header-length:short|body-length:int|path:bytes|header:bytes|body:bytes|
  */
 
 public class RemotingRequestMessage extends RemotingMessage implements RequestMessage {
@@ -35,7 +33,7 @@ public class RemotingRequestMessage extends RemotingMessage implements RequestMe
 
 	private boolean deserialized;
 
-	private static final Integer protocolCodeLength = RemotingProtocolIdentifier.PROTOCOL_CODE.length;
+	private static final Integer protocolCodeLength = RemotingProtocolId.PROTOCOL_CODE.length;
 
 	private static final Integer protocolVersionLength = Byte.BYTES;
 
@@ -60,7 +58,7 @@ public class RemotingRequestMessage extends RemotingMessage implements RequestMe
 	}
 
 	@Override
-	public MessageType messageType() {
+	public MessageType getMessageType() {
 		return messageType;
 	}
 

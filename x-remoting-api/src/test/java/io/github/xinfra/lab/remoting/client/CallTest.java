@@ -58,7 +58,7 @@ public class CallTest {
 		executor = Executors.newCachedThreadPool();
 		timer = new HashedWheelTimer();
 
-		// set messageFactory
+		// set getMessageFactory
 		messageFactory = mock(MessageFactory.class);
 		testProtocol.setMessageFactory(messageFactory);
 
@@ -76,13 +76,13 @@ public class CallTest {
 	@Test
 	public void testBlockingCall() throws InterruptedException {
 		RequestMessage requestMessage = mock(RequestMessage.class);
-		doReturn(requestId).when(requestMessage).id();
+		doReturn(requestId).when(requestMessage).getId();
 
 		Channel channel = new EmbeddedChannel();
 		Connection connection = new Connection(testProtocol, channel, executor, timer);
 
 		ResponseMessage mockResponseMessage = mock(ResponseMessage.class);
-		// complete invokeFuture
+		// onMessage invokeFuture
 		executor.submit(() -> {
 			try {
 				Wait.untilIsTrue(() -> {
@@ -111,7 +111,7 @@ public class CallTest {
 			.thenReturn(mockSendFailedresponseMessage);
 
 		RequestMessage requestMessage = mock(RequestMessage.class);
-		doReturn(requestId).when(requestMessage).id();
+		doReturn(requestId).when(requestMessage).getId();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
 		Connection connection = new Connection(testProtocol, channel, executor, timer);
@@ -129,7 +129,7 @@ public class CallTest {
 			.thenReturn(mockSendFailedresponseMessage);
 
 		RequestMessage requestMessage = mock(RequestMessage.class);
-		doReturn(requestId).when(requestMessage).id();
+		doReturn(requestId).when(requestMessage).getId();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
 		Connection connection = new Connection(testProtocol, channel, executor, timer);
@@ -147,7 +147,7 @@ public class CallTest {
 			.thenReturn(mockTimeoutresponseMessage);
 
 		RequestMessage requestMessage = mock(RequestMessage.class);
-		doReturn(requestId).when(requestMessage).id();
+		doReturn(requestId).when(requestMessage).getId();
 		Channel channel = new EmbeddedChannel();
 		Connection connection = new Connection(testProtocol, channel, executor, timer);
 		ResponseMessage responseMessage = call.blockingCall(requestMessage, connection, callOptions);
@@ -158,12 +158,12 @@ public class CallTest {
 	public void testFutureCall() throws InterruptedException, TimeoutException {
 		ResponseMessage responseMessage = mock(ResponseMessage.class);
 		RequestMessage requestMessage = mock(RequestMessage.class);
-		doReturn(requestId).when(requestMessage).id();
+		doReturn(requestId).when(requestMessage).getId();
 		Channel channel = new EmbeddedChannel();
 		Connection connection = new Connection(testProtocol, channel, executor, timer);
 		InvokeFuture invokeFuture = call.futureCall(requestMessage, connection, callOptions);
 
-		// complete invokeFuture
+		// onMessage invokeFuture
 		Wait.untilIsTrue(() -> {
 			InvokeFuture future = connection.removeInvokeFuture(requestId);
 			if (future != null) {
@@ -185,7 +185,7 @@ public class CallTest {
 			.thenReturn(mockSendFailedresponseMessage);
 
 		RequestMessage requestMessage = mock(RequestMessage.class);
-		doReturn(requestId).when(requestMessage).id();
+		doReturn(requestId).when(requestMessage).getId();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
 		Connection connection = new Connection(testProtocol, channel, executor, timer);
@@ -202,7 +202,7 @@ public class CallTest {
 			.thenReturn(mockSendFailedresponseMessage);
 
 		RequestMessage requestMessage = mock(RequestMessage.class);
-		doReturn(requestId).when(requestMessage).id();
+		doReturn(requestId).when(requestMessage).getId();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
 		Connection connection = new Connection(testProtocol, channel, executor, timer);
@@ -219,7 +219,7 @@ public class CallTest {
 			.thenReturn(mockTimeoutresponseMessage);
 
 		RequestMessage requestMessage = mock(RequestMessage.class);
-		doReturn(requestId).when(requestMessage).id();
+		doReturn(requestId).when(requestMessage).getId();
 		Channel channel = new EmbeddedChannel();
 
 		Connection connection = new Connection(testProtocol, channel, executor, timer);
@@ -231,7 +231,7 @@ public class CallTest {
 	public void testAsyncCall() throws InterruptedException, TimeoutException {
 		ResponseMessage responseMessage = mock(ResponseMessage.class);
 		RequestMessage requestMessage = mock(RequestMessage.class);
-		doReturn(requestId).when(requestMessage).id();
+		doReturn(requestId).when(requestMessage).getId();
 		Channel channel = new EmbeddedChannel();
 		Connection connection = new Connection(testProtocol, channel, executor, timer);
 
@@ -240,7 +240,7 @@ public class CallTest {
 			callbackMessage.set(msg);
 		});
 
-		// complete invokeFuture
+		// onMessage invokeFuture
 		Wait.untilIsTrue(() -> {
 			InvokeFuture future = connection.removeInvokeFuture(requestId);
 			if (future != null) {
@@ -270,7 +270,7 @@ public class CallTest {
 			.thenReturn(mockSendFailedresponseMessage);
 
 		RequestMessage requestMessage = mock(RequestMessage.class);
-		doReturn(requestId).when(requestMessage).id();
+		doReturn(requestId).when(requestMessage).getId();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
 		Connection connection = new Connection(testProtocol, channel, executor, timer);
@@ -299,7 +299,7 @@ public class CallTest {
 			.thenReturn(mockSendFailedresponseMessage);
 
 		RequestMessage requestMessage = mock(RequestMessage.class);
-		doReturn(requestId).when(requestMessage).id();
+		doReturn(requestId).when(requestMessage).getId();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
 		Connection connection = new Connection(testProtocol, channel, executor, timer);
@@ -328,7 +328,7 @@ public class CallTest {
 			.thenReturn(mockTimeoutresponseMessage);
 
 		RequestMessage requestMessage = mock(RequestMessage.class);
-		doReturn(requestId).when(requestMessage).id();
+		doReturn(requestId).when(requestMessage).getId();
 		Channel channel = new EmbeddedChannel();
 		Connection connection = new Connection(testProtocol, channel, executor, timer);
 
@@ -351,13 +351,13 @@ public class CallTest {
 	@Test
 	public void testOneway() throws InterruptedException, TimeoutException {
 		RequestMessage requestMessage = mock(RequestMessage.class);
-		doReturn(requestId).when(requestMessage).id();
+		doReturn(requestId).when(requestMessage).getId();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
 		Connection connection = new Connection(testProtocol, channel, executor, timer);
 		call.oneway(requestMessage, connection, callOptions);
 
-		// complete invokeFuture
+		// onMessage invokeFuture
 		Channel finalChannel = channel;
 		Wait.untilIsTrue(() -> {
 			try {
@@ -376,7 +376,7 @@ public class CallTest {
 	public void testOnewaySendFailed1() throws InterruptedException, TimeoutException {
 
 		RequestMessage requestMessage = mock(RequestMessage.class);
-		doReturn(requestId).when(requestMessage).id();
+		doReturn(requestId).when(requestMessage).getId();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
 		Connection connection = new Connection(testProtocol, channel, executor, timer);
@@ -385,7 +385,7 @@ public class CallTest {
 
 		call.oneway(requestMessage, connection, callOptions);
 
-		// complete invokeFuture
+		// onMessage invokeFuture
 		Channel finalChannel = channel;
 		Wait.untilIsTrue(() -> {
 			try {
@@ -404,7 +404,7 @@ public class CallTest {
 	public void testOnewaySendFailed2() throws InterruptedException, TimeoutException {
 
 		RequestMessage requestMessage = mock(RequestMessage.class);
-		doReturn(requestId).when(requestMessage).id();
+		doReturn(requestId).when(requestMessage).getId();
 		Channel channel = new EmbeddedChannel();
 		channel = spy(channel);
 		Connection connection = new Connection(testProtocol, channel, executor, timer);
@@ -413,7 +413,7 @@ public class CallTest {
 
 		call.oneway(requestMessage, connection, callOptions);
 
-		// complete invokeFuture
+		// onMessage invokeFuture
 		Channel finalChannel = channel;
 		Wait.untilIsTrue(() -> {
 			try {

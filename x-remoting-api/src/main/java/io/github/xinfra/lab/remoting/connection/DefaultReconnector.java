@@ -3,8 +3,8 @@ package io.github.xinfra.lab.remoting.connection;
 import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
+import io.github.xinfra.lab.remoting.common.Validate;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.Validate;
 
 import java.net.SocketAddress;
 import java.util.concurrent.CopyOnWriteArrayList;

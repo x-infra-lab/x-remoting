@@ -1,11 +1,11 @@
 package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.annotation.AccessForTest;
+import io.github.xinfra.lab.remoting.common.Validate;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.netty.channel.ChannelHandler;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.Validate;
 
 import java.io.IOException;
 import java.net.SocketAddress;
@@ -49,7 +49,7 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 		ConnectionEventHandler connectionEventHandler = new ConnectionEventHandler(this);
 
 		List<Supplier<ChannelHandler>> channelHandlerSuppliers = new ArrayList<>();
-		// encoder and decoder not @ChannelHandler.Sharable marked. it need create
+		// getEncoder and getDecoder not @ChannelHandler.Sharable marked. it need create
 		// instance everytime
 		channelHandlerSuppliers.add(ProtocolEncoder::new);
 		channelHandlerSuppliers.add(ProtocolDecoder::new);

@@ -2,6 +2,7 @@ package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
+import io.github.xinfra.lab.remoting.common.Validate;
 import io.github.xinfra.lab.remoting.message.ResponseMessage;
 import io.github.xinfra.lab.remoting.message.ResponseStatus;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
@@ -13,7 +14,6 @@ import io.netty.util.Timer;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.Validate;
 
 import java.net.SocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
@@ -55,7 +55,7 @@ public class Connection {
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 
 	public Connection(Protocol protocol, Channel channel, Executor executor, Timer timer) {
-		Validate.notNull(protocol, "protocol can not be null");
+		Validate.notNull(protocol, "getProtocol can not be null");
 		Validate.notNull(channel, "channel can not be null");
 		Validate.notNull(executor, "executor can not be null");
 		Validate.notNull(timer, "timer can not be null");
@@ -107,8 +107,8 @@ public class Connection {
 			InvokeFuture<?> invokeFuture = removeInvokeFuture(requestId);
 			if (invokeFuture != null) {
 				invokeFuture.cancelTimeout();
-				ResponseMessage responseMessage = protocol.messageFactory()
-					.createResponse(requestId, invokeFuture.getRequestMessage().serializationType(),
+				ResponseMessage responseMessage = protocol.getMessageFactory()
+					.createResponse(requestId, invokeFuture.getRequestMessage().getSerializationType(),
 							ResponseStatus.ConnectionClosed);
 				invokeFuture.complete(responseMessage);
 				invokeFuture.asyncExecuteCallBack(getExecutor());

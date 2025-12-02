@@ -2,7 +2,7 @@ package io.github.xinfra.lab.remoting.message;
 
 public interface MessageType {
 
-	byte data();
+	byte getCode();
 
 	MessageType heartbeatRequest = () -> (byte) -1;
 

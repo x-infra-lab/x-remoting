@@ -58,7 +58,7 @@ public class CallServerTest {
 
 		AbstractServer server = new AbstractServer(config) {
 			@Override
-			public Protocol protocol() {
+			public Protocol getProtocol() {
 				return testProtocol;
 			}
 		};
@@ -94,7 +94,7 @@ public class CallServerTest {
 
 		AbstractServer server = new AbstractServer(config) {
 			@Override
-			public Protocol protocol() {
+			public Protocol getProtocol() {
 				return testProtocol;
 			}
 		};

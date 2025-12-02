@@ -23,7 +23,7 @@ public class HessionSerializer implements Serializer {
 	};
 
 	@Override
-	public SerializationType serializationType() {
+	public SerializationType getSerializationType() {
 		return SerializationType.Hession;
 	}
 

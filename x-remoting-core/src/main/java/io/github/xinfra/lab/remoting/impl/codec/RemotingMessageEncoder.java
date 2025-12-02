@@ -18,16 +18,16 @@ public class RemotingMessageEncoder implements MessageEncoder {
 		try {
 			if (msg instanceof RemotingMessage) {
 				RemotingMessage remotingMessage = (RemotingMessage) msg;
-				out.writeBytes(remotingMessage.protocolIdentifier().code());
-				out.writeByte(remotingMessage.protocolIdentifier().version());
-				out.writeByte(remotingMessage.messageType().data());
-				out.writeInt(remotingMessage.id());
-				out.writeByte(remotingMessage.serializationType().data());
+				out.writeBytes(remotingMessage.getProtocolIdentifier().getCodes());
+				out.writeByte(remotingMessage.getProtocolIdentifier().version());
+				out.writeByte(remotingMessage.getMessageType().getCode());
+				out.writeInt(remotingMessage.getId());
+				out.writeByte(remotingMessage.getSerializationType().getCode());
 
 				if (msg instanceof RemotingResponseMessage) {
 					// write response status
 					RemotingResponseMessage responseMessage = (RemotingResponseMessage) msg;
-					out.writeShort(responseMessage.responseStatus().status());
+					out.writeShort(responseMessage.getResponseStatus().status());
 				}
 				int pathLength = 0;
 				if (msg instanceof RemotingRequestMessage) {
@@ -40,8 +40,9 @@ public class RemotingMessageEncoder implements MessageEncoder {
 				}
 
 				// write header and body length
-				int headerLength = remotingMessage.headers() == null ? 0 : remotingMessage.headers().data().length;
-				int bodyLength = remotingMessage.body() == null ? 0 : remotingMessage.body().data().length;
+				int headerLength = remotingMessage.getHeaders() == null ? 0
+						: remotingMessage.getHeaders().getDataTotalLength();
+				int bodyLength = remotingMessage.getBody() == null ? 0 : remotingMessage.getBody().getDataTotalLength();
 
 				out.writeShort(headerLength);
 				out.writeInt(bodyLength);
@@ -53,10 +54,10 @@ public class RemotingMessageEncoder implements MessageEncoder {
 
 				// write header and body
 				if (headerLength > 0) {
-					out.writeBytes(remotingMessage.headers().data());
+					remotingMessage.getHeaders().getData().forEach(data -> out.writeBytes(data));
 				}
 				if (bodyLength > 0) {
-					out.writeBytes(remotingMessage.body().data());
+					remotingMessage.getBody().getData().forEach(data -> out.writeBytes(data));
 				}
 			}
 		}

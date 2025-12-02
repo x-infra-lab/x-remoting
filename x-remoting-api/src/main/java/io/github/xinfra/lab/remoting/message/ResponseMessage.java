@@ -2,9 +2,9 @@ package io.github.xinfra.lab.remoting.message;
 
 public interface ResponseMessage extends Message {
 
-	ResponseStatus responseStatus();
+	ResponseStatus getResponseStatus();
 
-	default MessageType messageType() {
+	default MessageType getMessageType() {
 		return MessageType.response;
 	}
 

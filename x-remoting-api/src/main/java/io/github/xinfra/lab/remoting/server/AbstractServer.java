@@ -4,6 +4,7 @@ import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.common.Resource;
+import io.github.xinfra.lab.remoting.common.Validate;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.connection.ConnectionEventHandler;
 import io.github.xinfra.lab.remoting.connection.ConnectionEventProcessor;
@@ -31,7 +32,6 @@ import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timer;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.Validate;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -167,8 +167,8 @@ public abstract class AbstractServer extends AbstractLifeCycle implements Server
 				protected void initChannel(SocketChannel channel) throws Exception {
 					ChannelPipeline pipeline = channel.pipeline();
 
-					pipeline.addLast("encoder", new ProtocolEncoder());
-					pipeline.addLast("decoder", new ProtocolDecoder());
+					pipeline.addLast("getEncoder", new ProtocolEncoder());
+					pipeline.addLast("getDecoder", new ProtocolDecoder());
 
 					if (config.isIdleSwitch()) {
 						pipeline.addLast("idleStateHandler", new IdleStateHandler(config.getIdleReaderTimeout(),
@@ -201,7 +201,7 @@ public abstract class AbstractServer extends AbstractLifeCycle implements Server
 
 	@AccessForTest
 	protected void createConnection(SocketChannel channel) {
-		Connection connection = new Connection(protocol(), channel, executor, timer);
+		Connection connection = new Connection(getProtocol(), channel, executor, timer);
 		if (config.isManageConnection()) {
 			connectionManager.add(connection);
 		}
@@ -226,7 +226,7 @@ public abstract class AbstractServer extends AbstractLifeCycle implements Server
 	}
 
 	@Override
-	public SocketAddress localAddress() {
+	public SocketAddress getLocalAddress() {
 		return this.localAddress;
 	}
 

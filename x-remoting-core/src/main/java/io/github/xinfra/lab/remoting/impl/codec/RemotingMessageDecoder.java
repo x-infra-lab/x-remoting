@@ -2,7 +2,7 @@ package io.github.xinfra.lab.remoting.impl.codec;
 
 import io.github.xinfra.lab.remoting.codec.MessageDecoder;
 import io.github.xinfra.lab.remoting.exception.CodecException;
-import io.github.xinfra.lab.remoting.impl.RemotingProtocolIdentifier;
+import io.github.xinfra.lab.remoting.impl.RemotingProtocolId;
 import io.github.xinfra.lab.remoting.impl.message.RemotingMessage;
 import io.github.xinfra.lab.remoting.impl.message.RemotingMessageBody;
 import io.github.xinfra.lab.remoting.impl.message.RemotingRequestMessage;
@@ -23,7 +23,7 @@ import static io.github.xinfra.lab.remoting.message.MessageType.*;
 @Slf4j
 public class RemotingMessageDecoder implements MessageDecoder {
 
-	private int protocolCodeLength = RemotingProtocolIdentifier.PROTOCOL_CODE.length;
+	private int protocolCodeLength = RemotingProtocolId.PROTOCOL_CODE.length;
 
 	private int minLength = Math.min(RemotingRequestMessage.REQUEST_HEADER_BYTES,
 			RemotingResponseMessage.RESPONSE_HEADER_BYTES);
@@ -34,7 +34,7 @@ public class RemotingMessageDecoder implements MessageDecoder {
 			if (in.readableBytes() >= minLength) {
 				in.markReaderIndex();
 				in.skipBytes(protocolCodeLength);
-				in.skipBytes(1); // skip protocol version
+				in.skipBytes(1); // skip getProtocol version
 
 				byte messageTypeCode = in.readByte();
 				MessageType messageType = valueOf(messageTypeCode);

@@ -1,5 +1,6 @@
 package io.github.xinfra.lab.remoting.impl.message;
 
+import io.github.xinfra.lab.remoting.common.ArraysUtils;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
@@ -30,20 +31,22 @@ public class RemotingMessageTest {
 
 		requestMessage.serialize();
 		Assertions.assertNotNull(requestMessage.getPathData());
-		Assertions.assertNotNull(requestMessage.headers().data());
-		Assertions.assertNotNull(requestMessage.body().data());
+		Assertions.assertNotNull(requestMessage.getHeaders().getData());
+		Assertions.assertNotNull(requestMessage.getBody().getData());
 
 		// deserialize
 		RemotingRequestMessage requestMessage2 = new RemotingRequestMessage(requestId, MessageType.request,
 				SerializationType.Hession);
 		requestMessage2.setPathData(requestMessage.getPathData());
-		requestMessage2.setHeaders(new DefaultMessageHeaders(requestMessage.headers().data()));
-		requestMessage2.setBody(new RemotingMessageBody(requestMessage.body().data()));
+
+		requestMessage2
+			.setHeaders(new DefaultMessageHeaders(ArraysUtils.concat(requestMessage.getHeaders().getData())));
+		requestMessage2.setBody(new RemotingMessageBody(ArraysUtils.concat(requestMessage.getBody().getData())));
 		requestMessage2.deserialize();
 
 		Assertions.assertEquals(requestMessage2.getPath(), requestMessage.getPath());
-		Assertions.assertEquals(requestMessage2.headers().get(headerKey), headerValue);
-		Assertions.assertEquals(requestMessage2.body().getBodyValue(), content);
+		Assertions.assertEquals(requestMessage2.getHeaders().get(headerKey), headerValue);
+		Assertions.assertEquals(requestMessage2.getBody().getBodyValue(), content);
 	}
 
 	@Test
@@ -62,17 +65,19 @@ public class RemotingMessageTest {
 		responseMessage.setBody(new RemotingMessageBody(content));
 		responseMessage.serialize();
 
-		Assertions.assertNotNull(responseMessage.headers().data());
-		Assertions.assertNotNull(responseMessage.body().data());
+		Assertions.assertNotNull(responseMessage.getHeaders().getData());
+		Assertions.assertNotNull(responseMessage.getBody().getData());
 
 		RemotingResponseMessage responseMessage2 = new RemotingResponseMessage(requestId, SerializationType.Hession,
 				ResponseStatus.OK);
-		responseMessage2.setHeaders(new DefaultMessageHeaders(responseMessage.headers().data()));
-		responseMessage2.setBody(new RemotingMessageBody(responseMessage.body().data()));
+
+		responseMessage2
+			.setHeaders(new DefaultMessageHeaders(ArraysUtils.concat(responseMessage.getHeaders().getData())));
+		responseMessage2.setBody(new RemotingMessageBody(ArraysUtils.concat(responseMessage.getBody().getData())));
 		responseMessage2.deserialize();
 
-		Assertions.assertEquals(responseMessage2.headers().get(headerKey), headerValue);
-		Assertions.assertEquals(responseMessage2.body().getBodyValue(), content);
+		Assertions.assertEquals(responseMessage2.getHeaders().get(headerKey), headerValue);
+		Assertions.assertEquals(responseMessage2.getBody().getBodyValue(), content);
 	}
 
 	@Test
@@ -83,15 +88,15 @@ public class RemotingMessageTest {
 				SerializationType.Hession, ResponseStatus.Error, new RuntimeException("testCreateExceptionResponse1"));
 		responseMessage.serialize();
 
-		Assertions.assertNull(responseMessage.headers());
-		Assertions.assertNotNull(responseMessage.body().data());
+		Assertions.assertNull(responseMessage.getHeaders());
+		Assertions.assertNotNull(responseMessage.getBody().getData());
 
 		RemotingResponseMessage responseMessage2 = new RemotingResponseMessage(requestId, SerializationType.Hession,
 				ResponseStatus.OK);
-		responseMessage2.setBody(new RemotingMessageBody(responseMessage.body().data()));
+		responseMessage2.setBody(new RemotingMessageBody(ArraysUtils.concat(responseMessage.getBody().getData())));
 		responseMessage2.deserialize();
 
-		Assertions.assertTrue(responseMessage2.body().getBodyValue() instanceof RuntimeException);
+		Assertions.assertTrue(responseMessage2.getBody().getBodyValue() instanceof RuntimeException);
 	}
 
 }

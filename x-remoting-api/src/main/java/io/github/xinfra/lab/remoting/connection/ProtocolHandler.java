@@ -14,7 +14,7 @@ public class ProtocolHandler extends ChannelDuplexHandler {
 	public void channelRead(ChannelHandlerContext ctx, Object msg) {
 		if (msg instanceof Message) {
 			Connection connection = ctx.channel().attr(CONNECTION).get();
-			connection.getProtocol().messageHandler().handleMessage(ctx, (Message) msg);
+			connection.getProtocol().getMessageHandler().handleMessage(ctx, (Message) msg);
 		}
 		else {
 			ctx.fireChannelRead(msg);

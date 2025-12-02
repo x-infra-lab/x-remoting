@@ -14,12 +14,12 @@ public class RemotingMessageCodec implements MessageCodec {
 	}
 
 	@Override
-	public RemotingMessageEncoder encoder() {
+	public RemotingMessageEncoder getEncoder() {
 		return remotingMessageEncoder;
 	}
 
 	@Override
-	public RemotingMessageDecoder decoder() {
+	public RemotingMessageDecoder getDecoder() {
 		return remotingMessageDecoder;
 	}
 
