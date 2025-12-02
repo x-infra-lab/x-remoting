@@ -1,5 +1,6 @@
 package io.github.xinfra.lab.remoting.impl.codec;
 
+import io.github.xinfra.lab.remoting.common.ArraysUtils;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.exception.CodecException;
 import io.github.xinfra.lab.remoting.impl.RemotingProtocolId;
@@ -15,7 +16,6 @@ import io.github.xinfra.lab.remoting.serialization.SerializationType;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
-import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -71,14 +71,12 @@ public class RemotingMessageEncoderTest {
 
 		byte[] headerData = new byte[headerDataLength];
 		byteBuf.readBytes(headerData);
-		byte[] headerBytes = new byte[0];
-		requestMessage.getHeaders().getData().forEach(data -> ArrayUtils.addAll(headerBytes, data));
+		byte[] headerBytes = ArraysUtils.concat(requestMessage.getHeaders().getData());
 		Assertions.assertArrayEquals(headerBytes, headerData);
 
 		byte[] bodyData = new byte[bodyDataLength];
 		byteBuf.readBytes(bodyData);
-		byte[] bodyBytes = new byte[0];
-		requestMessage.getBody().getData().forEach(data -> ArrayUtils.addAll(bodyBytes, data));
+		byte[] bodyBytes = ArraysUtils.concat(requestMessage.getBody().getData());
 		Assertions.assertArrayEquals(bodyBytes, bodyData);
 
 		Assertions.assertEquals(byteBuf.readableBytes(), 0);
@@ -131,15 +129,13 @@ public class RemotingMessageEncoderTest {
 		byte[] headerData = new byte[headerDataLength];
 		byteBuf.readBytes(headerData);
 
-		byte[] headerBytes = new byte[0];
-		responseMessage.getHeaders().getData().forEach(data -> ArrayUtils.addAll(headerBytes, data));
+		byte[] headerBytes = ArraysUtils.concat(responseMessage.getHeaders().getData());
 		Assertions.assertArrayEquals(headerBytes, headerData);
 
 		byte[] bodyData = new byte[bodyDataLength];
 		byteBuf.readBytes(bodyData);
 
-		byte[] bodyBytes = new byte[0];
-		responseMessage.getBody().getData().forEach(data -> ArrayUtils.addAll(bodyBytes, data));
+		byte[] bodyBytes = ArraysUtils.concat(responseMessage.getBody().getData());
 		Assertions.assertArrayEquals(bodyBytes, bodyData);
 
 		Assertions.assertEquals(byteBuf.readableBytes(), 0);

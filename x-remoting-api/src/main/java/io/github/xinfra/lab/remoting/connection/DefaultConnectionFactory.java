@@ -2,6 +2,7 @@ package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.common.Resource;
+import io.github.xinfra.lab.remoting.common.Validate;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.netty.bootstrap.Bootstrap;
@@ -22,7 +23,6 @@ import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timer;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.Validate;
 
 import java.io.IOException;
 import java.net.SocketAddress;

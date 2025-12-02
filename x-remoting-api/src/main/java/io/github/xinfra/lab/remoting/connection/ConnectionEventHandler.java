@@ -1,12 +1,12 @@
 package io.github.xinfra.lab.remoting.connection;
 
+import io.github.xinfra.lab.remoting.common.Validate;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelPromise;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.Validate;
 
 import java.net.SocketAddress;
 

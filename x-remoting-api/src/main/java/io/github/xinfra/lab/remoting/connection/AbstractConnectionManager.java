@@ -2,9 +2,9 @@ package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
+import io.github.xinfra.lab.remoting.common.Validate;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.Validate;
 
 import java.net.SocketAddress;
 import java.util.Map;

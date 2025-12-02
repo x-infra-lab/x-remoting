@@ -5,8 +5,8 @@ import io.github.xinfra.lab.remoting.exception.SerializeException;
 import io.github.xinfra.lab.remoting.serialization.Serializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -22,7 +22,21 @@ import java.util.function.Supplier;
 @Slf4j
 public class DefaultMessageHeaders implements MessageHeaders {
 
-	private ConcurrentHashMap<Pair<String, String>, Supplier<?>> headers = new ConcurrentHashMap<>();
+	@Data
+	static class HeaderKey {
+
+		String name;
+
+		String typeName;
+
+		public HeaderKey(String name, String typeName) {
+			this.name = name;
+			this.typeName = typeName;
+		}
+
+	}
+
+	private ConcurrentHashMap<HeaderKey, Supplier<?>> headers = new ConcurrentHashMap<>();
 
 	byte[] headerData;
 
@@ -51,12 +65,12 @@ public class DefaultMessageHeaders implements MessageHeaders {
 
 	@Override
 	public <T> void put(Key<T> key, T value) {
-		headers.put(Pair.of(key.getName(), key.getType().getName()), () -> value);
+		headers.put(new HeaderKey(key.getName(), key.getType().getName()), () -> value);
 	}
 
 	@Override
 	public <T> T get(Key<T> key) {
-		Supplier<?> supplier = headers.get(Pair.of(key.getName(), key.getType().getName()));
+		Supplier<?> supplier = headers.get(new HeaderKey(key.getName(), key.getType().getName()));
 		if (supplier != null) {
 			return (T) supplier.get();
 		}
@@ -65,7 +79,7 @@ public class DefaultMessageHeaders implements MessageHeaders {
 
 	@Override
 	public boolean contains(Key<?> key) {
-		return headers.contains(Pair.of(key.getName(), key.getType().getName()));
+		return headers.contains(new HeaderKey(key.getName(), key.getType().getName()));
 	}
 
 	@Override
@@ -77,12 +91,12 @@ public class DefaultMessageHeaders implements MessageHeaders {
 			}
 			headerDataList = new ArrayList<>(headers.size());
 
-			for (Map.Entry<Pair<String, String>, Supplier<?>> entry : headers.entrySet()) {
-				Pair<String, String> pair = entry.getKey();
+			for (Map.Entry<HeaderKey, Supplier<?>> entry : headers.entrySet()) {
+				HeaderKey pair = entry.getKey();
 				Object value = entry.getValue().get();
 
-				byte[] keyData = pair.getLeft().getBytes(StandardCharsets.UTF_8);
-				byte[] valueTypeData = pair.getRight().getBytes(StandardCharsets.UTF_8);
+				byte[] keyData = pair.getName().getBytes(StandardCharsets.UTF_8);
+				byte[] valueTypeData = pair.getTypeName().getBytes(StandardCharsets.UTF_8);
 				byte[] valueData = serializer.serialize(value);
 
 				int headerDataLength = HEADER_SIZE + keyData.length + valueTypeData.length + valueData.length;
@@ -134,7 +148,7 @@ public class DefaultMessageHeaders implements MessageHeaders {
 					byteBuf.readBytes(valueData);
 
 					// lazy deserialization
-					headers.put(Pair.of(key, valueType), new Supplier<Object>() {
+					headers.put(new HeaderKey(key, valueType), new Supplier<Object>() {
 						private Object value;
 
 						@Override
