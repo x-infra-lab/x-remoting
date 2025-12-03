@@ -8,6 +8,31 @@
     <version>0.0.3-RC1</version>
     <packaging>pom</packaging>
 
+    <name>x-remoting</name>
+    <description>x-remoting is a network communication framework based on Netty.</description>
+    <url>https://github.com/x-infra-lab/x-remoting</url>
+    <licenses>
+        <license>
+            <name>The Apache Software License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
+    <developers>
+        <developer>
+            <name>JoeCqupt</name>
+            <email>joe469391363@gmail.com</email>
+            <organization>x-infra-lab</organization>
+            <organizationUrl>https://github.com/x-infra-lab</organizationUrl>
+        </developer>
+    </developers>
+    <scm child.scm.connection.inherit.append.path="false"
+         child.scm.developerConnection.inherit.append.path="false"
+         child.scm.url.inherit.append.path="false">
+        <connection>scm:git:https://github.com/x-infra-lab/x-remoting.git</connection>
+        <developerConnection>scm:git:https://github.com/x-infra-lab/x-remoting.git</developerConnection>
+        <url>https://github.com/x-infra-lab/x-remoting/tree/main</url>
+    </scm>
+
     <modules>
         <module>x-remoting</module>
         <module>x-remoting-api</module>
