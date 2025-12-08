@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.github.x-infra-lab</groupId>
     <artifactId>x-remoting-parent</artifactId>
-    <version>0.0.3-RC1</version>
+    <version>0.0.3-RC2</version>
     <packaging>pom</packaging>
 
     <name>x-remoting</name>
