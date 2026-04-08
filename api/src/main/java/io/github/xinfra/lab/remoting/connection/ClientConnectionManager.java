@@ -62,11 +62,11 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 	@Override
 	public synchronized Connection connect(SocketAddress socketAddress) throws RemotingException {
 		ensureStarted();
-		Connections connections = this.connections.get(socketAddress);
+		Connections connections = this.connectionsMap.get(socketAddress);
 		if (connections == null) {
-			connections = createConnectionHolder(socketAddress);
+			connections = createConnections(socketAddress);
 		}
-		createConnectionForHolder(socketAddress, connections, config.getConnectionNumPreEndpoint());
+		createConnection(socketAddress, connections, config.getConnectionNumPreEndpoint());
 
 		return connections.get();
 	}
@@ -76,7 +76,7 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 		ensureStarted();
 		Validate.notNull(socketAddress, "socketAddress can not be null");
 
-		Connections connections = this.connections.get(socketAddress);
+		Connections connections = this.connectionsMap.get(socketAddress);
 		if (connections == null) {
 			return connect(socketAddress);
 		}

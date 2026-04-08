@@ -171,7 +171,7 @@ public class ClientConnectionManagerTest {
 
 		connectionManager.reconnector().disableReconnect(address);
 		connectionManager.close(connection);
-		Assertions.assertNull(((ClientConnectionManager) connectionManager).connections.get(address));
+		Assertions.assertNull(((ClientConnectionManager) connectionManager).connectionsMap.get(address));
 		// close again
 		connectionManager.close(connection);
 
@@ -184,7 +184,7 @@ public class ClientConnectionManagerTest {
 		Connection connection = connectionManager.get(address);
 		Assertions.assertNotNull(connection);
 
-		Map<SocketAddress, Connections> connections = ((ClientConnectionManager) connectionManager).connections;
+		Map<SocketAddress, Connections> connections = ((ClientConnectionManager) connectionManager).connectionsMap;
 		Assertions.assertTrue(connections.containsKey(address));
 		connectionManager.close(connection);
 
@@ -213,29 +213,29 @@ public class ClientConnectionManagerTest {
 		InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort);
 		Connection connection = connectionManager.get(address);
 
-		Map<SocketAddress, Connections> connections = ((ClientConnectionManager) connectionManager).connections;
-		Connections connectionHolder = connections.get(address);
-		Assertions.assertEquals(connectionHolder.size(), numPreEndpoint);
+		Map<SocketAddress, Connections> connectionsMap = ((ClientConnectionManager) connectionManager).connectionsMap;
+		Connections connections = connectionsMap.get(address);
+		Assertions.assertEquals(connections.size(), numPreEndpoint);
 
 		connectionManager.close(connection);
-		Assertions.assertEquals(connectionHolder.size(), numPreEndpoint - 1);
+		Assertions.assertEquals(connections.size(), numPreEndpoint - 1);
 
 		connectionManager.reconnector().reconnect(address);
 		Wait.untilIsTrue(() -> {
-			if (Objects.equals(connectionHolder.size(), numPreEndpoint)) {
+			if (Objects.equals(connections.size(), numPreEndpoint)) {
 				return true;
 			}
 			return false;
 		}, 30, 100);
 
-		Assertions.assertEquals(connectionHolder.size(), numPreEndpoint);
+		Assertions.assertEquals(connections.size(), numPreEndpoint);
 	}
 
 	@Test
 	public void testReconnect3() throws InterruptedException, RemotingException, TimeoutException {
 		// valid socketAddress
 		InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort);
-		Map<SocketAddress, Connections> connections = ((ClientConnectionManager) connectionManager).connections;
+		Map<SocketAddress, Connections> connections = ((ClientConnectionManager) connectionManager).connectionsMap;
 
 		Reconnector reconnector = connectionManager.reconnector();
 
@@ -260,7 +260,7 @@ public class ClientConnectionManagerTest {
 	void testDisableReconnect() throws InterruptedException, TimeoutException {
 		InetSocketAddress address = new InetSocketAddress(remoteAddress, serverPort);
 		Reconnector reconnector = connectionManager.reconnector();
-		Map<SocketAddress, Connections> connections = ((ClientConnectionManager) connectionManager).connections;
+		Map<SocketAddress, Connections> connections = ((ClientConnectionManager) connectionManager).connectionsMap;
 
 		reconnector.disableReconnect(address);
 		reconnector.reconnect(address);

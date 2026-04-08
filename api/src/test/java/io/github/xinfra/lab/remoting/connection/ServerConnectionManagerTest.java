@@ -106,7 +106,7 @@ public class ServerConnectionManagerTest {
 		verify(connection1, times(1)).close();
 		verify(connection2, times(1)).close();
 
-		Assertions.assertTrue(((ServerConnectionManager) connectionManager).connections.isEmpty());
+		Assertions.assertTrue(((ServerConnectionManager) connectionManager).connectionsMap.isEmpty());
 		skipAfter = true;
 	}
 

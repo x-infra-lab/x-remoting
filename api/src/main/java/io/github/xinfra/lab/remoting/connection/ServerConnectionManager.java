@@ -17,7 +17,7 @@ public class ServerConnectionManager extends AbstractConnectionManager {
 		ensureStarted();
 		Validate.notNull(socketAddress, "socketAddress can not be null");
 
-		Connections connections = this.connections.get(socketAddress);
+		Connections connections = this.connectionsMap.get(socketAddress);
 		if (connections == null) {
 			return null;
 		}
