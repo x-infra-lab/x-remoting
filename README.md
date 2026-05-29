@@ -20,4 +20,4 @@ x-remoting was born to allow middleware developers to focus more on implementing
 
 
 ## License
-x-remoting is licensed under the [the Apache 2 License](https://github.com/MicroRaft/MicroRaft/blob/master/LICENSE).
+x-remoting is licensed under the [the Apache 2 License](https://github.com/x-infra-lab/x-remoting/blob/master/LICENSE).
