@@ -123,7 +123,7 @@ public class ConnectionEventHandlerTest {
 
 		Wait.untilIsTrue(() -> {
 			try {
-				verify(reconnector, times(1)).reconnect(eq(socketAddress));
+				verify(reconnector, times(1)).onUnhealthy(eq(socketAddress));
 				return true;
 			}
 			catch (Throwable e) {
@@ -135,7 +135,7 @@ public class ConnectionEventHandlerTest {
 		Assertions.assertTrue(connection.isClosed());
 		verify(connectionEventHandler, times(1)).channelInactive(any());
 		verify(connectionManager, times(1)).close(eq(connection));
-		verify(reconnector, times(1)).reconnect(eq(socketAddress));
+		verify(reconnector, times(1)).onUnhealthy(eq(socketAddress));
 
 		verify(connectionEventHandler, times(1)).userEventTriggered(any(), eq(ConnectionEvent.CLOSE));
 
@@ -167,7 +167,7 @@ public class ConnectionEventHandlerTest {
 
 		Wait.untilIsTrue(() -> {
 			try {
-				verify(reconnector, times(1)).reconnect(eq(socketAddress));
+				verify(reconnector, times(1)).onUnhealthy(eq(socketAddress));
 				return true;
 			}
 			catch (Throwable e) {
@@ -181,7 +181,7 @@ public class ConnectionEventHandlerTest {
 
 		verify(connectionEventHandler, times(1)).channelInactive(any());
 		verify(connectionManager, times(1)).close(eq(connection));
-		verify(reconnector, times(1)).reconnect(eq(socketAddress));
+		verify(reconnector, times(1)).onUnhealthy(eq(socketAddress));
 
 		verify(connectionEventHandler, times(1)).userEventTriggered(any(), eq(ConnectionEvent.CLOSE));
 
@@ -212,7 +212,7 @@ public class ConnectionEventHandlerTest {
 
 		Wait.untilIsTrue(() -> {
 			try {
-				verify(reconnector, times(1)).reconnect(eq(socketAddress));
+				verify(reconnector, times(1)).onUnhealthy(eq(socketAddress));
 				return true;
 			}
 			catch (Throwable e) {
@@ -225,7 +225,7 @@ public class ConnectionEventHandlerTest {
 		Assertions.assertTrue(connection.isClosed());
 		verify(connectionEventHandler, times(1)).channelInactive(any());
 		verify(connectionManager, times(1)).close(eq(connection));
-		verify(reconnector, times(1)).reconnect(eq(socketAddress));
+		verify(reconnector, times(1)).onUnhealthy(eq(socketAddress));
 
 		verify(connectionEventHandler, times(1)).userEventTriggered(any(), eq(ConnectionEvent.CLOSE));
 

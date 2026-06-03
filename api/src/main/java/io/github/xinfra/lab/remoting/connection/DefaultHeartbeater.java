@@ -9,16 +9,16 @@ import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
 import lombok.extern.slf4j.Slf4j;
 
-import java.net.SocketAddress;
-import java.util.HashSet;
+import java.net.InetSocketAddress;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 public class DefaultHeartbeater implements Heartbeater {
 
-	private Set<Connection> disabledConnections = new HashSet<>();
+	private final Set<Connection> disabledConnections = ConcurrentHashMap.newKeySet();
 
-	private Set<SocketAddress> disabledSocketAddresses = new HashSet<>();
+	private final Set<InetSocketAddress> disabledSocketAddresses = ConcurrentHashMap.newKeySet();
 
 	private Call call;
 
@@ -38,7 +38,7 @@ public class DefaultHeartbeater implements Heartbeater {
 			return;
 		}
 		int heartbeatFailCount = connection.getHeartbeatFailCnt();
-		if (heartbeatFailCount > connection.getHeartbeatMaxFailCount()) {
+		if (heartbeatFailCount >= connection.getHeartbeatMaxFailCount()) {
 			connection.close();
 			log.error("close connection after heartbeat fail {} times. remote address:{}", heartbeatFailCount,
 					connection.remoteAddress());
@@ -55,12 +55,11 @@ public class DefaultHeartbeater implements Heartbeater {
 
 			if (responseMessage.getResponseStatus() == ResponseStatus.OK) {
 				log.debug("heartbeat success. remote address:{}", connection.remoteAddress());
-				connection.setHeartbeatFailCnt(0);
+				connection.resetHeartbeatFailCnt();
 			}
 			else {
-				int failCount = connection.getHeartbeatFailCnt() + 1;
+				int failCount = connection.incrementHeartbeatFailCnt();
 				log.warn("heartbeat fail {} times. remote address:{}", failCount, connection.remoteAddress());
-				connection.setHeartbeatFailCnt(failCount);
 			}
 
 		});
@@ -78,12 +77,12 @@ public class DefaultHeartbeater implements Heartbeater {
 	}
 
 	@Override
-	public void disableHeartBeat(SocketAddress socketAddress) {
+	public void disableHeartBeat(InetSocketAddress socketAddress) {
 		disabledSocketAddresses.add(socketAddress);
 	}
 
 	@Override
-	public void enableHeartBeat(SocketAddress socketAddress) {
+	public void enableHeartBeat(InetSocketAddress socketAddress) {
 		disabledSocketAddresses.remove(socketAddress);
 	}
 

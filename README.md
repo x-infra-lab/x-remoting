@@ -17,6 +17,8 @@ x-remoting was born to allow middleware developers to focus more on implementing
 
 ## Documents
 * [Getting Started](./docs/getting-started.md)
+* [ConnectionManager](./docs/connection-manager.md) ([中文](./docs/connection-manager.zh-CN.md))
+* [Reconnect Mechanism](./docs/reconnect.md)
 
 
 ## License

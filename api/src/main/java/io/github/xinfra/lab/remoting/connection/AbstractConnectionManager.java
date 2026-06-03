@@ -6,21 +6,22 @@ import io.github.xinfra.lab.remoting.common.Validate;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import lombok.extern.slf4j.Slf4j;
 
-import java.net.SocketAddress;
-import java.util.Map;
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Slf4j
 public abstract class AbstractConnectionManager extends AbstractLifeCycle implements ConnectionManager {
 
 	@AccessForTest
-	protected Map<SocketAddress, Connections> connectionsMap = new ConcurrentHashMap<>();
+	protected ConcurrentHashMap<InetSocketAddress, Connections> connectionsMap = new ConcurrentHashMap<>();
 
 	protected ConnectionFactory connectionFactory;
 
-	private ConnectionSelectStrategy connectionSelectStrategy = new RoundRobinConnectionSelectStrategy();
+	protected ConnectionSelectStrategy connectionSelectStrategy = new RoundRobinConnectionSelectStrategy();
 
-	protected ConnectionManagerConfig config = new ConnectionManagerConfig();
+	protected ConnectionManagerConfig config = ConnectionManagerConfig.defaults();
 
 	private ConnectionEventProcessor connectionEventProcessor = new DefaultConnectionEventProcessor();
 
@@ -32,17 +33,16 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 	}
 
 	@Override
-	public synchronized void disconnect(SocketAddress socketAddress) {
+	public void disconnect(InetSocketAddress socketAddress) {
 		ensureStarted();
 		Validate.notNull(socketAddress, "socket address can not be null");
 		if (reconnector() != null) {
-			reconnector().disconnect(socketAddress);
+			reconnector().cancel(socketAddress);
 		}
 
-		Connections connections = this.connectionsMap.get(socketAddress);
+		Connections connections = connectionsMap.remove(socketAddress);
 		if (connections != null) {
 			connections.close();
-			this.connectionsMap.remove(socketAddress);
 		}
 		log.info("Disconnect connection for address: {}", socketAddress);
 	}
@@ -64,41 +64,42 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 	}
 
 	@Override
-	public synchronized void close(Connection connection) {
+	public void close(Connection connection) {
 		ensureStarted();
 		Validate.notNull(connection, "connection can not be null");
 
-		SocketAddress socketAddress = connection.remoteAddress();
-		Connections connections = this.connectionsMap.get(socketAddress);
+		InetSocketAddress socketAddress = (InetSocketAddress) connection.remoteAddress();
+		Connections connections = connectionsMap.get(socketAddress);
 		if (connections == null) {
 			connection.close();
+			return;
 		}
-		else {
-			if (connections.invalidate(connection)) {
-				if (reconnector() != null) {
-					reconnector().reconnect(socketAddress);
-				}
+
+		if (connections.invalidate(connection)) {
+			Reconnector r = reconnector();
+			if (r != null && r.isStarted()) {
+				r.onUnhealthy(socketAddress);
 			}
-			if (connections.isEmpty()) {
-				this.connectionsMap.remove(socketAddress);
-			}
+		}
+		// Lazily drop the empty bucket. Only remove if the mapping still points to the
+		// same Connections instance — protects against a concurrent add() that re-created
+		// the entry.
+		if (connections.isEmpty()) {
+			connectionsMap.remove(socketAddress, connections);
 		}
 	}
 
 	@Override
-	public synchronized void add(Connection connection) {
+	public void add(Connection connection) {
 		ensureStarted();
 		Validate.notNull(connection, "connection can not be null");
 
-		SocketAddress socketAddress = connection.remoteAddress();
-		Connections connections = this.connectionsMap.get(socketAddress);
-		if (connections == null) {
-			connections = createConnections(socketAddress);
-			connections.add(connection);
-		}
-		else {
-			connections.add(connection);
-		}
+		InetSocketAddress socketAddress = (InetSocketAddress) connection.remoteAddress();
+		connectionsMap.compute(socketAddress, (k, existing) -> {
+			Connections cs = (existing != null) ? existing : new Connections(connectionSelectStrategy);
+			cs.add(connection);
+			return cs;
+		});
 	}
 
 	@Override
@@ -113,25 +114,31 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 	}
 
 	@Override
-	public synchronized void shutdown() {
-		for (Map.Entry<SocketAddress, Connections> entry : connectionsMap.entrySet()) {
-			disconnect(entry.getKey());
+	public void shutdown() {
+		List<InetSocketAddress> addresses = new ArrayList<>(connectionsMap.keySet());
+		for (InetSocketAddress address : addresses) {
+			disconnect(address);
 		}
 		super.shutdown();
 		connectionEventProcessor.shutdown();
 	}
 
-	protected Connections createConnections(SocketAddress socketAddress) {
-		Connections connections = new Connections(connectionSelectStrategy);
-		this.connectionsMap.put(socketAddress, connections);
-		return connections;
+	protected Connections createConnections(InetSocketAddress socketAddress) {
+		return connectionsMap.computeIfAbsent(socketAddress, k -> new Connections(connectionSelectStrategy));
 	}
 
-	protected void createConnection(SocketAddress socketAddress, Connections connections, int size)
+	protected void createConnection(InetSocketAddress socketAddress, Connections connections, int size)
 			throws RemotingException {
-		for (int i = connections.size(); i < size; i++) {
-			Connection connection = connectionFactory.create(socketAddress);
-			connections.add(connection);
+		// Serialize fill attempts for the same address; other addresses are unaffected.
+		synchronized (connections) {
+			while (connections.size() < size) {
+				if (connections.isClosed()) {
+					throw new RemotingException(
+							"Connections to " + socketAddress + " was closed concurrently during connect");
+				}
+				Connection connection = connectionFactory.create(socketAddress);
+				connections.add(connection);
+			}
 		}
 	}
 

@@ -14,9 +14,21 @@
     <url>https://github.com/x-infra-lab/x-remoting</url>
 
     <dependencies>
+        <!--
+            Netty: explicit modules instead of netty-all. netty-handler transitively
+            brings netty-transport, netty-buffer, netty-codec, netty-common, netty-resolver.
+            netty-transport-classes-epoll is required at compile time because EpollUtils
+            references io.netty.channel.epoll.* unconditionally; the native binary is
+            opt-in for users who want Epoll on Linux (add netty-transport-native-epoll
+            with the appropriate classifier).
+        -->
         <dependency>
             <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
+            <artifactId>netty-handler</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-transport-classes-epoll</artifactId>
         </dependency>
 
         <dependency>
@@ -37,6 +49,11 @@
         </dependency>
 
         <!-- test scope start -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-codec-http</artifactId>
+            <scope>test</scope>
+        </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-junit-jupiter</artifactId>

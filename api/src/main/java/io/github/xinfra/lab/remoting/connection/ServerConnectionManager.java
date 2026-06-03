@@ -3,17 +3,17 @@ package io.github.xinfra.lab.remoting.connection;
 import io.github.xinfra.lab.remoting.common.Validate;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 
 public class ServerConnectionManager extends AbstractConnectionManager {
 
 	@Override
-	public Connection connect(SocketAddress socketAddress) throws RemotingException {
+	public Connection connect(InetSocketAddress socketAddress) throws RemotingException {
 		throw new UnsupportedOperationException("ServerConnectionManager not support connect");
 	}
 
 	@Override
-	public Connection get(SocketAddress socketAddress) {
+	public Connection get(InetSocketAddress socketAddress) {
 		ensureStarted();
 		Validate.notNull(socketAddress, "socketAddress can not be null");
 

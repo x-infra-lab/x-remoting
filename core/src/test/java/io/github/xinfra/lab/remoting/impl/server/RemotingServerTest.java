@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -48,22 +48,26 @@ public class RemotingServerTest {
 		remotingServer.shutdown();
 	}
 
+	private static InetSocketAddress clientLocalAddress(Connection connection) {
+		return (InetSocketAddress) connection.getChannel().localAddress();
+	}
+
 	@Test
 	public void testSyncCall() throws RemotingException, InterruptedException {
-		SocketAddress serverAddress = remotingServer.getLocalAddress();
+		InetSocketAddress serverAddress = remotingServer.getLocalAddress();
 		String msg = "hello x-remoting";
 		EchoRequest request = new EchoRequest(msg);
 		String result = remotingClient.blockingCall(echoApi, request, serverAddress, callOptions);
 		Assertions.assertEquals(result, "echo:" + msg);
 
 		Connection connection = remotingClient.getConnectionManager().get(serverAddress);
-		result = remotingServer.blockingCall(echoApi, request, connection.getChannel().localAddress(), callOptions);
+		result = remotingServer.blockingCall(echoApi, request, clientLocalAddress(connection), callOptions);
 		Assertions.assertEquals(result, "echo:" + msg);
 	}
 
 	@Test
 	public void testFutureCall() throws RemotingException, InterruptedException, TimeoutException {
-		SocketAddress serverAddress = remotingServer.getLocalAddress();
+		InetSocketAddress serverAddress = remotingServer.getLocalAddress();
 		String msg = "hello x-remoting";
 		EchoRequest request = new EchoRequest(msg);
 		RemotingFuture<String> future = remotingClient.futureCall(echoApi, request, serverAddress, callOptions);
@@ -72,14 +76,14 @@ public class RemotingServerTest {
 		Assertions.assertEquals(result, "echo:" + msg);
 
 		Connection connection = remotingClient.getConnectionManager().get(serverAddress);
-		future = remotingServer.futureCall(echoApi, request, connection.getChannel().localAddress(), callOptions);
+		future = remotingServer.futureCall(echoApi, request, clientLocalAddress(connection), callOptions);
 		result = future.get(3, TimeUnit.SECONDS);
 		Assertions.assertEquals(result, "echo:" + msg);
 	}
 
 	@Test
 	public void testAsyncCall() throws RemotingException, InterruptedException, TimeoutException {
-		SocketAddress serverAddress = remotingServer.getLocalAddress();
+		InetSocketAddress serverAddress = remotingServer.getLocalAddress();
 		String msg = "hello x-remoting";
 		EchoRequest request = new EchoRequest(msg);
 
@@ -104,7 +108,7 @@ public class RemotingServerTest {
 		Connection connection = remotingClient.getConnectionManager().get(serverAddress);
 		CountDownLatch countDownLatch2 = new CountDownLatch(1);
 		AtomicReference<String> result2 = new AtomicReference<>();
-		remotingServer.asyncCall(echoApi, request, connection.getChannel().localAddress(), callOptions,
+		remotingServer.asyncCall(echoApi, request, clientLocalAddress(connection), callOptions,
 				new RemotingCallBack<String>() {
 					@Override
 					public void onException(Throwable t) {
@@ -124,7 +128,7 @@ public class RemotingServerTest {
 
 	@Test
 	public void testOnewayCall() throws RemotingException, InterruptedException {
-		SocketAddress serverAddress = remotingServer.getLocalAddress();
+		InetSocketAddress serverAddress = remotingServer.getLocalAddress();
 
 		String msg = "hello x-remoting";
 		EchoRequest request = new EchoRequest(msg);
@@ -132,7 +136,7 @@ public class RemotingServerTest {
 		remotingClient.oneway(echoApi, request, serverAddress, callOptions);
 
 		Connection connection = remotingClient.getConnectionManager().get(serverAddress);
-		remotingServer.oneway(echoApi, request, connection.getChannel().localAddress(), callOptions);
+		remotingServer.oneway(echoApi, request, clientLocalAddress(connection), callOptions);
 
 		TimeUnit.SECONDS.sleep(2);
 	}

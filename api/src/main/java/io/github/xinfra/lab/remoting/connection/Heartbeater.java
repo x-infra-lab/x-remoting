@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 
 public interface Heartbeater {
 
@@ -10,8 +10,8 @@ public interface Heartbeater {
 
 	void enableHeartBeat(Connection connection);
 
-	void disableHeartBeat(SocketAddress socketAddress);
+	void disableHeartBeat(InetSocketAddress socketAddress);
 
-	void enableHeartBeat(SocketAddress socketAddress);
+	void enableHeartBeat(InetSocketAddress socketAddress);
 
 }

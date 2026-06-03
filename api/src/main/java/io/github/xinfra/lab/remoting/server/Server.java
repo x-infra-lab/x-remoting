@@ -3,11 +3,11 @@ package io.github.xinfra.lab.remoting.server;
 import io.github.xinfra.lab.remoting.common.LifeCycle;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 
 public interface Server extends LifeCycle {
 
-	SocketAddress getLocalAddress();
+	InetSocketAddress getLocalAddress();
 
 	Protocol getProtocol();
 

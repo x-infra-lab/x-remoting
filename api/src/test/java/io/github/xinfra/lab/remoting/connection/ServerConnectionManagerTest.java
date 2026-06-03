@@ -11,7 +11,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -60,7 +59,7 @@ public class ServerConnectionManagerTest {
 	@Test
 	public void testGet1() throws RemotingException {
 		// valid socketAddress
-		SocketAddress socketAddress = new InetSocketAddress(remoteAddress, serverPort);
+		InetSocketAddress socketAddress = new InetSocketAddress(remoteAddress, serverPort);
 
 		// no connection
 		Connection connection1 = connectionManager.get(socketAddress);
@@ -71,11 +70,11 @@ public class ServerConnectionManagerTest {
 	@Test
 	public void testAdd() throws RemotingException {
 		Connection connection1 = mock(Connection.class);
-		SocketAddress socketAddress1 = new InetSocketAddress("localhost", 8080);
+		InetSocketAddress socketAddress1 = new InetSocketAddress("localhost", 8080);
 		doReturn(socketAddress1).when(connection1).remoteAddress();
 
 		Connection connection2 = mock(Connection.class);
-		SocketAddress socketAddress2 = new InetSocketAddress("localhost", 8081);
+		InetSocketAddress socketAddress2 = new InetSocketAddress("localhost", 8081);
 		doReturn(socketAddress2).when(connection2).remoteAddress();
 
 		connectionManager.add(connection1);
@@ -92,11 +91,11 @@ public class ServerConnectionManagerTest {
 	@Test
 	public void testShutdown() {
 		Connection connection1 = mock(Connection.class);
-		SocketAddress socketAddress1 = new InetSocketAddress("localhost", 8080);
+		InetSocketAddress socketAddress1 = new InetSocketAddress("localhost", 8080);
 		doReturn(socketAddress1).when(connection1).remoteAddress();
 
 		Connection connection2 = mock(Connection.class);
-		SocketAddress socketAddress2 = new InetSocketAddress("localhost", 8081);
+		InetSocketAddress socketAddress2 = new InetSocketAddress("localhost", 8081);
 		doReturn(socketAddress2).when(connection2).remoteAddress();
 
 		connectionManager.add(connection1);

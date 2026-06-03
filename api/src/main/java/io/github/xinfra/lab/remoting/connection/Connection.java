@@ -19,6 +19,7 @@ import java.net.SocketAddress;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 public class Connection {
@@ -40,9 +41,12 @@ public class Connection {
 	@Getter
 	private final Timer timer;
 
-	@Getter
-	@Setter
-	private int heartbeatFailCnt = 0;
+	/**
+	 * Heartbeat failure counter. Mutated concurrently by heartbeat callbacks running on
+	 * the connection's executor; reads happen from the NIO thread on each idle event.
+	 * Backed by {@link AtomicInteger} so updates are race-free.
+	 */
+	private final AtomicInteger heartbeatFailCnt = new AtomicInteger(0);
 
 	@Getter
 	@Setter
@@ -51,6 +55,20 @@ public class Connection {
 	@Getter
 	@Setter
 	private int heartbeatMaxFailCount = 3;
+
+	public int getHeartbeatFailCnt() {
+		return heartbeatFailCnt.get();
+	}
+
+	/** Atomically increment the heartbeat failure count and return the new value. */
+	public int incrementHeartbeatFailCnt() {
+		return heartbeatFailCnt.incrementAndGet();
+	}
+
+	/** Reset the heartbeat failure count to zero (after a successful heartbeat). */
+	public void resetHeartbeatFailCnt() {
+		heartbeatFailCnt.set(0);
+	}
 
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 
@@ -68,7 +86,7 @@ public class Connection {
 	}
 
 	public void addInvokeFuture(InvokeFuture<?> invokeFuture) {
-		InvokeFuture<?> prevFuture = invokeMap.put(invokeFuture.getRequestId(), invokeFuture);
+		InvokeFuture<?> prevFuture = invokeMap.putIfAbsent(invokeFuture.getRequestId(), invokeFuture);
 		Validate.isTrue(prevFuture == null, "requestId: %s already invoked", invokeFuture.getRequestId());
 	}
 
@@ -76,6 +94,12 @@ public class Connection {
 		return invokeMap.remove(requestId);
 	}
 
+	/**
+	 * Returns the channel's remote address. For all production (TCP) usage this is an
+	 * {@link java.net.InetSocketAddress}; the framework's public
+	 * {@code ConnectionManager} / {@code Reconnector} APIs assume this and cast at the
+	 * boundary.
+	 */
 	public SocketAddress remoteAddress() {
 		return channel.remoteAddress();
 	}

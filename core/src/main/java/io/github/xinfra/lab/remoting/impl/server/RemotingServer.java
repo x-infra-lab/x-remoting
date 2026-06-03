@@ -13,60 +13,53 @@ import io.github.xinfra.lab.remoting.server.AbstractServer;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 
 @Slf4j
 public class RemotingServer extends AbstractServer {
 
 	@Getter
-	private RemotingProtocol protocol;
+	private final RemotingProtocol protocol;
 
-	private RemotingCall serverRemotingCall;
+	private final RemotingCall serverRemotingCall;
 
-	private RequestHandlerRegistry requestHandlerRegistry = new RequestHandlerRegistry();
+	private final RequestHandlerRegistry requestHandlerRegistry = new RequestHandlerRegistry();
 
 	public RemotingServer() {
-		super(new RemotingServerConfig());
+		this(new RemotingServerConfig());
 	}
 
 	public RemotingServer(RemotingServerConfig config) {
 		super(config);
+		// Initialize protocol and call BEFORE startup() so that connections accepted by
+		// AbstractServer.startup() can see a fully-initialized protocol when the pipeline
+		// initializer calls createConnection() → getProtocol().
+		this.protocol = new RemotingProtocol(requestHandlerRegistry);
+		this.serverRemotingCall = new RemotingCall(connectionManager);
 	}
 
-	@Override
-	public void startup() {
-		super.startup();
-		protocol = new RemotingProtocol(requestHandlerRegistry);
-		serverRemotingCall = new RemotingCall(connectionManager);
-	}
-
-	@Override
-	public void shutdown() {
-		super.shutdown();
-	}
-
-	public <R> R blockingCall(RequestApi requestApi, Object request, SocketAddress socketAddress,
+	public <R> R blockingCall(RequestApi requestApi, Object request, InetSocketAddress socketAddress,
 			CallOptions callOptions) throws InterruptedException, RemotingException {
 		ensureStarted();
 
 		return serverRemotingCall.blockingCall(requestApi, request, socketAddress, callOptions);
 	}
 
-	public <R> RemotingFuture<R> futureCall(RequestApi requestApi, Object request, SocketAddress socketAddress,
+	public <R> RemotingFuture<R> futureCall(RequestApi requestApi, Object request, InetSocketAddress socketAddress,
 			CallOptions callOptions) throws RemotingException {
 		ensureStarted();
 
 		return serverRemotingCall.futureCall(requestApi, request, socketAddress, callOptions);
 	}
 
-	public <R> void asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress,
+	public <R> void asyncCall(RequestApi requestApi, Object request, InetSocketAddress socketAddress,
 			CallOptions callOptions, RemotingCallBack<R> remotingCallBack) throws RemotingException {
 		ensureStarted();
 
 		serverRemotingCall.asyncCall(requestApi, request, socketAddress, callOptions, remotingCallBack);
 	}
 
-	public void oneway(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions)
+	public void oneway(RequestApi requestApi, Object request, InetSocketAddress socketAddress, CallOptions callOptions)
 			throws RemotingException {
 		ensureStarted();
 

@@ -1,5 +1,6 @@
 package io.github.xinfra.lab.remoting.connection;
 
+import io.github.xinfra.lab.remoting.common.EpollUtils;
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.common.Resource;
 import io.github.xinfra.lab.remoting.common.Validate;
@@ -13,19 +14,15 @@ import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
-import io.netty.channel.epoll.Epoll;
-import io.netty.channel.epoll.EpollEventLoopGroup;
-import io.netty.channel.epoll.EpollSocketChannel;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.flush.FlushConsolidationHandler;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timer;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -41,12 +38,8 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 
 	private ConnectionFactoryConfig connectionFactoryConfig;
 
-	// todo EpollUtils
-	private final EventLoopGroup workerGroup = Epoll.isAvailable()
-			? new EpollEventLoopGroup(Runtime.getRuntime().availableProcessors(),
-					new NamedThreadFactory("RemotingClient-Client-IO-Worker"))
-			: new NioEventLoopGroup(Runtime.getRuntime().availableProcessors(),
-					new NamedThreadFactory("RemotingClient-Client-IO-Worker"));
+	private final EventLoopGroup workerGroup = EpollUtils.newEventLoopGroup(Runtime.getRuntime().availableProcessors(),
+			new NamedThreadFactory("RemotingClient-Client-IO-Worker"));
 
 	private Resource<ExecutorService> defaultExecutorResource = new Resource<ExecutorService>() {
 
@@ -93,11 +86,10 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 
 	private Timer timer;
 
-	private static final Class<? extends SocketChannel> channelClass = Epoll.isAvailable() ? EpollSocketChannel.class
-			: NioSocketChannel.class;
+	private static final Class<? extends SocketChannel> channelClass = EpollUtils.clientChannelClass();
 
 	public DefaultConnectionFactory(Protocol protocol, List<Supplier<ChannelHandler>> channelHandlerSuppliers) {
-		this(protocol, channelHandlerSuppliers, new ConnectionFactoryConfig());
+		this(protocol, channelHandlerSuppliers, ConnectionFactoryConfig.defaults());
 	}
 
 	// Q: why use Supplier to get ChannelHandler?
@@ -125,6 +117,7 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 
 		bootstrap = new Bootstrap();
 		bootstrap.option(ChannelOption.SO_KEEPALIVE, true)
+			.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionFactoryConfig.getConnectTimeout())
 			.group(workerGroup)
 			.channel(channelClass)
 			.handler(new ChannelInitializer<SocketChannel>() {
@@ -132,6 +125,9 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 				@Override
 				protected void initChannel(SocketChannel ch) throws Exception {
 					ChannelPipeline pipeline = ch.pipeline();
+					if (connectionFactoryConfig.isUseFlushConsolidation()) {
+						pipeline.addLast("flushConsolidationHandler", new FlushConsolidationHandler());
+					}
 					if (connectionFactoryConfig.isIdleSwitch()) {
 						pipeline.addLast("idleStateHandler",
 								new IdleStateHandler(connectionFactoryConfig.getIdleReaderTimeout(),
@@ -142,22 +138,29 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 					for (Supplier<ChannelHandler> supplier : channelHandlerSuppliers) {
 						pipeline.addLast(supplier.get());
 					}
-
-					// todo FlushConsolidationHandler
 				}
 			});
 	}
 
 	@Override
-	public Connection create(SocketAddress socketAddress) throws RemotingException {
-		bootstrap.option(ChannelOption.CONNECT_TIMEOUT_MILLIS, connectionFactoryConfig.getConnectTimeout());
+	public Connection create(InetSocketAddress socketAddress) throws RemotingException {
 		ChannelFuture future = bootstrap.connect(socketAddress);
 
-		future.awaitUninterruptibly();
-		if (!future.isDone()) {
-			String errMsg = "Create connection to " + socketAddress + " timeout!";
-			log.warn(errMsg);
-			throw new RemotingException(errMsg);
+		// Wait at most connectTimeout + 100ms so Netty's own CONNECT_TIMEOUT_MILLIS
+		// always fires first and the future carries a real cause.
+		long waitMillis = connectionFactoryConfig.getConnectTimeout() + 100L;
+		try {
+			if (!future.await(waitMillis, TimeUnit.MILLISECONDS)) {
+				future.cancel(true);
+				String errMsg = "Create connection to " + socketAddress + " timeout (" + waitMillis + "ms)!";
+				log.warn(errMsg);
+				throw new RemotingException(errMsg);
+			}
+		}
+		catch (InterruptedException e) {
+			future.cancel(true);
+			Thread.currentThread().interrupt();
+			throw new RemotingException("Create connection to " + socketAddress + " interrupted", e);
 		}
 		if (future.isCancelled()) {
 			String errMsg = "Create connection to " + socketAddress + " cancelled by user!";

@@ -14,7 +14,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
@@ -37,7 +37,7 @@ public class ServerTest {
 	}
 
 	private Connection getConnection(AbstractServer server) throws RemotingException {
-		SocketAddress serverAddress = server.localAddress;
+		InetSocketAddress serverAddress = server.localAddress;
 
 		List<Supplier<ChannelHandler>> channelHandlerSuppliers = new ArrayList<>();
 		channelHandlerSuppliers.add(() -> new HttpClientCodec()); // anyone channel
@@ -104,7 +104,7 @@ public class ServerTest {
 		Connection clientConnection = getConnection(server);
 		Assertions.assertNotNull(clientConnection);
 
-		SocketAddress clientAddress = clientConnection.getChannel().localAddress();
+		InetSocketAddress clientAddress = (InetSocketAddress) clientConnection.getChannel().localAddress();
 
 		Wait.untilIsTrue(() -> {
 			return connectionManager.get(clientAddress) != null;

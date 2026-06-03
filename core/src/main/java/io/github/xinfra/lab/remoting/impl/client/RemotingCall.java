@@ -17,7 +17,7 @@ import io.github.xinfra.lab.remoting.message.MessageFactory;
 import io.github.xinfra.lab.remoting.message.RequestMessage;
 import io.github.xinfra.lab.remoting.message.Requests;
 
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 
 public class RemotingCall implements Call {
 
@@ -27,7 +27,7 @@ public class RemotingCall implements Call {
 		this.connectionManager = connectionManager;
 	}
 
-	public <R> R blockingCall(RequestApi requestApi, Object request, SocketAddress socketAddress,
+	public <R> R blockingCall(RequestApi requestApi, Object request, InetSocketAddress socketAddress,
 			CallOptions callOptions) throws InterruptedException, RemotingException {
 
 		Connection connection = connectionManager.get(socketAddress);
@@ -40,7 +40,7 @@ public class RemotingCall implements Call {
 		return RemotingResponses.getResponseObject(responseMessage);
 	}
 
-	public <R> RemotingFuture<R> futureCall(RequestApi requestApi, Object request, SocketAddress socketAddress,
+	public <R> RemotingFuture<R> futureCall(RequestApi requestApi, Object request, InetSocketAddress socketAddress,
 			CallOptions callOptions) throws RemotingException {
 
 		Connection connection = connectionManager.get(socketAddress);
@@ -53,7 +53,7 @@ public class RemotingCall implements Call {
 		return new RemotingFuture<R>(invokeFuture);
 	}
 
-	public <R> void asyncCall(RequestApi requestApi, Object request, SocketAddress socketAddress,
+	public <R> void asyncCall(RequestApi requestApi, Object request, InetSocketAddress socketAddress,
 			CallOptions callOptions, RemotingCallBack<R> remotingCallBack) throws RemotingException {
 
 		Connection connection = connectionManager.get(socketAddress);
@@ -65,7 +65,7 @@ public class RemotingCall implements Call {
 		asyncCall(requestMessage, connection, callOptions, remotingCallBack);
 	}
 
-	public void oneway(RequestApi requestApi, Object request, SocketAddress socketAddress, CallOptions callOptions)
+	public void oneway(RequestApi requestApi, Object request, InetSocketAddress socketAddress, CallOptions callOptions)
 			throws RemotingException {
 
 		Connection connection = connectionManager.get(socketAddress);

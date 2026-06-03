@@ -2,6 +2,7 @@ package io.github.xinfra.lab.remoting.server;
 
 import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
+import io.github.xinfra.lab.remoting.common.EpollUtils;
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.common.Resource;
 import io.github.xinfra.lab.remoting.common.Validate;
@@ -22,20 +23,13 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.ServerChannel;
-import io.netty.channel.epoll.Epoll;
-import io.netty.channel.epoll.EpollEventLoopGroup;
-import io.netty.channel.epoll.EpollServerSocketChannel;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.SocketChannel;
-import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timer;
 import lombok.extern.slf4j.Slf4j;
 
-import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -44,7 +38,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public abstract class AbstractServer extends AbstractLifeCycle implements Server {
 
-	protected SocketAddress localAddress;
+	protected InetSocketAddress localAddress;
 
 	private Executor executor;
 
@@ -95,18 +89,13 @@ public abstract class AbstractServer extends AbstractLifeCycle implements Server
 
 	private Channel serverChannel;
 
-	private final EventLoopGroup bossGroup = Epoll.isAvailable()
-			? new EpollEventLoopGroup(1, new NamedThreadFactory("RemotingServer-IO-Boss"))
-			: new NioEventLoopGroup(1, new NamedThreadFactory("RemotingServer-IO-Boss"));
+	private final EventLoopGroup bossGroup = EpollUtils.newEventLoopGroup(1,
+			new NamedThreadFactory("RemotingServer-IO-Boss"));
 
-	private final EventLoopGroup workerGroup = Epoll.isAvailable()
-			? new EpollEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2,
-					new NamedThreadFactory("RemotingServer-IO-Worker"))
-			: new NioEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2,
-					new NamedThreadFactory("RemotingServer-IO-Worker"));
+	private final EventLoopGroup workerGroup = EpollUtils.newEventLoopGroup(
+			Runtime.getRuntime().availableProcessors() * 2, new NamedThreadFactory("RemotingServer-IO-Worker"));
 
-	private static final Class<? extends ServerChannel> serverChannelClass = Epoll.isAvailable()
-			? EpollServerSocketChannel.class : NioServerSocketChannel.class;
+	private static final Class<? extends ServerChannel> serverChannelClass = EpollUtils.serverChannelClass();
 
 	private ChannelHandler connectionEventHandler;
 
@@ -195,7 +184,7 @@ public abstract class AbstractServer extends AbstractLifeCycle implements Server
 			}
 			// need update
 			if (config.getPort() == 0) {
-				this.localAddress = channelFuture.channel().localAddress();
+				this.localAddress = (InetSocketAddress) channelFuture.channel().localAddress();
 			}
 			serverChannel = channelFuture.channel();
 		}
@@ -231,7 +220,7 @@ public abstract class AbstractServer extends AbstractLifeCycle implements Server
 	}
 
 	@Override
-	public SocketAddress getLocalAddress() {
+	public InetSocketAddress getLocalAddress() {
 		return this.localAddress;
 	}
 

@@ -3,15 +3,15 @@ package io.github.xinfra.lab.remoting.connection;
 import io.github.xinfra.lab.remoting.common.LifeCycle;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 
-import java.net.SocketAddress;
+import java.net.InetSocketAddress;
 
 public interface ConnectionManager extends LifeCycle {
 
-	Connection connect(SocketAddress socketAddress) throws RemotingException;
+	Connection connect(InetSocketAddress socketAddress) throws RemotingException;
 
-	void disconnect(SocketAddress socketAddress);
+	void disconnect(InetSocketAddress socketAddress);
 
-	Connection get(SocketAddress socketAddress) throws RemotingException;
+	Connection get(InetSocketAddress socketAddress) throws RemotingException;
 
 	void check(Connection connection) throws RemotingException;
 
