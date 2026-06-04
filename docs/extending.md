@@ -1,5 +1,7 @@
 # Extending x-remoting
 
+> [📖 Index](README.md) · Previous: [← Reconnect](reconnect.md) · Next: [FAQ →](faq.md) · [🇨🇳 中文](extending.zh-CN.md)
+
 This page covers the most common extension points.
 
 ## Custom `BackoffPolicy`
@@ -43,7 +45,7 @@ ReconnectConfig cfg = ReconnectConfig.builder()
 
 ## Custom `ReconnectListener`
 
-Already covered in [Reconnect](Reconnect). Common patterns:
+Already covered in [Reconnect](reconnect.md). Common patterns:
 
 ```java
 // Micrometer metrics
@@ -136,6 +138,10 @@ The bundled `RemotingProtocol` in `core` is the reference implementation. If you
 needs match RPC, prefer extending it (register your own `RequestHandler`s) rather
 than rolling a new protocol from scratch.
 
+> See also [Design Debt](design-debt.md) — the `Protocol` extension point is currently
+> more aspirational than complete. The surrounding `Message` / `MessageType`
+> hierarchy is shaped for `RemotingProtocol` specifically.
+
 ## Sharing a Netty `EventLoopGroup` across multiple clients
 
 `DefaultConnectionFactory` creates its own `EventLoopGroup`. If you run many
@@ -147,3 +153,7 @@ clients in the same JVM and want them to share Netty threads, either:
   with a custom `ConnectionFactory` that uses your shared `EventLoopGroup`.
 
 This is on the roadmap but not yet a first-class config knob.
+
+---
+
+> [📖 Index](README.md) · Previous: [← Reconnect](reconnect.md) · Next: [FAQ →](faq.md)

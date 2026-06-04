@@ -1,5 +1,7 @@
 # Architecture
 
+> [📖 Index](README.md) · Previous: [← Getting Started](getting-started.md) · Next: [RPC Usage →](rpc-usage.md) · [🇨🇳 中文](architecture.zh-CN.md)
+
 x-remoting is laid out as two thin layers:
 
 - **api** — the framework (connection / protocol / event / heartbeat / reconnect
@@ -47,6 +49,9 @@ x-remoting is laid out as two thin layers:
 
 If you only want the framework (to build your own protocol), depend on `api`. If you
 want the RPC out of the box, depend on `all` (or `core` directly).
+
+> Heads-up: the `api` / `core` split is currently more aspirational than enforced.
+> See [Design Debt](design-debt.md) for the honest take.
 
 ## Key abstractions
 
@@ -126,7 +131,8 @@ want the RPC out of the box, depend on `all` (or `core` directly).
 There is **no global lock** on the hot paths. `ConnectionManager` uses
 `ConcurrentHashMap.compute` and per-endpoint `Connections` monitors; the reconnector
 keeps one tiny monitor per endpoint task; listeners can opt into their own executors
-so a slow listener doesn't block the dispatcher.
+so a slow listener doesn't block the dispatcher. See [Connection Manager](connection-manager.md)
+for details.
 
 ## Public API contract
 
@@ -136,4 +142,9 @@ uses Netty's `SocketAddress`; `Connection.remoteAddress()` returns `SocketAddres
 and is cast at the framework boundary.
 
 All `*Config` classes are immutable and built via fluent builders. `build()` validates
-the inputs and throws `IllegalArgumentException` on bad values.
+the inputs and throws `IllegalArgumentException` on bad values. See
+[Configuration Reference](configuration-reference.md).
+
+---
+
+> [📖 Index](README.md) · Previous: [← Getting Started](getting-started.md) · Next: [RPC Usage →](rpc-usage.md)

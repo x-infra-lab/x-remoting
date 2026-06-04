@@ -1,5 +1,7 @@
 # FAQ
 
+> [📖 Index](README.md) · Previous: [← Extending](extending.md) · Next: [Design Debt →](design-debt.md) · [🇨🇳 中文](faq.zh-CN.md)
+
 ## Why does the public API take `InetSocketAddress` instead of `SocketAddress`?
 
 x-remoting only supports TCP. Using `InetSocketAddress` in the API removes a round of
@@ -45,7 +47,7 @@ amplifies failure-mode load on the remote. If you need faster recovery, swap in
 ## How do I plug in OpenTelemetry / Micrometer?
 
 For reconnect events: implement `ReconnectListener` and increment your meters in the
-callbacks (see [Extending x-remoting](Extending-x-remoting)).
+callbacks (see [Extending](extending.md)).
 
 For connection-level events: implement `ConnectionEventListener` and register it
 with `connectionEventProcessor()`.
@@ -63,7 +65,7 @@ custom `Protocol`) on top of the `api` module to support other transports.
 Set `RemotingServerConfig.manageConnection=true`. The server then retains accepted
 channels in its `ServerConnectionManager`. Once a client has connected, the server
 can call `server.blockingCall(api, request, clientAddress, opts)` and route the
-request back over that channel. See [RPC Usage](RPC-Usage#server-to-client-calls).
+request back over that channel. See [RPC Usage](rpc-usage.md#server-to-client-calls).
 
 ## Why does `shutdown()` throw `IllegalStateException` the second time I call it?
 
@@ -109,3 +111,7 @@ The Netty `EventLoopGroup`s are daemon threads (Netty default), but the
 `RemotingClient-Reconnect-Worker-*` pool, the event dispatcher thread, and the
 server's cached executor are not. **Always call `shutdown()`** so the JVM can exit
 cleanly.
+
+---
+
+> [📖 Index](README.md) · Previous: [← Extending](extending.md) · Next: [Design Debt →](design-debt.md)

@@ -1,62 +1,10 @@
-# ConnectionManager
+# Connection Manager
 
-> 中文版：[connection-manager.zh-CN.md](./connection-manager.zh-CN.md)
+> [📖 Index](README.md) · Previous: [← Configuration Reference](configuration-reference.md) · Next: [Reconnect →](reconnect.md) · [🇨🇳 中文](connection-manager.zh-CN.md)
 
-`ConnectionManager` is x-remoting's central abstraction for owning and reusing
-TCP connections. On the client side it keeps a pool of warm connections per remote
-address; on the server side it indexes connections accepted from peers. All the
-machinery for building connections, watching their health, reacting to failures, and
-firing lifecycle events sits behind this one interface.
-
-## Type map
-
-```
-                                 ConnectionManager  (interface, extends LifeCycle)
-                                          ▲
-                                          │
-                          ┌───────────────┴───────────────┐
-                          │                               │
-              AbstractConnectionManager           (shared base)
-                          │
-                ┌─────────┴────────────┐
-                │                      │
-   ClientConnectionManager       ServerConnectionManager
-   (active dialer, owns          (registers accepted
-    Reconnector + Heartbeater)    channels; no dialing)
-```
-
-Supporting collaborators:
-
-| Type                          | Role                                                      |
-|-------------------------------|-----------------------------------------------------------|
-| `Connection`                  | Wrapper around a Netty `Channel` + protocol + executor + timer + outstanding `InvokeFuture` map. |
-| `Connections`                 | Per-address pool of `Connection` objects with a closed flag and safe `add()`. |
-| `ConnectionFactory`           | Builds a `Connection` to a target address.                |
-| `DefaultConnectionFactory`    | Netty `Bootstrap`-based implementation.                   |
-| `ConnectionFactoryConfig`     | Idle timeouts, connect timeout, optional shared `Executor`/`Timer`. |
-| `ConnectionManagerConfig`     | Pool sizing (`connectionNumPerEndpoint`).                 |
-| `ConnectionSelectStrategy`    | Picks one `Connection` from a pool (default: round robin). |
-| `ConnectionEventProcessor`    | Async fan-out of `CONNECT`/`CLOSE` events to listeners.   |
-| `ConnectionEventListener`     | User callback for `CONNECT`/`CLOSE`.                      |
-| `ConnectionEventHandler`      | Netty handler that bridges `channelInactive` /`exceptionCaught` to the manager and fires events. |
-| `Heartbeater`                 | Triggered by Netty `IdleStateEvent`; sends heartbeat request, counts failures, closes channel after N failures. |
-| `Reconnector`                 | Per-endpoint reconnect state machine. See [reconnect.md](./reconnect.md). |
-
-## ConnectionManager interface
-
-```java
-public interface ConnectionManager extends LifeCycle {
-    Connection connect(InetSocketAddress addr) throws RemotingException;   // build pool, return one
-    void       disconnect(InetSocketAddress addr);                          // tear pool down
-    Connection get(InetSocketAddress addr) throws RemotingException;        // get-or-connect
-    void       check(Connection conn) throws RemotingException;         // liveness probe
-    void       close(Connection conn);                                  // remove single conn
-    void       add(Connection conn);                                    // register a conn (server)
-    Reconnector              reconnector();                             // may be null on server
-    ConnectionEventProcessor connectionEventProcessor();
-    Heartbeater              heartbeater();                             // may be null on server
-}
-```
+`ConnectionManager` is the central abstraction that owns and reuses TCP connections.
+On the client it keeps a pool of warm connections per remote address; on the server
+it indexes connections accepted from peers.
 
 ## Pool layout
 
@@ -68,51 +16,25 @@ ClientConnectionManager
          └── …
 ```
 
-- `connectionsMap` is a `ConcurrentHashMap`; the bucket key is the remote
-  `SocketAddress`.
+- The map is a `ConcurrentHashMap`; pool size per address is
+  `ConnectionManagerConfig.connectionNumPerEndpoint` (default 1).
 - Each `Connections` holds a `CopyOnWriteArrayList<Connection>` plus a `volatile
-  boolean closed` flag. After `close()` it rejects subsequent `add()`s (the offered
-  connection is closed instead of leaked).
-- Pool size per address is `ConnectionManagerConfig.connectionNumPerEndpoint`
-  (default `1`).
-- A `ConnectionSelectStrategy` chooses among the live connections; the default
-  `RoundRobinConnectionSelectStrategy` uses an `AtomicInteger` counter.
+  boolean closed` flag — after `close()` it rejects further `add()`s by immediately
+  closing the offered connection, so disconnect/add races don't leak channels.
+- A `ConnectionSelectStrategy` picks one of the live connections. Default is
+  `RoundRobinConnectionSelectStrategy`.
 
 ## Connection internals
 
-`Connection` wraps a single Netty `Channel` and carries:
+`Connection` wraps a Netty `Channel` plus:
 
-- `Protocol` — codecs and message factory used over this channel.
-- `Executor` — where user-space callbacks (e.g. `InvokeCallBack`) run; defaults to a
-  shared pool inside `DefaultConnectionFactory`.
-- `Timer` — `HashedWheelTimer` used to time out in-flight requests; also shared.
-- `invokeMap : ConcurrentHashMap<Integer, InvokeFuture<?>>` — outstanding RPCs keyed
-  by request id.
-- `closed : AtomicBoolean` — `close()` is idempotent. When closed, all outstanding
-  `InvokeFuture`s are completed with `ConnectionClosed` status.
+- `Protocol` — codecs and message factory for this channel
+- `Executor` — where user callbacks run (defaults to a pool inside `DefaultConnectionFactory`)
+- `Timer` — `HashedWheelTimer` for request timeouts
+- `invokeMap : ConcurrentHashMap<Integer, InvokeFuture<?>>` — outstanding RPCs by request id
+- `closed : AtomicBoolean` — idempotent `close()`; pending `InvokeFuture`s complete with `ConnectionClosed`
 
-The newly constructed `Connection` immediately fires `ConnectionEvent.CONNECT` on the
-channel pipeline.
-
-## Lifecycle
-
-```
-startup()
-  └── AbstractConnectionManager.startup()
-        ├── super.startup()                        (flips started=true)
-        └── connectionEventProcessor.startup()     (starts event dispatch thread)
-  └── ClientConnectionManager.startup() also:
-        └── reconnector.startup()                  (starts HashedWheelTimer + worker pool)
-
-shutdown()
-  └── ClientConnectionManager.shutdown()
-        ├── super.shutdown()                       (disconnects every address)
-        ├── connectionFactory.close()              (shuts down Netty EventLoopGroup)
-        └── reconnector.shutdown()                 (cancels timers, drains workers)
-```
-
-`AbstractLifeCycle.shutdown()` uses a CAS-protected flag, so a duplicate `shutdown()`
-throws `IllegalStateException`.
+The `Connection` constructor fires `ConnectionEvent.CONNECT` on the pipeline.
 
 ## End-to-end flows
 
@@ -136,38 +58,28 @@ get(addr)
 ```
 
 `DefaultConnectionFactory.create(addr)` does `bootstrap.connect(addr)` then waits on
-the future with `await(connectTimeout + 100ms)`. Interrupts are honored (the in-flight
-connect is cancelled and `RemotingException` is thrown). The constructed `Connection`
-ends up on the channel as the `CONNECTION` attribute and fires `ConnectionEvent.CONNECT`
-through the pipeline.
+the future with `await(connectTimeout + 100ms)`. **Interrupts are honored** — the
+in-flight connect is cancelled and `RemotingException` is thrown.
 
 ### `close(connection)` — passive teardown
 
-This is called from `ConnectionEventHandler.channelInactive` (which fires on link
-drop, peer reset, idle close, heartbeat-driven close, exception, etc.) and from
-`check()` when liveness fails.
+Fires from `ConnectionEventHandler.channelInactive` (link drop, peer reset, idle
+close, heartbeat-driven close, exception) and from `check()` when liveness fails.
 
 ```
-NIO thread → channelInactive
-   └── if (connectionManager.isStarted()) connectionManager.close(conn)
-   └── userEventTriggered(ConnectionEvent.CLOSE)
-
 ConnectionManager.close(conn):
    ├── connections = connectionsMap.get(addr)
    ├── if connections == null  → conn.close(); return
    ├── connections.invalidate(conn)  → conn.close() + COW remove
-   │     ├── true  → reconnector.onUnhealthy(addr)   (see reconnect.md)
+   │     ├── true  → reconnector.onUnhealthy(addr)
    │     └── false → no-op
    └── if connections.isEmpty()  → connectionsMap.remove(addr, connections)
 ```
 
-The `remove(addr, connections)` form only deletes the entry if it still points to
-the same `Connections` object — guards against a concurrent `add()` that recreated
-the pool.
+The two-arg `remove(addr, connections)` only deletes if the mapping still points to
+the same `Connections` — guards against a concurrent `add()` that recreated the pool.
 
 ### `disconnect(addr)` — active teardown
-
-User explicitly says "I am done with this endpoint":
 
 ```
 ConnectionManager.disconnect(addr):
@@ -176,117 +88,109 @@ ConnectionManager.disconnect(addr):
    └── if connections != null: connections.close() (mark closed + close every conn)
 ```
 
-If a concurrent `add()` slipped in after `remove()`, its target `Connections` is the
-**new** one in the map; the old one is closed cleanly. Conversely if the `add()`
-landed inside the old `Connections` after `close()` marked it, `Connections.add()`
-closes the offered connection instead of leaking it.
-
-### `add(connection)` — server-side registration
-
-```
-ConnectionManager.add(conn):
-   └── connectionsMap.compute(addr, (k, existing) -> {
-         Connections cs = (existing != null) ? existing : new Connections(strategy);
-         cs.add(conn);
-         return cs;
-       });
-```
-
-Atomic create-or-append against `connectionsMap`, plus the `closed`-aware `add()` on
-`Connections` itself.
-
 ## Concurrency model
 
-The reconnect rewrite removed every global `synchronized` from `AbstractConnectionManager`:
+There is no global `synchronized` on the hot paths. Per-operation locks:
 
-| Operation        | Lock(s) held                                          |
+| Operation        | Locks held                                            |
 |------------------|-------------------------------------------------------|
 | `get(addr)`      | None on the hot path. May fall through to `connect`.  |
-| `connect(addr)`  | `synchronized (connections)` during the fill loop. Per-address only. |
+| `connect(addr)`  | `synchronized (connections)` during the fill loop only. Per-address. |
 | `close(conn)`    | None at the manager. `Connections.invalidate` is COW-based. |
 | `disconnect(addr)` | None at the manager. `Connections.close` flips a volatile flag. |
 | `add(conn)`      | `ConcurrentHashMap` bucket lock during `compute`. Short. |
 
 NIO threads invoking `channelInactive → close(conn)` never contend with a slow
-`connect()` on another address.
+`connect()` on a different address.
 
-## ConnectionEvent fan-out
+## Connection events
 
-`ConnectionEvent` enum has two values: `CONNECT` (fired in the `Connection`
-constructor) and `CLOSE` (fired in `ConnectionEventHandler.channelInactive`). They are
-forwarded by `ConnectionEventHandler.userEventTriggered` to
-`ConnectionEventProcessor.handleEvent(event, connection)`.
+`ConnectionEvent` has two values: `CONNECT` (fired from the `Connection` constructor)
+and `CLOSE` (fired from `channelInactive`). They're forwarded to
+`ConnectionEventProcessor.handleEvent(event, connection)` and asynchronously
+dispatched to every registered `ConnectionEventListener`.
 
-`DefaultConnectionEventProcessor` enqueues every event into an unbounded
-`LinkedBlockingQueue` and a single background thread
-(`RemotingClient-Connection-Event`) drains the queue and dispatches to each
-registered `ConnectionEventListener`. Listener exceptions are caught and logged so
-one bad listener cannot affect the others. Event delivery is asynchronous and ordered
-per-process (single dispatcher thread).
+```java
+client.getConnectionManager().connectionEventProcessor()
+      .addConnectionEventListener(new ConnectionEventListener() {
+          @Override public void onEvent(ConnectionEvent evt, Connection conn) {
+              log.info("{} {}", evt, conn.remoteAddress());
+          }
+      });
+```
+
+### Dispatcher executor
+
+By default, every event is dispatched on a single `RemotingClient-Connection-Event`
+thread. A slow listener will delay subsequent events. Two escape hatches:
+
+- **Per-listener executor.** Listeners that need to do I/O or other slow work can
+  override `executor()`:
+  ```java
+  new ConnectionEventListener() {
+      @Override public void onEvent(...) { /* slow work */ }
+      @Override public Executor executor() { return myPool; }
+  }
+  ```
+- **Custom dispatcher.** Construct `DefaultConnectionEventProcessor(myExecutor)` to
+  replace the default single-thread dispatcher entirely. The caller owns the
+  executor's lifecycle.
 
 ## Heartbeats
 
-Heartbeats are driven by Netty's `IdleStateHandler` (installed via
-`ConnectionFactoryConfig.idleSwitch / idleReader / idleWriter / idleAll`, all
-defaulting to 15 s). When an idle event fires, `ProtocolHeartBeatHandler` calls
-`Heartbeater.triggerHeartBeat(connection)`.
+The heartbeat is driven by Netty's `IdleStateHandler` (installed when
+`ConnectionFactoryConfig.idleSwitch=true`, default). When an idle event fires,
+`ProtocolHeartBeatHandler` calls `Heartbeater.triggerHeartBeat(connection)`.
 
-`DefaultHeartbeater` sends a heartbeat `RequestMessage` over the connection. On
-success it resets `connection.heartbeatFailCnt`; on failure it increments the counter.
-When `failCnt >= heartbeatMaxFailCount` (default `3`), the connection is closed — which
-in turn triggers `channelInactive → close(conn) → reconnector.onUnhealthy(addr)`.
+`DefaultHeartbeater` sends a heartbeat `RequestMessage` over the connection:
 
-Heartbeat can be suppressed per-`Connection` or per-`SocketAddress` via
-`disableHeartBeat` / `enableHeartBeat`.
+- **Success** → `connection.heartbeatFailCnt` reset to 0
+- **Failure** → `heartbeatFailCnt` incremented (atomically)
+- **`heartbeatFailCnt >= heartbeatMaxFailCount`** (default 3) → close the connection,
+  which triggers `channelInactive → close(conn) → reconnector.onUnhealthy(addr)`
 
-## Reconnection
-
-`ClientConnectionManager.reconnector()` returns a `Reconnector` that drives
-per-endpoint reconnect tasks with backoff + jitter. The Reconnector is documented in
-detail in [reconnect.md](./reconnect.md). The connection between the two:
-
-- `AbstractConnectionManager.close(conn)` calls `reconnector.onUnhealthy(addr)` after
-  removing the connection from its pool (only if the reconnector is started).
-- `AbstractConnectionManager.disconnect(addr)` calls `reconnector.cancel(addr)`
-  before removing the pool.
-- `ServerConnectionManager.reconnector()` returns `null`; the abstract base
-  null-checks before every call.
-
-## Configuration
+Heartbeat can be paused per-`Connection` or per-`InetSocketAddress`:
 
 ```java
-RemotingClientConfig clientConfig = new RemotingClientConfig();
-clientConfig.setConnectionFactoryConfig(connectionFactoryConfig);   // optional
-clientConfig.setConnectionManagerConfig(connectionManagerConfig);   // optional
-clientConfig.setReconnectConfig(reconnectConfig);                   // optional
-RemotingClient client = new RemotingClient(clientConfig);
+client.getConnectionManager().heartbeater().disableHeartBeat(connection);
+client.getConnectionManager().heartbeater().disableHeartBeat(address);
 ```
 
-`ConnectionFactoryConfig` knobs (all optional, sensible defaults):
+Both blocklists are stored in `ConcurrentHashMap.newKeySet()` so they're safe to
+mutate from any thread.
 
-| Field                  | Default | Effect                                              |
-|------------------------|---------|-----------------------------------------------------|
-| `idleSwitch`           | `true`  | Install `IdleStateHandler` and run heartbeats.      |
-| `idleReader/Writer/AllTimeout` | 15000 ms | Idle thresholds.                          |
-| `connectTimeout`       | 1000 ms | Netty `CONNECT_TIMEOUT_MILLIS` + the await ceiling. |
-| `executor` / `timer`   | `null`  | Optional shared `ExecutorService` / `Timer` for `Connection` callbacks. When `null`, `DefaultConnectionFactory` owns its own and closes them on `shutdown`. |
+## Lifecycle
 
-`ConnectionManagerConfig`:
+```
+startup()
+  └── AbstractConnectionManager.startup()
+        ├── super.startup()                        (started = true)
+        └── connectionEventProcessor.startup()     (starts dispatcher)
+  └── ClientConnectionManager.startup() also:
+        └── reconnector.startup()                  (starts HashedWheelTimer + worker pool)
 
-| Field                          | Default | Effect                            |
-|--------------------------------|---------|-----------------------------------|
-| `connectionNumPerEndpoint`     | `1`     | Pool size per address.            |
+shutdown()
+  └── ClientConnectionManager.shutdown()
+        ├── super.shutdown()                       (disconnects every address)
+        ├── connectionFactory.close()              (shuts down Netty EventLoopGroup)
+        └── reconnector.shutdown()                 (cancels timers, drains workers)
+```
 
-`ReconnectConfig` — see [reconnect.md](./reconnect.md).
+`AbstractLifeCycle.shutdown()` uses a CAS-protected flag, so a duplicate `shutdown()`
+call throws `IllegalStateException`.
 
 ## Server-side specialisation
 
-`ServerConnectionManager` reuses the abstract base for `add`, `close`, `disconnect`,
-`get`, and `check`, but:
+`ServerConnectionManager` reuses the base for `add`, `close`, `disconnect`, `get`,
+and `check`, but:
 
 - `connect(addr)` throws `UnsupportedOperationException` — the server does not dial.
-- `reconnector()` and `heartbeater()` return `null` — the server does not retry or
-  ping clients.
+- `reconnector()` and `heartbeater()` return `null` — the server doesn't retry or
+  ping clients. The abstract base null-checks before every call.
 
-The same `ConnectionEventHandler` runs on the server pipeline, so listeners receive
-`CONNECT` / `CLOSE` for every accepted channel.
+The same `ConnectionEventHandler` runs on the server pipeline, so registered
+listeners receive `CONNECT` / `CLOSE` for every accepted channel.
+
+---
+
+> [📖 Index](README.md) · Previous: [← Configuration Reference](configuration-reference.md) · Next: [Reconnect →](reconnect.md)

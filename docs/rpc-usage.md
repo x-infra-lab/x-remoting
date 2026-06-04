@@ -1,5 +1,7 @@
 # RPC Usage
 
+> [📖 Index](README.md) · Previous: [← Architecture](architecture.md) · Next: [Configuration Reference →](configuration-reference.md) · [🇨🇳 中文](rpc-usage.zh-CN.md)
+
 The `core` module ships a complete RPC built on top of the framework. This page
 covers the entry-point APIs you'll touch day-to-day.
 
@@ -17,7 +19,7 @@ client.shutdown();
 
 The no-arg constructor uses `ConnectionFactoryConfig.defaults()`,
 `ConnectionManagerConfig.defaults()`, and `ReconnectConfig.defaults()`. See
-[Configuration Reference](Configuration-Reference) for what you can change.
+[Configuration Reference](configuration-reference.md) for what you can change.
 
 ### Four call patterns
 
@@ -189,6 +191,9 @@ client.shutdown()
           └── reconnector.shutdown()      // cancels timers, drains workers
 ```
 
+For the gory details, see [Connection Manager](connection-manager.md) and
+[Reconnect](reconnect.md).
+
 ## Common mistakes
 
 - **Forgetting `manageConnection=true` for reverse calls.** Without it, the server
@@ -199,3 +204,7 @@ client.shutdown()
   serialization.** Hessian uses field names; add fields cautiously.
 - **Calling `shutdown()` twice.** `AbstractLifeCycle` is CAS-guarded and throws
   `IllegalStateException` on the second call.
+
+---
+
+> [📖 Index](README.md) · Previous: [← Architecture](architecture.md) · Next: [Configuration Reference →](configuration-reference.md)

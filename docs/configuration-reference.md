@@ -1,5 +1,7 @@
 # Configuration Reference
 
+> [📖 Index](README.md) · Previous: [← RPC Usage](rpc-usage.md) · Next: [Connection Manager →](connection-manager.md) · [🇨🇳 中文](configuration-reference.zh-CN.md)
+
 Every tuning knob in x-remoting lives in one of five config classes. All of them are
 **immutable**, built via a fluent builder, and validated at `build()` time.
 
@@ -61,7 +63,7 @@ ConnectionManagerConfig pool = ConnectionManagerConfig.builder()
 
 ## `ReconnectConfig`
 
-Controls the reconnect state machine. See [Reconnect](Reconnect) for the full model.
+Controls the reconnect state machine. See [Reconnect](reconnect.md) for the full model.
 
 | Field                    | Default                                  | Effect                                                |
 |--------------------------|------------------------------------------|-------------------------------------------------------|
@@ -90,7 +92,7 @@ ReconnectConfig reconnect = ReconnectConfig.builder()
 | `NoReconnectPolicy`            | Returns `-1` — never retries (effectively disables reconnect) |
 
 Roll your own by implementing `BackoffPolicy.nextDelayNanos(int attempts)`. Return a
-negative value to signal "give up".
+negative value to signal "give up". See [Extending](extending.md) for an example.
 
 ## `RemotingClientConfig`
 
@@ -138,3 +140,7 @@ Distinct from the configs above — passed on each call:
 | `timeoutMills`       | 3000                     | Per-call timeout                        |
 | `serializationType`  | `Hession`                | Per-call serializer override            |
 | `headers`            | empty `DefaultMessageHeaders` | Custom message headers              |
+
+---
+
+> [📖 Index](README.md) · Previous: [← RPC Usage](rpc-usage.md) · Next: [Connection Manager →](connection-manager.md)
