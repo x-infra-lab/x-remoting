@@ -29,7 +29,7 @@ String result = client.blockingCall(
         RequestApi.of("echo"),
         new EchoRequest("hi"),
         address,
-        new CallOptions());
+        CallOptions.defaults());
 ```
 
 线程阻塞直到响应到达或 per-call 超时（`CallOptions.timeoutMills`，默认 3000ms）。传输/序列化错误抛 `RemotingException`，服务端错误响应抛 `ResponseStatusRuntimeException`。
@@ -41,7 +41,7 @@ RemotingFuture<String> future = client.futureCall(
         RequestApi.of("echo"),
         new EchoRequest("hi"),
         address,
-        new CallOptions());
+        CallOptions.defaults());
 
 String result = future.get(3, TimeUnit.SECONDS);   // 或 future.get()
 boolean done = future.isDone();
@@ -54,7 +54,7 @@ client.asyncCall(
         RequestApi.of("echo"),
         new EchoRequest("hi"),
         address,
-        new CallOptions(),
+        CallOptions.defaults(),
         new RemotingCallBack<String>() {
             @Override public void onResponse(String response) { /* ... */ }
             @Override public void onException(Throwable t)   { /* ... */ }
@@ -66,7 +66,7 @@ client.asyncCall(
 #### `oneway` —— 发完不管
 
 ```java
-client.oneway(RequestApi.of("notify"), new Notify("..."), address, new CallOptions());
+client.oneway(RequestApi.of("notify"), new Notify("..."), address, CallOptions.defaults());
 ```
 
 不返回响应、不追踪 `InvokeFuture`。适合不关心对端是否收到的事件型场景。
@@ -132,12 +132,13 @@ client.registerRequestHandler(RequestApi.of("notify"), (Notify n) -> { /* ... */
 ## CallOptions
 
 ```java
-@Data
-public class CallOptions {
-    private int timeoutMills = 3000;
-    private SerializationType serializationType = SerializationType.Hession;
-    private DefaultMessageHeaders headers = new DefaultMessageHeaders();
-}
+CallOptions opts = CallOptions.builder()
+        .timeoutMills(5000)
+        .serializationType(SerializationType.Hession)
+        .build();
+
+// 或者用全部默认值：
+CallOptions opts = CallOptions.defaults();
 ```
 
 - `timeoutMills` —— per-call 超时。框架往 `HashedWheelTimer` 排个 timeout，到点没拿到响应就用 `Timeout` 状态完成 `InvokeFuture`。

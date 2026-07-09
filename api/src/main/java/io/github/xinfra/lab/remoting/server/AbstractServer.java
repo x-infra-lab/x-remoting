@@ -50,7 +50,7 @@ public abstract class AbstractServer extends AbstractLifeCycle implements Server
 		public ExecutorService get() {
 			if (defaultExecutor == null) {
 				defaultExecutor = Executors
-					.newCachedThreadPool(new NamedThreadFactory("RemotingClient-Server-Default-Executor"));
+					.newCachedThreadPool(new NamedThreadFactory("RemotingServer-Default-Executor"));
 			}
 			return defaultExecutor;
 		}
@@ -70,7 +70,7 @@ public abstract class AbstractServer extends AbstractLifeCycle implements Server
 		@Override
 		public Timer get() {
 			if (defaultTimer == null) {
-				defaultTimer = new HashedWheelTimer(new NamedThreadFactory("RemotingClient-Server-Timer"));
+				defaultTimer = new HashedWheelTimer(new NamedThreadFactory("RemotingServer-Timer"));
 			}
 			return defaultTimer;
 		}

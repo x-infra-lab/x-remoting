@@ -15,7 +15,7 @@ public class ResponseMessageTypeHandler implements MessageTypeHandler<ResponseMe
 	@Override
 	public void handleMessage(Connection connection, ResponseMessage responseMessage) {
 		int id = responseMessage.getId();
-		InvokeFuture<?> future = connection.removeInvokeFuture(id);
+		InvokeFuture<?> future = connection.getInFlightRequests().remove(id);
 		if (future != null) {
 			future.cancelTimeout();
 			future.complete(responseMessage);

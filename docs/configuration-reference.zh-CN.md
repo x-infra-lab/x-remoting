@@ -127,7 +127,7 @@ server.setIdleAllTimeout(60_000);
 
 ## `CallOptions`（per-call）
 
-跟上面的 config 不同，每次调用都要传：
+不可变，通过 `CallOptions.builder()...build()` 或 `CallOptions.defaults()` 构造。每次调用都要传：
 
 | 字段                | 默认值                  | 作用                                  |
 |--------------------|------------------------|--------------------------------------|

@@ -53,7 +53,7 @@ public class CallTest {
 
 	MessageFactory messageFactory;
 
-	CallOptions callOptions = new CallOptions();
+	CallOptions callOptions = CallOptions.defaults();
 
 	@BeforeEach
 	public void beforeEach() {
@@ -89,7 +89,7 @@ public class CallTest {
 		executor.submit(() -> {
 			try {
 				Wait.untilIsTrue(() -> {
-					InvokeFuture invokeFuture = connection.removeInvokeFuture(requestId);
+					InvokeFuture invokeFuture = connection.getInFlightRequests().remove(requestId);
 					if (invokeFuture != null) {
 						invokeFuture.complete(mockResponseMessage);
 						return true;
@@ -168,7 +168,7 @@ public class CallTest {
 
 		// onMessage invokeFuture
 		Wait.untilIsTrue(() -> {
-			InvokeFuture future = connection.removeInvokeFuture(requestId);
+			InvokeFuture future = connection.getInFlightRequests().remove(requestId);
 			if (future != null) {
 				future.cancelTimeout();
 				future.complete(responseMessage);
@@ -245,7 +245,7 @@ public class CallTest {
 
 		// onMessage invokeFuture
 		Wait.untilIsTrue(() -> {
-			InvokeFuture future = connection.removeInvokeFuture(requestId);
+			InvokeFuture future = connection.getInFlightRequests().remove(requestId);
 			if (future != null) {
 				future.cancelTimeout();
 				future.complete(responseMessage);
@@ -304,7 +304,7 @@ public class CallTest {
 
 		// onMessage invokeFuture
 		Wait.untilIsTrue(() -> {
-			InvokeFuture future = connection.removeInvokeFuture(requestId);
+			InvokeFuture future = connection.getInFlightRequests().remove(requestId);
 			if (future != null) {
 				future.cancelTimeout();
 				future.complete(responseMessage);

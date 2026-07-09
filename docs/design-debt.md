@@ -1,6 +1,6 @@
 # Design Debt
 
-> [📖 Index](README.md) · Previous: [← FAQ](faq.md) · [🇨🇳 中文](design-debt.zh-CN.md)
+> [📖 Index](README.md) · Previous: [← FAQ](faq.md) · Next: [Roadmap →](roadmap.md) · [🇨🇳 中文](design-debt.zh-CN.md)
 
 This is an honest, opinionated list of architectural debt and design smells that
 exist in the codebase as of `35bb2ce`. The intent is to be useful to future
@@ -337,4 +337,4 @@ If someone wants to start paying this debt down:
 
 ---
 
-> [📖 Index](README.md) · Previous: [← FAQ](faq.md)
+> [📖 Index](README.md) · Previous: [← FAQ](faq.md) · Next: [Roadmap →](roadmap.md)

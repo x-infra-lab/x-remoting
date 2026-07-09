@@ -37,8 +37,9 @@ public class DefaultHeartbeater implements Heartbeater {
 			log.debug("heartbeat is disabled for socket address:{}", connection.remoteAddress());
 			return;
 		}
-		int heartbeatFailCount = connection.getHeartbeatFailCnt();
-		if (heartbeatFailCount >= connection.getHeartbeatMaxFailCount()) {
+		HeartbeatState hbState = connection.getHeartbeatState();
+		int heartbeatFailCount = hbState.getFailCount();
+		if (heartbeatFailCount >= hbState.getMaxFailCount()) {
 			connection.close();
 			log.error("close connection after heartbeat fail {} times. remote address:{}", heartbeatFailCount,
 					connection.remoteAddress());
@@ -49,16 +50,15 @@ public class DefaultHeartbeater implements Heartbeater {
 		RequestMessage heartbeatRequestMessage = protocol.getMessageFactory()
 			.createHeartbeatRequest(IDGenerator.nextRequestId(), SerializationType.Hession);
 
-		CallOptions callOptions = new CallOptions();
-		callOptions.setTimeoutMills(connection.getHeartbeatTimeoutMills());
+		CallOptions callOptions = CallOptions.builder().timeoutMills(hbState.getTimeoutMills()).build();
 		call.asyncCall(heartbeatRequestMessage, connection, callOptions, responseMessage -> {
 
 			if (responseMessage.getResponseStatus() == ResponseStatus.OK) {
 				log.debug("heartbeat success. remote address:{}", connection.remoteAddress());
-				connection.resetHeartbeatFailCnt();
+				connection.getHeartbeatState().resetFailCount();
 			}
 			else {
-				int failCount = connection.incrementHeartbeatFailCnt();
+				int failCount = connection.getHeartbeatState().incrementFailCount();
 				log.warn("heartbeat fail {} times. remote address:{}", failCount, connection.remoteAddress());
 			}
 

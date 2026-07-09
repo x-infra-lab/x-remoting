@@ -20,7 +20,7 @@ public class QuickStartClient {
                 RequestApi.of("echo"),
                 new EchoRequest("hello"),
                 address,
-                new CallOptions()
+                CallOptions.defaults()
         );
 
         System.out.println(msg);

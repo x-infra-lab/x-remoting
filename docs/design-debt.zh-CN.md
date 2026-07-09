@@ -1,6 +1,6 @@
 # 设计债
 
-> [📖 索引](README.zh-CN.md) · 上一篇：[← FAQ](faq.zh-CN.md) · [🇬🇧 English](design-debt.md)
+> [📖 索引](README.zh-CN.md) · 上一篇：[← FAQ](faq.zh-CN.md) · 下一篇：[路线图 →](roadmap.zh-CN.md) · [🇬🇧 English](design-debt.md)
 
 这是一份诚实、有立场的架构债和设计 smell 清单，记录截至 `35bb2ce` 时代码库里还存在的问题。目的是对后来的贡献者**有用**，而不是客气。按伤害位置分组、按严重度打标：
 
@@ -226,4 +226,4 @@ server shutdown 时，已接入连接被关闭。客户端视角上跟网络故�
 
 ---
 
-> [📖 索引](README.zh-CN.md) · 上一篇：[← FAQ](faq.zh-CN.md)
+> [📖 索引](README.zh-CN.md) · 上一篇：[← FAQ](faq.zh-CN.md) · 下一篇：[路线图 →](roadmap.zh-CN.md)

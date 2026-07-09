@@ -1,10 +1,8 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import io.github.xinfra.lab.remoting.annotation.AccessForTest;
+import io.github.xinfra.lab.remoting.client.InFlightRequests;
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
 import io.github.xinfra.lab.remoting.common.Validate;
-import io.github.xinfra.lab.remoting.message.ResponseMessage;
-import io.github.xinfra.lab.remoting.message.ResponseStatus;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -12,22 +10,16 @@ import io.netty.channel.ChannelFutureListener;
 import io.netty.util.AttributeKey;
 import io.netty.util.Timer;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.net.SocketAddress;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 public class Connection {
 
 	public static final AttributeKey<Connection> CONNECTION = AttributeKey.valueOf("connection");
-
-	@AccessForTest
-	protected ConcurrentHashMap<Integer, InvokeFuture<?>> invokeMap = new ConcurrentHashMap<>();
 
 	@Getter
 	private final Channel channel;
@@ -41,34 +33,11 @@ public class Connection {
 	@Getter
 	private final Timer timer;
 
-	/**
-	 * Heartbeat failure counter. Mutated concurrently by heartbeat callbacks running on
-	 * the connection's executor; reads happen from the NIO thread on each idle event.
-	 * Backed by {@link AtomicInteger} so updates are race-free.
-	 */
-	private final AtomicInteger heartbeatFailCnt = new AtomicInteger(0);
+	@Getter
+	private final InFlightRequests inFlightRequests = new InFlightRequests();
 
 	@Getter
-	@Setter
-	private int heartbeatTimeoutMills = 3000;
-
-	@Getter
-	@Setter
-	private int heartbeatMaxFailCount = 3;
-
-	public int getHeartbeatFailCnt() {
-		return heartbeatFailCnt.get();
-	}
-
-	/** Atomically increment the heartbeat failure count and return the new value. */
-	public int incrementHeartbeatFailCnt() {
-		return heartbeatFailCnt.incrementAndGet();
-	}
-
-	/** Reset the heartbeat failure count to zero (after a successful heartbeat). */
-	public void resetHeartbeatFailCnt() {
-		heartbeatFailCnt.set(0);
-	}
+	private final HeartbeatState heartbeatState = new HeartbeatState();
 
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 
@@ -85,28 +54,23 @@ public class Connection {
 		this.channel.pipeline().fireUserEventTriggered(ConnectionEvent.CONNECT);
 	}
 
+	@Deprecated
 	public void addInvokeFuture(InvokeFuture<?> invokeFuture) {
-		InvokeFuture<?> prevFuture = invokeMap.putIfAbsent(invokeFuture.getRequestId(), invokeFuture);
-		Validate.isTrue(prevFuture == null, "requestId: %s already invoked", invokeFuture.getRequestId());
+		inFlightRequests.add(invokeFuture);
 	}
 
-	public InvokeFuture<?> removeInvokeFuture(Integer requestId) {
-		return invokeMap.remove(requestId);
+	@Deprecated
+	public InvokeFuture<?> removeInvokeFuture(int requestId) {
+		return inFlightRequests.remove(requestId);
 	}
 
-	/**
-	 * Returns the channel's remote address. For all production (TCP) usage this is an
-	 * {@link java.net.InetSocketAddress}; the framework's public
-	 * {@code ConnectionManager} / {@code Reconnector} APIs assume this and cast at the
-	 * boundary.
-	 */
 	public SocketAddress remoteAddress() {
 		return channel.remoteAddress();
 	}
 
 	public ChannelFuture close() {
 		if (closed.compareAndSet(false, true)) {
-			onClose();
+			inFlightRequests.cancelAll(protocol, executor);
 			return channel.close().addListener(new ChannelFutureListener() {
 				@Override
 				public void operationComplete(ChannelFuture future) throws Exception {
@@ -126,18 +90,39 @@ public class Connection {
 		return closed.get();
 	}
 
-	public void onClose() {
-		for (int requestId : invokeMap.keySet()) {
-			InvokeFuture<?> invokeFuture = removeInvokeFuture(requestId);
-			if (invokeFuture != null) {
-				invokeFuture.cancelTimeout();
-				ResponseMessage responseMessage = protocol.getMessageFactory()
-					.createResponse(requestId, invokeFuture.getRequestMessage().getSerializationType(),
-							ResponseStatus.ConnectionClosed);
-				invokeFuture.complete(responseMessage);
-				invokeFuture.executeCallBack(getExecutor());
-			}
-		}
+	@Deprecated
+	public int getHeartbeatFailCnt() {
+		return heartbeatState.getFailCount();
+	}
+
+	@Deprecated
+	public int incrementHeartbeatFailCnt() {
+		return heartbeatState.incrementFailCount();
+	}
+
+	@Deprecated
+	public void resetHeartbeatFailCnt() {
+		heartbeatState.resetFailCount();
+	}
+
+	@Deprecated
+	public int getHeartbeatTimeoutMills() {
+		return heartbeatState.getTimeoutMills();
+	}
+
+	@Deprecated
+	public void setHeartbeatTimeoutMills(int heartbeatTimeoutMills) {
+		heartbeatState.setTimeoutMills(heartbeatTimeoutMills);
+	}
+
+	@Deprecated
+	public int getHeartbeatMaxFailCount() {
+		return heartbeatState.getMaxFailCount();
+	}
+
+	@Deprecated
+	public void setHeartbeatMaxFailCount(int heartbeatMaxFailCount) {
+		heartbeatState.setMaxFailCount(heartbeatMaxFailCount);
 	}
 
 }

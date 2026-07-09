@@ -27,12 +27,12 @@ public interface Call {
 		int requestId = requestMessage.getId();
 		InvokeFuture<?> invokeFuture = new InvokeFuture<>(requestMessage);
 		try {
-			connection.addInvokeFuture(invokeFuture);
+			connection.getInFlightRequests().add(invokeFuture);
 			connection.getChannel().writeAndFlush(requestMessage).addListener((ChannelFuture channelFuture) -> {
 				if (!channelFuture.isSuccess()) {
 					log.error("Write requestMessage fail. requestId:{} remoteAddress:{}", requestId,
 							connection.remoteAddress(), channelFuture.cause());
-					InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
+					InvokeFuture<?> future = connection.getInFlightRequests().remove(requestId);
 					if (future != null) {
 						future.complete(messageFactory.createResponse(requestId, requestMessage.getSerializationType(),
 								ResponseStatus.SendFailed, channelFuture.cause()));
@@ -43,7 +43,7 @@ public interface Call {
 		catch (Throwable t) {
 			log.error("Invoke write requestMessage fail. requestId:{} remoteAddress:{}", requestId,
 					connection.remoteAddress(), t);
-			InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
+			InvokeFuture<?> future = connection.getInFlightRequests().remove(requestId);
 			if (future != null) {
 				future.complete(messageFactory.createResponse(requestId, requestMessage.getSerializationType(),
 						ResponseStatus.SendFailed, t));
@@ -56,7 +56,7 @@ public interface Call {
 		catch (TimeoutException timeoutException) {
 			log.warn("Wait responseMessage timeout. requestId:{} remoteAddress:{}", requestId,
 					connection.remoteAddress());
-			connection.removeInvokeFuture(requestId);
+			connection.getInFlightRequests().remove(requestId);
 			responseMessage = messageFactory.createResponse(requestId, requestMessage.getSerializationType(),
 					ResponseStatus.Timeout);
 		}
@@ -74,7 +74,7 @@ public interface Call {
 		Timeout timeout = timer.newTimeout((t) -> {
 			log.warn("Wait responseMessage timeout. requestId:{} remoteAddress:{}", requestId,
 					connection.remoteAddress());
-			InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
+			InvokeFuture<?> future = connection.getInFlightRequests().remove(requestId);
 			if (future != null) {
 				ResponseMessage responseMessage = messageFactory.createResponse(requestId,
 						requestMessage.getSerializationType(), ResponseStatus.Timeout);
@@ -84,12 +84,12 @@ public interface Call {
 		invokeFuture.addTimeout(timeout);
 
 		try {
-			connection.addInvokeFuture(invokeFuture);
+			connection.getInFlightRequests().add(invokeFuture);
 			connection.getChannel().writeAndFlush(requestMessage).addListener((ChannelFuture channelFuture) -> {
 				if (!channelFuture.isSuccess()) {
 					log.error("Write requestMessage fail. requestId:{} remoteAddress:{}", requestId,
 							connection.remoteAddress(), channelFuture.cause());
-					InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
+					InvokeFuture<?> future = connection.getInFlightRequests().remove(requestId);
 					if (future != null) {
 						future.cancelTimeout();
 						future.complete(messageFactory.createResponse(requestId, requestMessage.getSerializationType(),
@@ -101,7 +101,7 @@ public interface Call {
 		catch (Throwable t) {
 			log.error("Invoke write requestMessage fail. requestId:{} remoteAddress:{}", requestId,
 					connection.remoteAddress(), t);
-			InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
+			InvokeFuture<?> future = connection.getInFlightRequests().remove(requestId);
 			if (future != null) {
 				future.cancelTimeout();
 				future.complete(messageFactory.createResponse(requestId, requestMessage.getSerializationType(),
@@ -123,7 +123,7 @@ public interface Call {
 		Timeout timeout = timer.newTimeout((t) -> {
 			log.warn("Wait responseMessage timeout. requestId:{} remoteAddress:{}", requestId,
 					connection.remoteAddress());
-			InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
+			InvokeFuture<?> future = connection.getInFlightRequests().remove(requestId);
 			if (future != null) {
 				ResponseMessage responseMessage = messageFactory.createResponse(requestId,
 						requestMessage.getSerializationType(), ResponseStatus.Timeout);
@@ -135,12 +135,12 @@ public interface Call {
 		invokeFuture.addCallBack(invokeCallBack);
 
 		try {
-			connection.addInvokeFuture(invokeFuture);
+			connection.getInFlightRequests().add(invokeFuture);
 			connection.getChannel().writeAndFlush(requestMessage).addListener((ChannelFuture channelFuture) -> {
 				if (!channelFuture.isSuccess()) {
 					log.error("Write requestMessage fail. requestId:{} remoteAddress:{}", requestId,
 							connection.remoteAddress(), channelFuture.cause());
-					InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
+					InvokeFuture<?> future = connection.getInFlightRequests().remove(requestId);
 					if (future != null) {
 						future.cancelTimeout();
 						ResponseMessage responseMessage = messageFactory.createResponse(requestId,
@@ -156,7 +156,7 @@ public interface Call {
 		catch (Throwable t) {
 			log.error("Invoke write requestMessage fail. requestId:{} remoteAddress:{}", requestId,
 					connection.remoteAddress(), t);
-			InvokeFuture<?> future = connection.removeInvokeFuture(requestId);
+			InvokeFuture<?> future = connection.getInFlightRequests().remove(requestId);
 			if (future != null) {
 				future.cancelTimeout();
 				ResponseMessage responseMessage = messageFactory.createResponse(requestId,

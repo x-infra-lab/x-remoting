@@ -418,11 +418,11 @@ public class RemotingRequestMessageTypeHandlerTest {
 		EmbeddedChannel channel = new EmbeddedChannel();
 		doReturn(channel).when(context).channel();
 		Connection connection = new Connection(protocol, channel, executorService, timer);
-		connection = spy(connection);
 		channel.attr(CONNECTION).set(connection);
 
 		InvokeFuture future = mock(InvokeFuture.class);
-		doReturn(future).when(connection).removeInvokeFuture(eq(requestId));
+		doReturn(requestId).when(future).getRequestId();
+		connection.getInFlightRequests().add(future);
 
 		messageHandler.handleMessage(context, responseMessage);
 
@@ -459,11 +459,11 @@ public class RemotingRequestMessageTypeHandlerTest {
 		EmbeddedChannel channel = new EmbeddedChannel();
 		doReturn(channel).when(context).channel();
 		Connection connection = new Connection(protocol, channel, executorService, timer);
-		connection = spy(connection);
 		channel.attr(CONNECTION).set(connection);
 
 		InvokeFuture future = mock(InvokeFuture.class);
-		doReturn(future).when(connection).removeInvokeFuture(eq(requestId));
+		doReturn(requestId).when(future).getRequestId();
+		connection.getInFlightRequests().add(future);
 
 		doThrow(new RuntimeException("testHandleResponseCallbackException")).when(future).executeCallBack(any());
 

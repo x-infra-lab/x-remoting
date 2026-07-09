@@ -1,5 +1,6 @@
 package io.github.xinfra.lab.remoting.connection;
 
+import io.github.xinfra.lab.remoting.client.InFlightRequests;
 import io.github.xinfra.lab.remoting.client.InvokeFuture;
 import io.github.xinfra.lab.remoting.common.IDGenerator;
 import io.github.xinfra.lab.remoting.message.MessageFactory;
@@ -51,35 +52,35 @@ public class ConnectionTest {
 		Assertions.assertEquals(connection.remoteAddress(), channel.remoteAddress());
 		Assertions.assertEquals(connection.getProtocol(), testProtocol);
 		Assertions.assertEquals(channel.attr(CONNECTION).get(), connection);
-		Assertions.assertEquals(connection.getHeartbeatFailCnt(), 0L);
+		Assertions.assertEquals(connection.getHeartbeatState().getFailCount(), 0);
 	}
 
 	@Test
 	public void testConnectionWithInvokeFuture() {
-		// repeat add
+		InFlightRequests inFlight = connection.getInFlightRequests();
+
 		final int requestId1 = IDGenerator.nextRequestId();
-		Assertions.assertNull(connection.removeInvokeFuture(requestId1));
+		Assertions.assertNull(inFlight.remove(requestId1));
 
 		RequestMessage requestMessage1 = mock(RequestMessage.class);
 		doReturn(requestId1).when(requestMessage1).getId();
 
-		connection.addInvokeFuture(new InvokeFuture<>(requestMessage1));
+		inFlight.add(new InvokeFuture<>(requestMessage1));
 		Assertions.assertThrows(IllegalArgumentException.class, () -> {
-			connection.addInvokeFuture(new InvokeFuture<>(requestMessage1));
+			inFlight.add(new InvokeFuture<>(requestMessage1));
 		});
 
-		// repeat remove
 		final int requestId2 = IDGenerator.nextRequestId();
 
 		RequestMessage requestMessage2 = mock(RequestMessage.class);
 		doReturn(requestId2).when(requestMessage2).getId();
 
 		InvokeFuture<?> invokeFuture = new InvokeFuture<>(requestMessage2);
-		connection.addInvokeFuture(invokeFuture);
+		inFlight.add(invokeFuture);
 
-		Assertions.assertEquals(invokeFuture, connection.removeInvokeFuture(requestId2));
-		Assertions.assertNull(connection.removeInvokeFuture(requestId2));
-		Assertions.assertNull(connection.removeInvokeFuture(requestId2));
+		Assertions.assertEquals(invokeFuture, inFlight.remove(requestId2));
+		Assertions.assertNull(inFlight.remove(requestId2));
+		Assertions.assertNull(inFlight.remove(requestId2));
 	}
 
 	@Test
@@ -107,6 +108,8 @@ public class ConnectionTest {
 		connection = spy(connection);
 		when(connection.getExecutor()).thenReturn(executor);
 
+		InFlightRequests inFlight = connection.getInFlightRequests();
+
 		int times = 10;
 		List<InvokeFuture<?>> invokeFutures = new ArrayList<>();
 		for (int i = 0; i < times; i++) {
@@ -115,13 +118,13 @@ public class ConnectionTest {
 			doReturn(requestId).when(requestMessage).getId();
 			InvokeFuture<ResponseMessage> invokeFuture = new InvokeFuture<>(requestMessage);
 			invokeFutures.add(invokeFuture);
-			connection.addInvokeFuture(invokeFuture);
+			inFlight.add(invokeFuture);
 		}
 		Assertions.assertEquals(invokeFutures.size(), times);
-		Assertions.assertEquals(connection.invokeMap.size(), times);
+		Assertions.assertEquals(inFlight.size(), times);
 
-		connection.onClose();
-		Assertions.assertEquals(0, connection.invokeMap.size());
+		inFlight.cancelAll(connection.getProtocol(), connection.getExecutor());
+		Assertions.assertEquals(0, inFlight.size());
 		for (InvokeFuture<?> invokeFuture : invokeFutures) {
 			Assertions.assertTrue(invokeFuture.isDone());
 		}

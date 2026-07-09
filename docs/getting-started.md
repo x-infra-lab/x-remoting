@@ -100,7 +100,7 @@ String result = client.blockingCall(
         echo,
         new EchoRequest("hello"),
         address,
-        new CallOptions());
+        CallOptions.defaults());
 
 System.out.println(result);   // → echo: hello
 ```

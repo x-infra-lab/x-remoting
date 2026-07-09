@@ -133,7 +133,8 @@ predates the builder refactor. It may move to a builder in a future release.
 
 ## `CallOptions` (per-call)
 
-Distinct from the configs above — passed on each call:
+Immutable, constructed via `CallOptions.builder()...build()` or `CallOptions.defaults()`.
+Passed on each call:
 
 | Field                | Default                  | Effect                                  |
 |----------------------|--------------------------|-----------------------------------------|

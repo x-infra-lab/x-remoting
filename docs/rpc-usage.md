@@ -33,7 +33,7 @@ String result = client.blockingCall(
         RequestApi.of("echo"),
         new EchoRequest("hi"),
         address,
-        new CallOptions());
+        CallOptions.defaults());
 ```
 
 The thread blocks until the response arrives or the per-call timeout fires
@@ -48,7 +48,7 @@ RemotingFuture<String> future = client.futureCall(
         RequestApi.of("echo"),
         new EchoRequest("hi"),
         address,
-        new CallOptions());
+        CallOptions.defaults());
 
 String result = future.get(3, TimeUnit.SECONDS);   // or future.get()
 boolean done = future.isDone();
@@ -61,7 +61,7 @@ client.asyncCall(
         RequestApi.of("echo"),
         new EchoRequest("hi"),
         address,
-        new CallOptions(),
+        CallOptions.defaults(),
         new RemotingCallBack<String>() {
             @Override public void onResponse(String response) { /* ... */ }
             @Override public void onException(Throwable t)   { /* ... */ }
@@ -74,7 +74,7 @@ The callback runs on the connection's executor
 #### `oneway` — fire and forget
 
 ```java
-client.oneway(RequestApi.of("notify"), new Notify("..."), address, new CallOptions());
+client.oneway(RequestApi.of("notify"), new Notify("..."), address, CallOptions.defaults());
 ```
 
 No response is delivered and no `InvokeFuture` is tracked. Best for events where
@@ -147,12 +147,13 @@ client.registerRequestHandler(RequestApi.of("notify"), (Notify n) -> { /* ... */
 ## CallOptions
 
 ```java
-@Data
-public class CallOptions {
-    private int timeoutMills = 3000;
-    private SerializationType serializationType = SerializationType.Hession;
-    private DefaultMessageHeaders headers = new DefaultMessageHeaders();
-}
+CallOptions opts = CallOptions.builder()
+        .timeoutMills(5000)
+        .serializationType(SerializationType.Hession)
+        .build();
+
+// or use all defaults:
+CallOptions opts = CallOptions.defaults();
 ```
 
 - `timeoutMills` — per-call timeout. The framework schedules a timeout in the

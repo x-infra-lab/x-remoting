@@ -27,7 +27,7 @@ public class RemotingServerTest {
 
 	private static RemotingClient remotingClient;
 
-	private static CallOptions callOptions = new CallOptions();
+	private static CallOptions callOptions = CallOptions.defaults();
 
 	@BeforeAll
 	public static void beforeAll() {

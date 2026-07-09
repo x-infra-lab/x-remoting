@@ -23,6 +23,7 @@
 | 7 | [扩展](extending.zh-CN.md) | 自定义退避、监听器、协议 |
 | 8 | [FAQ](faq.zh-CN.md) | 常见问题和陷阱 |
 | 9 | [设计债](design-debt.zh-CN.md) | 留给贡献者的架构债清单 |
+| 10 | [路线图](roadmap.zh-CN.md) | 通往 1.0 的项目路线图 |
 
 ## 项目状态
 

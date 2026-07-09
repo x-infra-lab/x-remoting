@@ -23,7 +23,7 @@ public class HeartbeatTest {
 
 	private static RemotingClient remotingClient;
 
-	private static CallOptions callOptions = new CallOptions();
+	private static CallOptions callOptions = CallOptions.defaults();
 
 	@BeforeAll
 	public static void beforeAll() {
@@ -52,7 +52,7 @@ public class HeartbeatTest {
 		RequestMessage heartbeatRequestMessage = protocol.getMessageFactory()
 			.createHeartbeatRequest(IDGenerator.nextRequestId(), SerializationType.Hession);
 
-		CallOptions callOptions = new CallOptions();
+		CallOptions callOptions = CallOptions.defaults();
 		ResponseMessage responseMessage = call.blockingCall(heartbeatRequestMessage, connection, callOptions);
 		Assertions.assertEquals(responseMessage.getResponseStatus(), ResponseStatus.OK);
 	}
