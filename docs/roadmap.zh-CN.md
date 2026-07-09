@@ -31,6 +31,10 @@
 - [x] 误导的线程池改名
 - [x] `CallOptions` → 不可变 builder
 - [x] `Connection` god object 拆解（`InFlightRequests` + `HeartbeatState`）
+- [x] 传输层 / RPC 层分离（`Protocol` 最小化，`impl.*` → `rpc.*`）
+- [x] 单模块合并（`api` / `core` / `all` / `examples` 合为一个）
+- [x] `@AccessForTest` 注解删除
+- [x] `CHANGELOG.md` 已创建
 
 ---
 
@@ -44,8 +48,7 @@
   （`spring-javaformat:apply`）、PR 流程、commit 信息规范。
 - [ ] **Issue 和 PR 模板**（`.github/ISSUE_TEMPLATE/`、`.github/pull_request_template.md`）：
   bug 报告、功能请求、PR 检查清单。
-- [ ] **`CHANGELOG.md`** — 从下个版本开始跟踪。使用
-  [Keep a Changelog](https://keepachangelog.com/) 格式。
+- [x] **`CHANGELOG.md`** — 已创建并开始跟踪变更。
 - [ ] **`CODE_OF_CONDUCT.md`** — 采用 Contributor Covenant 或类似公约。
 
 ---
@@ -139,7 +142,6 @@ handler 注册。修改方向：
 
 | 条目 | 严重度 | 工作量 |
 |------|--------|--------|
-| 在抽取修复了可测试性的地方移除 `@AccessForTest` | 🟡 | S |
 | `Resource<T>` → `Supplier` + `Closeable` | 🟡 | S |
 | 文档说明为什么保留 `Validate`（vs Commons/Guava） | 🟡 | S |
 | `IDGenerator.nextRequestId()` 返回 `int` 而非 `Integer` | 🟡 | S |

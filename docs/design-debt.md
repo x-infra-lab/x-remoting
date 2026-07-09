@@ -2,10 +2,9 @@
 
 > [📖 Index](README.md) · Previous: [← FAQ](faq.md) · Next: [Roadmap →](roadmap.md) · [🇨🇳 中文](design-debt.zh-CN.md)
 
-This is an honest, opinionated list of architectural debt and design smells that
-exist in the codebase as of `35bb2ce`. The intent is to be useful to future
-contributors — not to be polite. Items are grouped by where they hurt and tagged
-with severity:
+This is an honest, opinionated list of architectural debt and design smells
+remaining in the codebase. The intent is to be useful to future contributors —
+not to be polite. Items are grouped by where they hurt and tagged with severity:
 
 - 🔴 — load-bearing architectural problem; "frameworky" claims fall apart here.
 - 🟠 — meaningful design smell or footgun; needs cleanup before 1.0.
@@ -15,37 +14,14 @@ What's actually good is acknowledged at the end.
 
 ## TL;DR
 
-> The major layering issues have been resolved: the transport layer is now a genuine
-> protocol-agnostic framework, `Connection` is a lean wrapper, and
-> `Protocol` is truly extensible. Remaining debt is mostly internal to the RPC
-> layer (over-inheritance in `MessageTypeHandler`, thread pool naming, etc.).
+> The major layering issues (transport vs RPC split, `Connection` god object,
+> `Protocol` pseudo-extensibility) have all been resolved. Remaining debt is
+> mostly internal to the RPC layer (over-inheritance in `MessageTypeHandler`,
+> thread pool naming, etc.).
 
 ---
 
 ## Architectural smells
-
-### ~~🔴 Transport vs RPC layering was name-only~~ ✅ Resolved
-
-The transport layer is now a genuine protocol-agnostic framework.
-All RPC-specific concepts (`Call`, `InvokeFuture`, `InFlightRequests`,
-`MessageType`, `RequestMessage`, `ResponseMessage`, `AbstractMessageHandler`,
-`Heartbeater`, `HeartbeatState`) live in the `rpc.*` packages. The transport
-layer's `Message` is a marker interface; `Protocol` exposes only codec + handler.
-A non-RPC protocol can be built on the transport layer without inheriting RPC scaffolding.
-
-### ~~🔴 `Connection` is a god object~~ ✅ Resolved
-
-`Connection` has been trimmed to: Channel, Protocol, Executor, Timer, close hooks,
-and a `closed` flag. RPC-specific state (`InFlightRequests`, `HeartbeatState`) now
-lives as Netty channel attributes in the `rpc` layer, registered via close hooks.
-
-### ~~🔴 `Protocol` is pseudo-extensibility~~ ✅ Resolved
-
-`Protocol` is now a minimal interface (codec + message handler). All RPC-specific
-types (`Message`, `RequestMessage`, `ResponseMessage`, `MessageType`,
-`MessageTypeHandler`, `MessageFactory`) have been moved to the `rpc` layer in
-the `rpc` packages. A new `RpcProtocol` sub-interface adds `getMessageFactory()`. A non-RPC
-protocol can now implement `Protocol` without touching any RPC abstractions.
 
 ### 🔴 `MessageType` / `MessageTypeHandler` family is over-inherited
 
@@ -131,12 +107,6 @@ real race.
 ---
 
 ## Code-smell catalogue
-
-### ~~🟠 `@AccessForTest` everywhere~~ ✅ Resolved
-
-The custom `@AccessForTest` annotation and the entire `annotation` package have
-been deleted. The 7 annotated fields were already `protected` / package-private
-and remain so — they just no longer carry the annotation.
 
 ### 🟠 Thread name `RemotingClient-Server-Default-Executor-*`
 
@@ -276,17 +246,13 @@ not by adding features on top of the current ones.
 
 If someone wants to start paying this debt down:
 
-1. ~~**Triage `Connection`**~~ ✅ Done — `InFlightRequests` + `HeartbeatState`
-   extracted to RPC layer as channel attributes.
-2. ~~**Delete or replace `Protocol`**~~ ✅ Done — `Protocol` is now minimal;
-   RPC-specific types moved to `core/rpc`.
-3. **Rename misleading thread pools** — 5 minutes, immediate ops win.
-4. **`SECURITY.md` + Hessian risk doc** — minimum security responsibility.
-5. **`CallOptions` builder + `IDGenerator` per-client `AtomicLong`** — the
+1. **Rename misleading thread pools** — 5 minutes, immediate ops win.
+2. **`SECURITY.md` + Hessian risk doc** — minimum security responsibility.
+3. **`CallOptions` builder + `IDGenerator` per-client `AtomicLong`** — the
    remaining "I would have fixed this when I had time" items.
-6. **Fold `MessageType` hierarchy** — now that it's isolated in the `rpc` packages, the
-   over-inheritance is easier to simplify.
-7. **Backpressure on writes** — the highest-impact runtime correctness gap.
+4. **Fold `MessageType` hierarchy** — now that it's isolated in the `rpc`
+   packages, the over-inheritance is easier to simplify.
+5. **Backpressure on writes** — the highest-impact runtime correctness gap.
 
 ---
 

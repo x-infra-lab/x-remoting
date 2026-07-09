@@ -32,6 +32,10 @@ These improvements have landed since the design-debt audit:
 - [x] Misleading thread pool rename
 - [x] `CallOptions` → immutable builder
 - [x] `Connection` god object triage (`InFlightRequests` + `HeartbeatState`)
+- [x] Transport / RPC layer separation (`Protocol` minimal, `impl.*` → `rpc.*`)
+- [x] Single-module consolidation (merged `api` / `core` / `all` / `examples`)
+- [x] `@AccessForTest` annotation deleted
+- [x] `CHANGELOG.md` created
 
 ---
 
@@ -46,8 +50,7 @@ These improvements have landed since the design-debt audit:
   (`spring-javaformat:apply`), PR process, commit message conventions.
 - [ ] **Issue & PR templates** (`.github/ISSUE_TEMPLATE/`, `.github/pull_request_template.md`):
   bug report, feature request, PR checklist.
-- [ ] **`CHANGELOG.md`** — start tracking from the next release. Use
-  [Keep a Changelog](https://keepachangelog.com/) format.
+- [x] **`CHANGELOG.md`** — created and tracking changes.
 - [ ] **`CODE_OF_CONDUCT.md`** — adopt Contributor Covenant or similar.
 
 ---
@@ -145,7 +148,6 @@ These are small, independent improvements that can be folded into any PR:
 
 | Item | Severity | Effort |
 |------|----------|--------|
-| Remove `@AccessForTest` where extraction fixed testability | 🟡 | S |
 | `Resource<T>` → `Supplier` + `Closeable` | 🟡 | S |
 | Document why `Validate` exists (vs. Commons/Guava) | 🟡 | S |
 | `IDGenerator.nextRequestId()` return `int` not `Integer` | 🟡 | S |

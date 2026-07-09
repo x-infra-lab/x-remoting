@@ -2,7 +2,8 @@
 
 > [📖 索引](README.zh-CN.md) · 上一篇：[← FAQ](faq.zh-CN.md) · 下一篇：[路线图 →](roadmap.zh-CN.md) · [🇬🇧 English](design-debt.md)
 
-这是一份诚实、有立场的架构债和设计 smell 清单，记录截至 `35bb2ce` 时代码库里还存在的问题。目的是对后来的贡献者**有用**，而不是客气。按伤害位置分组、按严重度打标：
+这是一份诚实、有立场的架构债和设计 smell 清单，记录代码库里还存在的问题。
+目的是对后来的贡献者**有用**，而不是客气。按伤害位置分组、按严重度打标：
 
 - 🔴 —— 承重型架构问题；"框架"宣言在这里崩塌
 - 🟠 —— 有意义的设计 smell 或陷阱；1.0 之前应该清理
@@ -12,34 +13,12 @@
 
 ## TL;DR
 
-> 主要的分层问题已解决：传输层现在是真正的协议无关框架，`Connection` 是精简的封装，
-> `Protocol` 是真正可扩展的。剩余债务主要在 RPC 层内部（`MessageTypeHandler` 过度继承、
-> 线程池命名等）。
+> 主要的分层问题（传输层 vs RPC 分层、`Connection` god object、`Protocol` 假扩展点）
+> 已全部解决。剩余债务主要在 RPC 层内部（`MessageTypeHandler` 过度继承、线程池命名等）。
 
 ---
 
 ## 架构 smell
-
-### ~~🔴 传输层 vs RPC 层曾经是名义分层~~ ✅ 已解决
-
-传输层现在是真正的协议无关框架。所有 RPC 特有概念（`Call`、`InvokeFuture`、
-`InFlightRequests`、`MessageType`、`RequestMessage`、`ResponseMessage`、
-`AbstractMessageHandler`、`Heartbeater`、`HeartbeatState`）在 `rpc.*` 包中。
-传输层的 `Message` 是标记接口；`Protocol` 只暴露 codec + handler。
-非 RPC 协议可以在传输层之上构建，无需继承 RPC 脚手架。
-
-### ~~🔴 `Connection` 是 god object~~ ✅ 已解决
-
-`Connection` 已精简为：Channel、Protocol、Executor、Timer、close hooks 和 `closed` flag。
-RPC 特有状态（`InFlightRequests`、`HeartbeatState`）现在作为 Netty channel attribute 存在于
-`rpc` 层，通过 close hooks 注册清理逻辑。
-
-### ~~🔴 `Protocol` 是假扩展点~~ ✅ 已解决
-
-`Protocol` 现在是最小接口（codec + message handler）。所有 RPC 特有类型
-（`Message`、`RequestMessage`、`ResponseMessage`、`MessageType`、`MessageTypeHandler`、
-`MessageFactory`）已移至 `rpc` 包。新增 `RpcProtocol` 子接口提供
-`getMessageFactory()`。非 RPC 协议现在可以直接实现 `Protocol` 而无需碰任何 RPC 抽象。
 
 ### 🔴 `MessageType` / `MessageTypeHandler` 家族是过度继承的典型
 
@@ -104,11 +83,6 @@ default Executor getExecutor();                     // executor 覆盖
 ---
 
 ## 代码 smell 集
-
-### ~~🟠 `@AccessForTest` 满天飞~~ ✅ 已解决
-
-自定义的 `@AccessForTest` 注解及整个 `annotation` 包已删除。7 处标注的字段本来就是
-`protected` / package-private，保持不变，只是不再带注解。
 
 ### 🟠 线程名 `RemotingClient-Server-Default-Executor-*`
 
@@ -196,15 +170,11 @@ server shutdown 时，已接入连接被关闭。客户端视角上跟网络故�
 
 如果有人想开始还这笔债：
 
-1. ~~**拆解 `Connection`**~~ ✅ 已完成 —— `InFlightRequests` + `HeartbeatState`
-   已提取到 RPC 层作为 channel attribute。
-2. ~~**删掉或真做 `Protocol`**~~ ✅ 已完成 —— `Protocol` 现在是最小接口；
-   RPC 特有类型已移至 `core/rpc`。
-3. **重命名误导的线程池** —— 5 分钟，立即的运维赢面
-4. **`SECURITY.md` + Hessian 风险文档** —— 网络框架的安全最低线
-5. **`CallOptions` builder + `IDGenerator` per-client `AtomicLong`** —— "有时间就改" 那批的剩余
-6. **折叠 `MessageType` 层级** —— 已隔离在 `rpc` 包中，过度继承更容易简化了
-7. **写路径背压** —— runtime 正确性单项影响最大
+1. **重命名误导的线程池** —— 5 分钟，立即的运维赢面
+2. **`SECURITY.md` + Hessian 风险文档** —— 网络框架的安全最低线
+3. **`CallOptions` builder + `IDGenerator` per-client `AtomicLong`** —— "有时间就改" 那批的剩余
+4. **折叠 `MessageType` 层级** —— 已隔离在 `rpc` 包中，过度继承更容易简化了
+5. **写路径背压** —— runtime 正确性单项影响最大
 
 ---
 
