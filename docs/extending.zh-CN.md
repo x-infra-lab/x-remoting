@@ -114,26 +114,28 @@ public class StickyByThreadStrategy implements ConnectionSelectStrategy {
 
 ## 自定义 `Heartbeater`
 
-实现 `Heartbeater` 来改变心跳怎么发，或者根据应用状态门控。框架在每个 `IdleStateEvent` 上调 `triggerHeartBeat(Connection)`。默认实现负责"计数失败 + 超阈值关链"，自己替换的话记得复制这部分逻辑，否则死连接会泄漏。
+`Heartbeater` 位于 RPC 层（`rpc.heartbeat` 包）。实现它来改变心跳怎么发，或者根据应用状态
+门控。`ProtocolHeartBeatHandler` 在每个 `IdleStateEvent` 上调 `triggerHeartBeat(Connection)`。
+默认实现通过 `HeartbeatState` 计数失败 + 超阈值关链，自己替换的话记得复制这部分逻辑，否则死连接会泄漏。
 
 ## 自定义 `Protocol`（进阶）
 
-`Protocol` 是线协议门面：暴露一个 `MessageCodec`、一个 `MessageFactory`、一个 `MessageHandler` 和唯一的 `ProtocolId`。要实现一个意味着自己负责：
+`Protocol` 是线协议门面：暴露一个 `MessageCodec` 和 `MessageHandler`，加上唯一的
+`ProtocolId`。传输层的 `Message` 是标记接口 —— 协议实现定义自己的消息层级。
 
-1. 帧格式（长度前缀、magic、header 布局）—— 在 `MessageCodec` 里编解码
-2. 消息类型（request、response、heartbeat）—— `MessageFactory.createXxx(...)`
-3. 按类型派发 —— `MessageHandler` 和若干 `MessageTypeHandler`
+RPC 层增加了 `RpcProtocol`（扩展 `Protocol`，增加 `getMessageFactory()`）。
+内置的 `RemotingProtocol` 是参考的 `RpcProtocol` 实现。如果你的需求就是 RPC，
+更建议扩展它（注册自己的 `RequestHandler`），而不是从头另写一个协议。
 
-`core` 里的 `RemotingProtocol` 是参考实现。如果你的需求就是 RPC，更建议扩展它（注册自己的 `RequestHandler`），而不是从头另写一个协议。
-
-> 见[设计债](design-debt.zh-CN.md) —— `Protocol` 扩展点目前**更像理想而非现实**。周围的 `Message` / `MessageType` 体系都是为 `RemotingProtocol` 量身定做的。
+对于非 RPC 协议，直接实现 `Protocol` 即可 —— 只需要提供 codec 和 message handler，
+不会被强加任何 RPC 概念。
 
 ## 多客户端共享 Netty `EventLoopGroup`
 
 `DefaultConnectionFactory` 自己创建 `EventLoopGroup`。同一 JVM 里跑多个 client 想共享 Netty 线程，有两条路：
 
 - 通过 `ConnectionFactoryConfig` 传共享的 `Executor` 和 `Timer` —— 至少回调和 timeout 是共享的（worker group 仍然各自一份）
-- 直接用框架模块（`api`），自己写一个用共享 `EventLoopGroup` 的 `ConnectionFactory`，构造 `ClientConnectionManager`
+- 直接用传输层，自己写一个用共享 `EventLoopGroup` 的 `ConnectionFactory`，构造 `ClientConnectionManager`
 
 完整支持还在 roadmap，不是 first-class 配置。
 

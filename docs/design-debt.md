@@ -15,79 +15,37 @@ What's actually good is acknowledged at the end.
 
 ## TL;DR
 
-> Architecturally this is an RPC. The code pretends it's a framework. Most of the
-> recent improvements (reconnect, lock-free manager, builder configs,
-> `InetSocketAddress`) tightened the implementation; they did not fix the layering.
-
-If the intent is "RPC for personal / project use", things are fine. If the intent
-is "framework other projects can build on top of", the `api` vs `core` split needs
-real teeth, several abstractions need to be deleted (not extended), and the
-`Connection` god object needs to be broken up.
+> The major layering issues have been resolved: the transport layer is now a genuine
+> protocol-agnostic framework, `Connection` is a lean wrapper, and
+> `Protocol` is truly extensible. Remaining debt is mostly internal to the RPC
+> layer (over-inheritance in `MessageTypeHandler`, thread pool naming, etc.).
 
 ---
 
 ## Architectural smells
 
-### 🔴 `api` vs `core` is name-only
+### ~~🔴 Transport vs RPC layering was name-only~~ ✅ Resolved
 
-The `api` module is supposed to be the protocol-agnostic framework; `core` is the
-RPC built on it. In practice the line is not respected:
+The transport layer is now a genuine protocol-agnostic framework.
+All RPC-specific concepts (`Call`, `InvokeFuture`, `InFlightRequests`,
+`MessageType`, `RequestMessage`, `ResponseMessage`, `AbstractMessageHandler`,
+`Heartbeater`, `HeartbeatState`) live in the `rpc.*` packages. The transport
+layer's `Message` is a marker interface; `Protocol` exposes only codec + handler.
+A non-RPC protocol can be built on the transport layer without inheriting RPC scaffolding.
 
-- `api/.../client/Call.java` is the parent of `core/.../RemotingCall`. The
-  "framework" already knows about request/response call shapes.
-- `api/.../message/AbstractMessageHandler` constructor hardcodes
-  `ResponseMessageTypeHandler` and `HeartbeatRequestMessageTypeHandler`.
-- `Connection.invokeMap` holds `InvokeFuture<?>` — a request/response concept —
-  in the supposedly transport-level `Connection`.
-- `Connection.onClose()` walks `invokeMap` and writes `ConnectionClosed`
-  responses. That's RPC behaviour leaking into the connection lifecycle.
+### ~~🔴 `Connection` is a god object~~ ✅ Resolved
 
-**Effect:** If you tried to write a second protocol on top of `api` (a pure push
-channel, an event stream, a custom protocol over the same connection
-infrastructure), you'd inherit a bunch of RPC-shaped scaffolding you don't want.
+`Connection` has been trimmed to: Channel, Protocol, Executor, Timer, close hooks,
+and a `closed` flag. RPC-specific state (`InFlightRequests`, `HeartbeatState`) now
+lives as Netty channel attributes in the `rpc` layer, registered via close hooks.
 
-**Fix direction:** Either delete the pretense and call the project an RPC, or do
-the real work — move RPC-specific concepts (`InvokeFuture`, request/response
-message types, `Call`) into `core`, leave `api` as bytes-in / bytes-out + lifecycle.
+### ~~🔴 `Protocol` is pseudo-extensibility~~ ✅ Resolved
 
-### 🔴 `Connection` is a god object
-
-One class carries:
-
-1. The Netty `Channel`
-2. The `Protocol` reference
-3. A per-connection `Executor` (for callbacks)
-4. A `Timer` (for request timeouts)
-5. An `invokeMap` (outstanding RPCs)
-6. The heartbeat failure counter
-7. The `closed` flag + idempotent close
-8. RPC-aware `onClose` cleanup
-
-That's at least four distinct responsibilities glued together. Test infrastructure
-betrays it: `@AccessForTest` is sprinkled on protected fields because clean tests
-are otherwise impossible.
-
-**Fix direction:** strip to (1)-(4) + (7); move (5) to a client-side
-`InFlightRequests`, (6) to a per-Connection heartbeat state object owned by
-`Heartbeater`, (8) to whatever cleans up after a connection on the client side.
-
-### 🔴 `Protocol` is pseudo-extensibility
-
-The `Protocol` interface exists, but the codebase has exactly one implementation
-(`RemotingProtocol`) and the surrounding types (`Message`, `RequestMessage`,
-`ResponseMessage`, `MessageType` enum, `MessageTypeHandler` family) are all
-designed around its shape: length-prefixed framing + Hessian payload + a fixed
-3-element message type enum.
-
-**Effect:** a "Protocol" extension point that you cannot actually extend without
-forking half of `api/.../message`.
-
-**Fix direction:** pick one
-- (a) **Delete the interface** — admit there is only one protocol, simplify
-  accordingly. This is the YAGNI move.
-- (b) **Make it real** — define `Protocol` so it owns its own message hierarchy,
-  not just inherits from a shared one. The price is significant rewriting of
-  `api/.../message`.
+`Protocol` is now a minimal interface (codec + message handler). All RPC-specific
+types (`Message`, `RequestMessage`, `ResponseMessage`, `MessageType`,
+`MessageTypeHandler`, `MessageFactory`) have been moved to the `rpc` layer in
+the `rpc` packages. A new `RpcProtocol` sub-interface adds `getMessageFactory()`. A non-RPC
+protocol can now implement `Protocol` without touching any RPC abstractions.
 
 ### 🔴 `MessageType` / `MessageTypeHandler` family is over-inherited
 
@@ -283,8 +241,8 @@ For perspective:
   `Protocol` extension point is real — multiple protocol versions coexist.
 - **vs Dubbo Remoting** — Dubbo's transport layer is genuinely swappable
   (Netty / Mina / Grizzly historically). The codec / transport / exchange
-  layering is explicit. x-remoting's "api / core" split aspires to this but
-  isn't there.
+  layering is explicit. x-remoting's transport / RPC split aspires to this but
+  isn't there yet.
 - **vs gRPC-Java** — Different problem space (HTTP/2 multiplexing,
   bi-directional streams, flow control). Not a fair comparison; included only
   to note that if HTTP/2-style features ever become a requirement, the current
@@ -323,16 +281,16 @@ not by adding features on top of the current ones.
 
 If someone wants to start paying this debt down:
 
-1. **Triage `Connection`** — extract `InFlightRequests` to client side. Single
-   biggest win for testability and for "framework" credibility.
-2. **Delete or replace `Protocol`** — pick a side. Don't leave a fake
-   extension point.
+1. ~~**Triage `Connection`**~~ ✅ Done — `InFlightRequests` + `HeartbeatState`
+   extracted to RPC layer as channel attributes.
+2. ~~**Delete or replace `Protocol`**~~ ✅ Done — `Protocol` is now minimal;
+   RPC-specific types moved to `core/rpc`.
 3. **Rename misleading thread pools** — 5 minutes, immediate ops win.
 4. **`SECURITY.md` + Hessian risk doc** — minimum security responsibility.
 5. **`CallOptions` builder + `IDGenerator` per-client `AtomicLong`** — the
    remaining "I would have fixed this when I had time" items.
-6. **Real `Protocol` extensibility OR delete `MessageType` hierarchy** — pick
-   one direction, commit to it.
+6. **Fold `MessageType` hierarchy** — now that it's isolated in the `rpc` packages, the
+   over-inheritance is easier to simplify.
 7. **Backpressure on writes** — the highest-impact runtime correctness gap.
 
 ---

@@ -12,53 +12,34 @@
 
 ## TL;DR
 
-> 架构上是一个 RPC。代码上假装是一个框架。最近这一波改进（重连、lock-free manager、builder configs、`InetSocketAddress`）让**实现**更扎实，但没动**分层**。
-
-如果定位是"我自己 / 自家项目用的 RPC"，OK；如果定位是"别的项目能 import 的 framework"，就需要让 `api` / `core` 分层真正有牙齿，删掉若干抽象（不是扩展），把 `Connection` 这个 god object 拆开。
+> 主要的分层问题已解决：传输层现在是真正的协议无关框架，`Connection` 是精简的封装，
+> `Protocol` 是真正可扩展的。剩余债务主要在 RPC 层内部（`MessageTypeHandler` 过度继承、
+> 线程池命名等）。
 
 ---
 
 ## 架构 smell
 
-### 🔴 `api` vs `core` 是名义分层，不是结构分层
+### ~~🔴 传输层 vs RPC 层曾经是名义分层~~ ✅ 已解决
 
-`api` 模块名义上是协议无关的框架，`core` 是上面的 RPC。实际上这条线没人尊重：
+传输层现在是真正的协议无关框架。所有 RPC 特有概念（`Call`、`InvokeFuture`、
+`InFlightRequests`、`MessageType`、`RequestMessage`、`ResponseMessage`、
+`AbstractMessageHandler`、`Heartbeater`、`HeartbeatState`）在 `rpc.*` 包中。
+传输层的 `Message` 是标记接口；`Protocol` 只暴露 codec + handler。
+非 RPC 协议可以在传输层之上构建，无需继承 RPC 脚手架。
 
-- `api/.../client/Call.java` 是 `core/.../RemotingCall` 的父类。"框架"已经知道请求 / 响应是什么了
-- `api/.../message/AbstractMessageHandler` 构造器里写死注册了 `ResponseMessageTypeHandler` 和 `HeartbeatRequestMessageTypeHandler`
-- `Connection.invokeMap` 持的是 `InvokeFuture<?>` —— 请求 / 响应的概念，居然放在所谓"传输级"的 `Connection` 里
-- `Connection.onClose()` 遍历 `invokeMap` 并发 `ConnectionClosed` 响应。这是 RPC 行为漏到连接生命周期里
+### ~~🔴 `Connection` 是 god object~~ ✅ 已解决
 
-**后果**：你想在 `api` 上写第二个协议（纯 push 通道、事件流、复用同样连接基础设施的自定义协议），会继承一堆为 RPC 量身定做的脚手架。
+`Connection` 已精简为：Channel、Protocol、Executor、Timer、close hooks 和 `closed` flag。
+RPC 特有状态（`InFlightRequests`、`HeartbeatState`）现在作为 Netty channel attribute 存在于
+`rpc` 层，通过 close hooks 注册清理逻辑。
 
-**修法方向**：要么承认这就是个 RPC，把"框架"招牌撤下来；要么真做 —— 把 RPC 特定概念（`InvokeFuture`、请求响应消息类型、`Call`）下放到 `core`，`api` 只保留字节进 / 字节出 + 生命周期。
+### ~~🔴 `Protocol` 是假扩展点~~ ✅ 已解决
 
-### 🔴 `Connection` 是 god object
-
-一个类同时管：
-
-1. Netty `Channel`
-2. `Protocol` 引用
-3. per-connection `Executor`（给回调用）
-4. `Timer`（给请求超时用）
-5. `invokeMap`（未完成的 RPC）
-6. 心跳失败计数
-7. `closed` flag + 幂等 close
-8. RPC-aware 的 `onClose` 清理
-
-至少**四种不同的职责粘在一起**。测试基础设施戳穿了它：`@AccessForTest` 散布在 protected 字段上，因为干净的单测根本写不出来。
-
-**修法方向**：剥到 (1)-(4) + (7)；(5) 挪到客户端的 `InFlightRequests`，(6) 挪到 `Heartbeater` 持有的 per-connection 心跳状态对象，(8) 挪到客户端的连接清理逻辑里。
-
-### 🔴 `Protocol` 是假扩展点
-
-`Protocol` 接口存在，但代码库里只有一个实现（`RemotingProtocol`），周围那一套类型（`Message`、`RequestMessage`、`ResponseMessage`、`MessageType` enum、`MessageTypeHandler` 家族）全都按它的形态设计：长度前缀帧 + Hessian payload + 固定 3 元素 message type enum。
-
-**后果**：一个看似可以扩展、实际上你扩展不动的扩展点。
-
-**修法方向**：二选一
-- (a) **删掉接口** —— 承认就一个协议，简化掉。这是 YAGNI 做法
-- (b) **做成真的** —— 让 `Protocol` 自己拥有自己的消息层级，而不是继承一个共享的。代价是 `api/.../message` 要大改
+`Protocol` 现在是最小接口（codec + message handler）。所有 RPC 特有类型
+（`Message`、`RequestMessage`、`ResponseMessage`、`MessageType`、`MessageTypeHandler`、
+`MessageFactory`）已移至 `rpc` 包。新增 `RpcProtocol` 子接口提供
+`getMessageFactory()`。非 RPC 协议现在可以直接实现 `Protocol` 而无需碰任何 RPC 抽象。
 
 ### 🔴 `MessageType` / `MessageTypeHandler` 家族是过度继承的典型
 
@@ -193,7 +174,7 @@ server shutdown 时，已接入连接被关闭。客户端视角上跟网络故�
 让你有个 sense：
 
 - **vs Bolt（alipay/sofa-bolt）** —— Bolt 的 `UserProcessor` 抽象、地址解析、`ProtocolManager`、连接事件 API 都更完备。它的 `Protocol` 扩展点是真的 —— 多个协议版本并存
-- **vs Dubbo Remoting** —— Dubbo 的传输层是真的可换的（历史上 Netty / Mina / Grizzly）。codec / transport / exchange 分层是显式的。x-remoting 的 "api / core" 分层有这个志向但还没到
+- **vs Dubbo Remoting** —— Dubbo 的传输层是真的可换的（历史上 Netty / Mina / Grizzly）。codec / transport / exchange 分层是显式的。x-remoting 的传输层 / RPC 层分层有这个志向但还没到
 - **vs gRPC-Java** —— 不在一个问题空间（HTTP/2 多路复用、双向流、流控）。不公平比较；只是说一句：万一以后真要 HTTP/2 这套能力，现在"一应一答 + 长连接池"的模型增量演进不上去
 
 总结：x-remoting 现在大概在 Bolt 0.x 那段时期的位置。Bolt 从那走到今天靠的是把抽象做扎实，不是堆 feature。
@@ -216,12 +197,14 @@ server shutdown 时，已接入连接被关闭。客户端视角上跟网络故�
 
 如果有人想开始还这笔债：
 
-1. **拆解 `Connection`** —— 把 `InFlightRequests` 抽到客户端。可测试性 + "框架"信誉度的单项最大收益
-2. **删掉或真做 `Protocol`** —— 选一边。别留假扩展点
+1. ~~**拆解 `Connection`**~~ ✅ 已完成 —— `InFlightRequests` + `HeartbeatState`
+   已提取到 RPC 层作为 channel attribute。
+2. ~~**删掉或真做 `Protocol`**~~ ✅ 已完成 —— `Protocol` 现在是最小接口；
+   RPC 特有类型已移至 `core/rpc`。
 3. **重命名误导的线程池** —— 5 分钟，立即的运维赢面
 4. **`SECURITY.md` + Hessian 风险文档** —— 网络框架的安全最低线
 5. **`CallOptions` builder + `IDGenerator` per-client `AtomicLong`** —— "有时间就改" 那批的剩余
-6. **要么真做 `Protocol` 扩展，要么删 `MessageType` 层级** —— 选一边，定下来
+6. **折叠 `MessageType` 层级** —— 已隔离在 `rpc` 包中，过度继承更容易简化了
 7. **写路径背压** —— runtime 正确性单项影响最大
 
 ---

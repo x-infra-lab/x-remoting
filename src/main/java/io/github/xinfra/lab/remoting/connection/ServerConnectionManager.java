@@ -1,0 +1,32 @@
+package io.github.xinfra.lab.remoting.connection;
+
+import io.github.xinfra.lab.remoting.common.Validate;
+import io.github.xinfra.lab.remoting.exception.RemotingException;
+
+import java.net.InetSocketAddress;
+
+public class ServerConnectionManager extends AbstractConnectionManager {
+
+	@Override
+	public Connection connect(InetSocketAddress socketAddress) throws RemotingException {
+		throw new UnsupportedOperationException("ServerConnectionManager not support connect");
+	}
+
+	@Override
+	public Connection get(InetSocketAddress socketAddress) {
+		ensureStarted();
+		Validate.notNull(socketAddress, "socketAddress can not be null");
+
+		Connections connections = this.connectionsMap.get(socketAddress);
+		if (connections == null) {
+			return null;
+		}
+		return connections.get();
+	}
+
+	@Override
+	public Reconnector reconnector() {
+		return null;
+	}
+
+}

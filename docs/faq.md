@@ -58,7 +58,7 @@ There is no first-class metrics integration yet — it's on the roadmap.
 
 Not directly. The shipped `ConnectionFactory` uses TCP only and the public API takes
 `InetSocketAddress`. You can write a custom `ConnectionFactory` (and possibly a
-custom `Protocol`) on top of the `api` module to support other transports.
+custom `Protocol`) on top of the transport layer to support other transports.
 
 ## How do I get a server to call back into a client?
 
@@ -83,7 +83,7 @@ if (client.isStarted()) {
 
 Not directly through the RPC API. You can pass a shared `Executor` and `Timer` via
 `ConnectionFactoryConfig` — those will at least be shared. For a fully shared
-`EventLoopGroup`, drop down to the `api` module and construct a custom
+`EventLoopGroup`, drop down to the transport layer and construct a custom
 `ConnectionFactory`. First-class support is on the roadmap.
 
 ## Does it work on macOS / Windows?

@@ -2,10 +2,13 @@
 
 > [📖 索引](README.zh-CN.md) · 上一篇：[← 快速开始](getting-started.zh-CN.md) · 下一篇：[RPC 使用 →](rpc-usage.zh-CN.md) · [🇬🇧 English](architecture.md)
 
-x-remoting 由两层薄薄的代码构成：
+x-remoting 是单模块项目（`io.github.x-infra-lab:x-remoting`），
+通过包划分为两个逻辑层：
 
-- **api** —— 框架本身（连接 / 协议 / 事件 / 心跳 / 重连的抽象与 Netty 默认实现）
-- **core** —— 基于框架实现的完整 RPC（handler 注册、request id 生成、四种调用模式、消息工厂）。`all` 模块是把两个一起打包的便利 uber-jar。
+- **传输层**（`io.github.xinfra.lab.remoting.*`）—— 连接、协议、事件、重连
+  等抽象及其 Netty 默认实现。
+- **RPC 层**（`io.github.xinfra.lab.remoting.rpc.*`）—— handler 注册、
+  request id 生成、四种调用模式、消息工厂、心跳。
 
 ```
                             ┌────────────────────┐
@@ -14,7 +17,7 @@ x-remoting 由两层薄薄的代码构成：
                                       │
    ┌──────────────────────────────────┴──────────────────────────────────┐
    │                                                                     │
-   │                          x-remoting-core                            │
+   │                        RPC 层 (rpc.*)                               │
    │   RemotingClient / RemotingServer  (blockingCall / futureCall /     │
    │                                     asyncCall / oneway)             │
    │   RequestHandler / RequestApi / RemotingProtocol / Codec            │
@@ -23,9 +26,9 @@ x-remoting 由两层薄薄的代码构成：
                                       │
    ┌──────────────────────────────────┴──────────────────────────────────┐
    │                                                                     │
-   │                          x-remoting-api                             │
+   │                        传输层                                       │
    │   ConnectionManager     ConnectionFactory     Protocol              │
-   │   Reconnector           Heartbeater           MessageHandler        │
+   │   Reconnector           MessageHandler        Message (标记接口)    │
    │   ConnectionEventProcessor / Listener                               │
    │   AbstractServer        ServerConnectionManager                     │
    │                                                                     │
@@ -36,35 +39,35 @@ x-remoting 由两层薄薄的代码构成：
                                 └────────────┘
 ```
 
-## 模块
+## Maven 坐标
 
-| 模块 | 坐标 | 内容 |
-|------|------|------|
-| `api`  | `io.github.x-infra-lab:x-remoting-api` | 框架抽象 + Netty 默认实现 |
-| `core` | `io.github.x-infra-lab:x-remoting-core` | RPC 实现（`impl.client` / `impl.server` / `impl.handler` / `impl.codec` / `impl.message`） |
-| `all`  | `io.github.x-infra-lab:x-remoting` | 便利 uber-jar，依赖前两者 |
-
-只想要框架自己（拿来写自己的协议）→ 依赖 `api`；想要开箱即用的 RPC → 依赖 `all`（或 `core`）。
-
-> 提醒：`api` / `core` 的分层目前更多是理想而非强制。诚实评价见[设计债](design-debt.zh-CN.md)。
+```xml
+<dependency>
+    <groupId>io.github.x-infra-lab</groupId>
+    <artifactId>x-remoting</artifactId>
+    <version>0.0.3-RC2</version>
+</dependency>
+```
 
 ## 关键抽象
 
 | 类型 | 层 | 职责 |
 |------|----|------|
-| `Protocol` | api | 线协议门面：codec、消息工厂、消息 handler |
-| `Connection` | api | 包一个 Netty `Channel` + per-connection executor/timer + 未完成 `InvokeFuture` map |
-| `Connections` | api | 单个地址的连接池，`close` 后 `add` 不会泄漏 |
-| `ConnectionFactory` | api | 给一个地址构造 `Connection` |
-| `ConnectionManager` | api | get-or-connect、disconnect、close —— 持有 `connectionsMap` |
-| `ConnectionEventProcessor` | api | 异步分发 `CONNECT` / `CLOSE` 事件给监听器 |
-| `Heartbeater` | api | 发心跳、计数失败、关链路 |
-| `Reconnector` | api | 每个 endpoint 一个的重连状态机，带退避 + 监听器 |
-| `Server` / `AbstractServer` | api | bind、accept、转给 manager |
-| `RemotingProtocol` | core | 内置 RPC 的具体 `Protocol` |
-| `RemotingClient` / `RemotingServer` | core | RPC 入口 —— 大部分用户直接接触的就是这两个 |
-| `RequestHandler` / `RequestApi` / `RequestHandlerRegistry` | core | 服务端按 path 派发 |
-| `CallOptions` / `RemotingCallBack` / `RemotingFuture` | core | per-call 配置 + 异步结果类型 |
+| `Protocol` | 传输 | 线协议门面：codec + 消息 handler |
+| `Connection` | 传输 | 包一个 Netty `Channel` + per-connection executor/timer + close hooks |
+| `Connections` | 传输 | 单个地址的连接池，`close` 后 `add` 不会泄漏 |
+| `ConnectionFactory` | 传输 | 给一个地址构造 `Connection` |
+| `ConnectionManager` | 传输 | get-or-connect、disconnect、close —— 持有 `connectionsMap` |
+| `ConnectionEventProcessor` | 传输 | 异步分发 `CONNECT` / `CLOSE` 事件给监听器 |
+| `Reconnector` | 传输 | 每个 endpoint 一个的重连状态机，带退避 + 监听器 |
+| `Server` / `AbstractServer` | 传输 | bind、accept、转给 manager |
+| `RpcProtocol` | RPC | 扩展 `Protocol`，增加 `getMessageFactory()` |
+| `RemotingProtocol` | RPC | 内置 RPC 的具体 `RpcProtocol` |
+| `Heartbeater` | RPC | 发心跳、通过 `HeartbeatState` 计数失败、关链路 |
+| `InFlightRequests` | RPC | 每连接的未完成 `InvokeFuture` map（channel attribute） |
+| `RemotingClient` / `RemotingServer` | RPC | RPC 入口 —— 大部分用户直接接触的就是这两个 |
+| `RequestHandler` / `RequestApi` / `RequestHandlerRegistry` | RPC | 服务端按 path 派发 |
+| `CallOptions` / `RemotingCallBack` / `RemotingFuture` | RPC | per-call 配置 + 异步结果类型 |
 
 ## 一次请求的流转
 

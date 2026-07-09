@@ -2,8 +2,8 @@
 
 > [📖 Index](README.md) · Previous: [← Architecture](architecture.md) · Next: [Configuration Reference →](configuration-reference.md) · [🇨🇳 中文](rpc-usage.zh-CN.md)
 
-The `core` module ships a complete RPC built on top of the framework. This page
-covers the entry-point APIs you'll touch day-to-day.
+The RPC layer (`rpc.*` packages) ships a complete RPC built on top of the
+transport framework. This page covers the entry-point APIs you'll touch day-to-day.
 
 ## RemotingClient
 

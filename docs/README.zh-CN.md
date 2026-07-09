@@ -15,7 +15,7 @@
 | # | 文档 | 主要内容 |
 |---|------|--------|
 | 1 | [快速开始](getting-started.zh-CN.md) | 安装、hello world、第一个请求 |
-| 2 | [架构](architecture.zh-CN.md) | 模块划分、关键抽象、请求流转、线程模型 |
+| 2 | [架构](architecture.zh-CN.md) | 包分层、关键抽象、请求流转、线程模型 |
 | 3 | [RPC 使用](rpc-usage.zh-CN.md) | 四种调用模式、Handler、服务端反向调用 |
 | 4 | [配置参考](configuration-reference.zh-CN.md) | 全部配置项 |
 | 5 | [ConnectionManager](connection-manager.zh-CN.md) | 连接池、生命周期、事件、心跳 |

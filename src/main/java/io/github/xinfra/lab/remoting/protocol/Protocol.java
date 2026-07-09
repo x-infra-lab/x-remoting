@@ -1,0 +1,14 @@
+package io.github.xinfra.lab.remoting.protocol;
+
+import io.github.xinfra.lab.remoting.codec.MessageCodec;
+import io.github.xinfra.lab.remoting.message.MessageHandler;
+
+public interface Protocol {
+
+	ProtocolId getProtocolId();
+
+	MessageCodec getMessageCodec();
+
+	MessageHandler getMessageHandler();
+
+}

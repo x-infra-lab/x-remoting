@@ -61,9 +61,9 @@ Handlers are keyed by a `RequestApi`. The path string is the route the client us
 to address the handler.
 
 ```java
-import io.github.xinfra.lab.remoting.impl.handler.RequestApi;
-import io.github.xinfra.lab.remoting.impl.server.RemotingServer;
-import io.github.xinfra.lab.remoting.impl.server.RemotingServerConfig;
+import io.github.xinfra.lab.remoting.rpc.handler.RequestApi;
+import io.github.xinfra.lab.remoting.rpc.server.RemotingServer;
+import io.github.xinfra.lab.remoting.rpc.server.RemotingServerConfig;
 
 RemotingServerConfig serverConfig = new RemotingServerConfig();
 serverConfig.setPort(8989);
@@ -84,9 +84,9 @@ lambda target. For non-blocking work, override the default
 ## 4. Send a request
 
 ```java
-import io.github.xinfra.lab.remoting.client.CallOptions;
-import io.github.xinfra.lab.remoting.impl.client.RemotingClient;
-import io.github.xinfra.lab.remoting.impl.handler.RequestApi;
+import io.github.xinfra.lab.remoting.rpc.client.CallOptions;
+import io.github.xinfra.lab.remoting.rpc.client.RemotingClient;
+import io.github.xinfra.lab.remoting.rpc.handler.RequestApi;
 
 import java.net.InetSocketAddress;
 

@@ -120,27 +120,25 @@ Currently the strategy is wired in `AbstractConnectionManager` as a `protected` 
 
 ## Custom `Heartbeater`
 
-Implement `Heartbeater` to change how heartbeats are sent or to gate them on app
-state. The framework calls `triggerHeartBeat(Connection)` on every
-`IdleStateEvent`. The default impl handles fail counting + close-on-threshold; if
-you replace it, replicate that logic or you'll leak dead connections.
+`Heartbeater` lives in the RPC layer (`rpc.heartbeat` package). Implement it to change
+how heartbeats are sent or to gate them on app state. `ProtocolHeartBeatHandler`
+calls `triggerHeartBeat(Connection)` on every `IdleStateEvent`. The default impl
+handles fail counting (via `HeartbeatState`) + close-on-threshold; if you replace
+it, replicate that logic or you'll leak dead connections.
 
 ## Custom `Protocol` (advanced)
 
-`Protocol` is the wire-level façade: it exposes a `MessageCodec`, `MessageFactory`,
-`MessageHandler`, and a unique `ProtocolId`. Implementing one means owning:
+`Protocol` is the wire-level façade: it exposes a `MessageCodec` and
+`MessageHandler`, plus a unique `ProtocolId`. The transport layer's `Message` is a
+marker interface — protocol implementations define their own message hierarchy.
 
-1. Frame format (length prefix, magic, header layout) — encode/decode in `MessageCodec`
-2. Message types (request, response, heartbeat) — `MessageFactory.createXxx(...)`
-3. Per-type dispatch — `MessageHandler` and one or more `MessageTypeHandler`
+The RPC layer adds `RpcProtocol` (extends `Protocol` with `getMessageFactory()`).
+The bundled `RemotingProtocol` is the reference `RpcProtocol`
+implementation. If your needs match RPC, prefer extending it (register your own
+`RequestHandler`s) rather than rolling a new protocol from scratch.
 
-The bundled `RemotingProtocol` in `core` is the reference implementation. If your
-needs match RPC, prefer extending it (register your own `RequestHandler`s) rather
-than rolling a new protocol from scratch.
-
-> See also [Design Debt](design-debt.md) — the `Protocol` extension point is currently
-> more aspirational than complete. The surrounding `Message` / `MessageType`
-> hierarchy is shaped for `RemotingProtocol` specifically.
+For a non-RPC protocol, implement `Protocol` directly — you only need to provide
+a codec and a message handler. No RPC concepts are imposed.
 
 ## Sharing a Netty `EventLoopGroup` across multiple clients
 
@@ -149,7 +147,7 @@ clients in the same JVM and want them to share Netty threads, either:
 
 - Pass a shared `Executor` and `Timer` via `ConnectionFactoryConfig` so at least
   callbacks and timeouts are shared (you still get separate worker groups), or
-- Use the framework module (`api`) directly and construct `ClientConnectionManager`
+- Use the transport layer directly and construct `ClientConnectionManager`
   with a custom `ConnectionFactory` that uses your shared `EventLoopGroup`.
 
 This is on the roadmap but not yet a first-class config knob.

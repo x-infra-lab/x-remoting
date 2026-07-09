@@ -2,13 +2,13 @@
 
 > [📖 Index](README.md) · Previous: [← Getting Started](getting-started.md) · Next: [RPC Usage →](rpc-usage.md) · [🇨🇳 中文](architecture.zh-CN.md)
 
-x-remoting is laid out as two thin layers:
+x-remoting is a single-module project (`io.github.x-infra-lab:x-remoting`)
+organized into two logical layers via packages:
 
-- **api** — the framework (connection / protocol / event / heartbeat / reconnect
-  abstractions and their Netty-backed default implementations).
-- **core** — a complete RPC built on the framework (handler registration, request id
-  generation, four call shapes, message factory). The `all` module is a convenience
-  uber-jar that bundles both.
+- **Transport layer** (`io.github.xinfra.lab.remoting.*`) — connection,
+  protocol, event, reconnect abstractions and their Netty-backed defaults.
+- **RPC layer** (`io.github.xinfra.lab.remoting.rpc.*`) — handler registration,
+  request id generation, four call shapes, message factory, heartbeat.
 
 ```
                             ┌────────────────────┐
@@ -17,7 +17,7 @@ x-remoting is laid out as two thin layers:
                                       │
    ┌──────────────────────────────────┴──────────────────────────────────┐
    │                                                                     │
-   │                          x-remoting-core                            │
+   │                        RPC layer (rpc.*)                            │
    │   RemotingClient / RemotingServer  (blockingCall / futureCall /     │
    │                                     asyncCall / oneway)             │
    │   RequestHandler / RequestApi / RemotingProtocol / Codec            │
@@ -26,9 +26,9 @@ x-remoting is laid out as two thin layers:
                                       │
    ┌──────────────────────────────────┴──────────────────────────────────┐
    │                                                                     │
-   │                          x-remoting-api                             │
+   │                      Transport layer                                │
    │   ConnectionManager     ConnectionFactory     Protocol              │
-   │   Reconnector           Heartbeater           MessageHandler        │
+   │   Reconnector           MessageHandler        Message (marker)      │
    │   ConnectionEventProcessor / Listener                               │
    │   AbstractServer        ServerConnectionManager                     │
    │                                                                     │
@@ -39,37 +39,35 @@ x-remoting is laid out as two thin layers:
                                 └────────────┘
 ```
 
-## Modules
+## Maven coordinate
 
-| Module | Coordinate | Contents |
-|--------|------------|----------|
-| `api`  | `io.github.x-infra-lab:x-remoting-api` | Framework abstractions + Netty-backed defaults |
-| `core` | `io.github.x-infra-lab:x-remoting-core` | RPC implementation (`impl.client`, `impl.server`, `impl.handler`, `impl.codec`, `impl.message`) |
-| `all`  | `io.github.x-infra-lab:x-remoting` | Convenience uber-jar that depends on both |
-
-If you only want the framework (to build your own protocol), depend on `api`. If you
-want the RPC out of the box, depend on `all` (or `core` directly).
-
-> Heads-up: the `api` / `core` split is currently more aspirational than enforced.
-> See [Design Debt](design-debt.md) for the honest take.
+```xml
+<dependency>
+    <groupId>io.github.x-infra-lab</groupId>
+    <artifactId>x-remoting</artifactId>
+    <version>0.0.3-RC2</version>
+</dependency>
+```
 
 ## Key abstractions
 
 | Type | Layer | Role |
 |------|-------|------|
-| `Protocol` | api | Wire-level façade: codec, message factory, message handler |
-| `Connection` | api | Wraps a Netty `Channel` + per-connection executor/timer + outstanding `InvokeFuture` map |
-| `Connections` | api | Per-address pool of `Connection`s, with safe `add` after `close` |
-| `ConnectionFactory` | api | Builds a `Connection` for an address |
-| `ConnectionManager` | api | Get-or-connect, disconnect, close — owns the `connectionsMap` |
-| `ConnectionEventProcessor` | api | Async fan-out of `CONNECT` / `CLOSE` events to user listeners |
-| `Heartbeater` | api | Sends heartbeats, counts failures, closes the link |
-| `Reconnector` | api | Per-endpoint reconnect state machine with backoff + listener |
-| `Server` / `AbstractServer` | api | Bind, accept, route to manager |
-| `RemotingProtocol` | core | Concrete `Protocol` for the bundled RPC |
-| `RemotingClient` / `RemotingServer` | core | RPC entry points — what most users touch |
-| `RequestHandler` / `RequestApi` / `RequestHandlerRegistry` | core | Server-side dispatch by path |
-| `CallOptions` / `RemotingCallBack` / `RemotingFuture` | core | Per-call options and async result types |
+| `Protocol` | transport | Wire-level façade: codec + message handler |
+| `Connection` | transport | Wraps a Netty `Channel` + per-connection executor/timer + close hooks |
+| `Connections` | transport | Per-address pool of `Connection`s, with safe `add` after `close` |
+| `ConnectionFactory` | transport | Builds a `Connection` for an address |
+| `ConnectionManager` | transport | Get-or-connect, disconnect, close — owns the `connectionsMap` |
+| `ConnectionEventProcessor` | transport | Async fan-out of `CONNECT` / `CLOSE` events to user listeners |
+| `Reconnector` | transport | Per-endpoint reconnect state machine with backoff + listener |
+| `Server` / `AbstractServer` | transport | Bind, accept, route to manager |
+| `RpcProtocol` | rpc | Extends `Protocol` with `getMessageFactory()` |
+| `RemotingProtocol` | rpc | Concrete `RpcProtocol` for the bundled RPC |
+| `Heartbeater` | rpc | Sends heartbeats, counts failures via `HeartbeatState`, closes the link |
+| `InFlightRequests` | rpc | Per-connection outstanding `InvokeFuture` map (channel attribute) |
+| `RemotingClient` / `RemotingServer` | rpc | RPC entry points — what most users touch |
+| `RequestHandler` / `RequestApi` / `RequestHandlerRegistry` | rpc | Server-side dispatch by path |
+| `CallOptions` / `RemotingCallBack` / `RemotingFuture` | rpc | Per-call options and async result types |
 
 ## How a request flows
 

@@ -56,9 +56,9 @@ public class EchoRequest implements Serializable {
 Handler 用 `RequestApi` 作为 key；客户端通过这个 path 字符串路由请求。
 
 ```java
-import io.github.xinfra.lab.remoting.impl.handler.RequestApi;
-import io.github.xinfra.lab.remoting.impl.server.RemotingServer;
-import io.github.xinfra.lab.remoting.impl.server.RemotingServerConfig;
+import io.github.xinfra.lab.remoting.rpc.handler.RequestApi;
+import io.github.xinfra.lab.remoting.rpc.server.RemotingServer;
+import io.github.xinfra.lab.remoting.rpc.server.RemotingServerConfig;
 
 RemotingServerConfig serverConfig = new RemotingServerConfig();
 serverConfig.setPort(8989);
@@ -77,9 +77,9 @@ System.out.println("server listening on " + server.getLocalAddress());
 ## 4. 发送请求
 
 ```java
-import io.github.xinfra.lab.remoting.client.CallOptions;
-import io.github.xinfra.lab.remoting.impl.client.RemotingClient;
-import io.github.xinfra.lab.remoting.impl.handler.RequestApi;
+import io.github.xinfra.lab.remoting.rpc.client.CallOptions;
+import io.github.xinfra.lab.remoting.rpc.client.RemotingClient;
+import io.github.xinfra.lab.remoting.rpc.handler.RequestApi;
 
 import java.net.InetSocketAddress;
 

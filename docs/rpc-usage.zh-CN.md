@@ -2,7 +2,7 @@
 
 > [📖 索引](README.zh-CN.md) · 上一篇：[← 架构](architecture.zh-CN.md) · 下一篇：[配置参考 →](configuration-reference.zh-CN.md) · [🇬🇧 English](rpc-usage.md)
 
-`core` 模块带了一套完整的 RPC。本页介绍你日常会用到的入口 API。
+RPC 层（`rpc.*` 包）带了一套完整的 RPC。本页介绍你日常会用到的入口 API。
 
 ## RemotingClient
 

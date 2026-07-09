@@ -17,7 +17,7 @@ Read in order, or skip to whatever you need.
 | # | Document | What it covers |
 |---|----------|----------------|
 | 1 | [Getting Started](getting-started.md) | Install, hello world, first request |
-| 2 | [Architecture](architecture.md) | Module map, key abstractions, request flow, threading |
+| 2 | [Architecture](architecture.md) | Package layers, key abstractions, request flow, threading |
 | 3 | [RPC Usage](rpc-usage.md) | Four call patterns, handlers, server-to-client calls |
 | 4 | [Configuration Reference](configuration-reference.md) | Every knob, in one place |
 | 5 | [Connection Manager](connection-manager.md) | Pool, lifecycle, events, heartbeat |

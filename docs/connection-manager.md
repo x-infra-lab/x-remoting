@@ -142,22 +142,18 @@ The heartbeat is driven by Netty's `IdleStateHandler` (installed when
 `ConnectionFactoryConfig.idleSwitch=true`, default). When an idle event fires,
 `ProtocolHeartBeatHandler` calls `Heartbeater.triggerHeartBeat(connection)`.
 
-`DefaultHeartbeater` sends a heartbeat `RequestMessage` over the connection:
+`DefaultHeartbeater` sends a heartbeat `RequestMessage` over the connection.
+Fail counts are tracked per-connection via `HeartbeatState` (stored as a Netty
+channel attribute):
 
-- **Success** → `connection.heartbeatFailCnt` reset to 0
-- **Failure** → `heartbeatFailCnt` incremented (atomically)
-- **`heartbeatFailCnt >= heartbeatMaxFailCount`** (default 3) → close the connection,
+- **Success** → fail count reset to 0
+- **Failure** → fail count incremented (atomically)
+- **fail count >= `heartbeatMaxFailCount`** (default 3) → close the connection,
   which triggers `channelInactive → close(conn) → reconnector.onUnhealthy(addr)`
 
-Heartbeat can be paused per-`Connection` or per-`InetSocketAddress`:
-
-```java
-client.getConnectionManager().heartbeater().disableHeartBeat(connection);
-client.getConnectionManager().heartbeater().disableHeartBeat(address);
-```
-
-Both blocklists are stored in `ConcurrentHashMap.newKeySet()` so they're safe to
-mutate from any thread.
+Heartbeat is managed at the RPC protocol layer, not the transport layer.
+The `Heartbeater` is owned by `RemotingClient` and injected via the channel
+pipeline (see `ProtocolHeartBeatHandler`).
 
 ## Lifecycle
 
@@ -185,8 +181,9 @@ call throws `IllegalStateException`.
 and `check`, but:
 
 - `connect(addr)` throws `UnsupportedOperationException` — the server does not dial.
-- `reconnector()` and `heartbeater()` return `null` — the server doesn't retry or
-  ping clients. The abstract base null-checks before every call.
+- `reconnector()` returns `null` — the server doesn't retry.
+  Heartbeat is a protocol-layer concern handled by `RemotingClient`, not the
+  connection manager.
 
 The same `ConnectionEventHandler` runs on the server pipeline, so registered
 listeners receive `CONNECT` / `CLOSE` for every accepted channel.

@@ -122,20 +122,15 @@ client.getConnectionManager().connectionEventProcessor()
 
 心跳由 Netty 的 `IdleStateHandler` 驱动（`ConnectionFactoryConfig.idleSwitch=true` 时安装，默认开）。idle 事件触发时，`ProtocolHeartBeatHandler` 调 `Heartbeater.triggerHeartBeat(connection)`。
 
-`DefaultHeartbeater` 在连接上发心跳 `RequestMessage`：
+`DefaultHeartbeater` 在连接上发心跳 `RequestMessage`。
+失败计数通过 `HeartbeatState`（存储为 Netty channel attribute）按连接跟踪：
 
-- **成功** → `connection.heartbeatFailCnt` 清零
-- **失败** → `heartbeatFailCnt` 原子自增
-- **`heartbeatFailCnt >= heartbeatMaxFailCount`**（默认 3）→ 关闭连接 → 触发 `channelInactive → close(conn) → reconnector.onUnhealthy(addr)`
+- **成功** → 失败计数清零
+- **失败** → 失败计数原子自增
+- **失败计数 >= `heartbeatMaxFailCount`**（默认 3）→ 关闭连接 → 触发 `channelInactive → close(conn) → reconnector.onUnhealthy(addr)`
 
-可以按 `Connection` 或按 `InetSocketAddress` 暂停心跳：
-
-```java
-client.getConnectionManager().heartbeater().disableHeartBeat(connection);
-client.getConnectionManager().heartbeater().disableHeartBeat(address);
-```
-
-两个 blocklist 都用 `ConcurrentHashMap.newKeySet()` 存，任意线程都可以安全修改。
+心跳由 RPC 协议层管理，而非传输层。`Heartbeater` 归 `RemotingClient` 所有，
+通过 channel pipeline 注入（见 `ProtocolHeartBeatHandler`）。
 
 ## 生命周期
 
@@ -161,7 +156,7 @@ shutdown()
 `ServerConnectionManager` 复用基类的 `add` / `close` / `disconnect` / `get` / `check`，但：
 
 - `connect(addr)` 直接抛 `UnsupportedOperationException` —— 服务端不发起拨号
-- `reconnector()` 和 `heartbeater()` 都返回 `null` —— 服务端不重连、不主动 ping 客户端。基类在每个调用前都做了 null check
+- `reconnector()` 返回 `null` —— 服务端不重连。心跳是协议层的关注点，由 `RemotingClient` 负责，不在连接管理器中
 
 服务端 pipeline 上跑同一个 `ConnectionEventHandler`，所以 listener 会收到每条被接入 channel 的 `CONNECT` / `CLOSE` 事件。
 

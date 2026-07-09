@@ -38,7 +38,7 @@ x-remoting 只支持 TCP。API 里用 `InetSocketAddress` 让用户少一层 cas
 
 ## 能用 unix domain socket / TLS / HTTP transport 吗？
 
-直接用不行。内置 `ConnectionFactory` 只走 TCP，公开 API 收 `InetSocketAddress`。你可以基于 `api` 模块写自定义 `ConnectionFactory`（也可能要自定义 `Protocol`）来支持其它 transport。
+直接用不行。内置 `ConnectionFactory` 只走 TCP，公开 API 收 `InetSocketAddress`。你可以基于传输层写自定义 `ConnectionFactory`（也可能要自定义 `Protocol`）来支持其它 transport。
 
 ## 服务端怎么反向调用客户端？
 
@@ -56,7 +56,7 @@ if (client.isStarted()) {
 
 ## 多客户端怎么共享 Netty 线程？
 
-直接走 RPC API 不行。可以通过 `ConnectionFactoryConfig` 传共享的 `Executor` 和 `Timer`，至少这两样共享。完全共享 `EventLoopGroup` 得降到 `api` 模块自己写 `ConnectionFactory`。first-class 支持还在 roadmap。
+直接走 RPC API 不行。可以通过 `ConnectionFactoryConfig` 传共享的 `Executor` 和 `Timer`，至少这两样共享。完全共享 `EventLoopGroup` 得降到传输层自己写 `ConnectionFactory`。first-class 支持还在 roadmap。
 
 ## macOS / Windows 上能用吗？
 
