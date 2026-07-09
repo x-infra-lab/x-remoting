@@ -1,6 +1,5 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.common.Validate;
@@ -20,12 +19,10 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class DefaultReconnector extends AbstractLifeCycle implements Reconnector {
 
-	@AccessForTest
 	protected volatile ConnectionManager connectionManager;
 
 	private final ReconnectConfig config;
 
-	@AccessForTest
 	protected final ConcurrentHashMap<InetSocketAddress, EndpointReconnectTask> tasks = new ConcurrentHashMap<>();
 
 	private final CopyOnWriteArrayList<ReconnectListener> listeners = new CopyOnWriteArrayList<>();

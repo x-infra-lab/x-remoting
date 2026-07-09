@@ -1,6 +1,5 @@
 package io.github.xinfra.lab.remoting.rpc.client;
 
-import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.common.Validate;
 import io.github.xinfra.lab.remoting.rpc.message.RequestMessage;
 import io.github.xinfra.lab.remoting.rpc.message.ResponseMessage;
@@ -29,12 +28,10 @@ public class InvokeFuture<T extends ResponseMessage> implements Future<ResponseM
 
 	private volatile ResponseMessage responseMessage;
 
-	@AccessForTest
 	protected volatile Timeout timeout;
 
 	private volatile InvokeCallBack invokeCallBack;
 
-	@AccessForTest
 	protected final AtomicBoolean callBackExecuted = new AtomicBoolean(false);
 
 	private final ClassLoader classLoader;

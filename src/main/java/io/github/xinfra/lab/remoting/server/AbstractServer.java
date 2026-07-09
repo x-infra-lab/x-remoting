@@ -1,6 +1,5 @@
 package io.github.xinfra.lab.remoting.server;
 
-import io.github.xinfra.lab.remoting.annotation.AccessForTest;
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.common.EpollUtils;
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
@@ -193,7 +192,6 @@ public abstract class AbstractServer extends AbstractLifeCycle implements Server
 		}
 	}
 
-	@AccessForTest
 	protected void createConnection(SocketChannel channel) {
 		Connection connection = new Connection(getProtocol(), channel, executor, timer);
 		if (config.isManageConnection()) {

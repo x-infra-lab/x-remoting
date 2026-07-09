@@ -105,11 +105,10 @@ default Executor getExecutor();                     // executor 覆盖
 
 ## 代码 smell 集
 
-### 🟠 `@AccessForTest` 满天飞
+### ~~🟠 `@AccessForTest` 满天飞~~ ✅ 已解决
 
-注解是自造的，模式是"我把这个 private/protected 了但测试需要"。代码库里 14 处。它是"这些类难以独立测试"的承认 —— 也就是设计错了，不是测试框架缺位。
-
-**修法方向**：把那些违规者重构得能测（小类、少 collaborator、可注入依赖），或者干脆改 package-private，注解都不要。
+自定义的 `@AccessForTest` 注解及整个 `annotation` 包已删除。7 处标注的字段本来就是
+`protected` / package-private，保持不变，只是不再带注解。
 
 ### 🟠 线程名 `RemotingClient-Server-Default-Executor-*`
 

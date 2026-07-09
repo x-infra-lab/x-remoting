@@ -1,7 +1,5 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import io.github.xinfra.lab.remoting.annotation.AccessForTest;
-
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +7,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 public class Connections implements Closeable {
 
-	@AccessForTest
 	protected CopyOnWriteArrayList<Connection> connections = new CopyOnWriteArrayList<>();
 
 	private final ConnectionSelectStrategy connectionSelectStrategy;

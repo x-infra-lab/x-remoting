@@ -132,16 +132,11 @@ real race.
 
 ## Code-smell catalogue
 
-### 🟠 `@AccessForTest` everywhere
+### ~~🟠 `@AccessForTest` everywhere~~ ✅ Resolved
 
-The annotation is custom but the pattern is "I made this private/protected but
-tests need it". 14 occurrences across the codebase. It's an admission that the
-classes are hard to test in isolation — i.e., the design is wrong, not that the
-test framework is missing.
-
-**Fix direction:** restructure the offenders for testability (small classes,
-fewer collaborators, injectable dependencies), or just make the fields
-package-private without the annotation.
+The custom `@AccessForTest` annotation and the entire `annotation` package have
+been deleted. The 7 annotated fields were already `protected` / package-private
+and remain so — they just no longer carry the annotation.
 
 ### 🟠 Thread name `RemotingClient-Server-Default-Executor-*`
 
