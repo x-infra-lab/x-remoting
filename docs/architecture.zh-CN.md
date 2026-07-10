@@ -20,7 +20,7 @@ x-remoting 是单模块项目（`io.github.x-infra-lab:x-remoting`），
    │                        RPC 层 (rpc.*)                               │
    │   RemotingClient / RemotingServer  (blockingCall / futureCall /     │
    │                                     asyncCall / oneway)             │
-   │   RequestHandler / RequestApi / RemotingProtocol / Codec            │
+   │   RequestHandler / RpcMessageDispatcher / RemotingProtocol / Codec   │
    │                                                                     │
    └──────────────────────────────────┬──────────────────────────────────┘
                                       │
@@ -66,7 +66,7 @@ x-remoting 是单模块项目（`io.github.x-infra-lab:x-remoting`），
 | `Heartbeater` | RPC | 发心跳、通过 `HeartbeatState` 计数失败、关链路 |
 | `InFlightRequests` | RPC | 每连接的未完成 `InvokeFuture` map（channel attribute） |
 | `RemotingClient` / `RemotingServer` | RPC | RPC 入口 —— 大部分用户直接接触的就是这两个 |
-| `RequestHandler` / `RequestApi` / `RequestHandlerRegistry` | RPC | 服务端按 path 派发 |
+| `RpcMessageDispatcher` / `RemotingRequestMessageHandler` | RPC | 按消息类型分发，再按 path 派发 |
 | `CallOptions` / `RemotingCallBack` / `RemotingFuture` | RPC | per-call 配置 + 异步结果类型 |
 
 ## 一次请求的流转

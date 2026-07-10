@@ -16,13 +16,13 @@ public class RemotingMessageFactoryTest {
 	public void testCreateRequestMessage() {
 		RemotingMessageFactory remotingMessageFactory = new RemotingMessageFactory();
 
-		RemotingRequestMessage requestMessage = remotingMessageFactory.createRequest(IDGenerator.nextRequestId(),
-				SerializationType.Hession);
+		RemotingRequestMessage requestMessage = remotingMessageFactory.createRequest(new IDGenerator().nextRequestId(),
+				SerializationType.Hessian);
 		Assertions.assertNotNull(requestMessage);
 		Assertions.assertEquals(requestMessage.getMessageType(), MessageType.request);
 		Assertions.assertArrayEquals(requestMessage.getProtocolIdentifier().getCodes(),
 				RemotingProtocolId.PROTOCOL_CODE);
-		Assertions.assertEquals(requestMessage.getSerializationType(), SerializationType.Hession);
+		Assertions.assertEquals(requestMessage.getSerializationType(), SerializationType.Hessian);
 		Assertions.assertNull(requestMessage.getPath());
 		Assertions.assertNull(requestMessage.getHeaders());
 		Assertions.assertNull(requestMessage.getBody());
@@ -32,14 +32,14 @@ public class RemotingMessageFactoryTest {
 	public void testCreateSendFailResponseMessage() throws UnknownHostException {
 		RemotingMessageFactory remotingMessageFactory = new RemotingMessageFactory();
 
-		RemotingResponseMessage responseMessage = remotingMessageFactory.createResponse(IDGenerator.nextRequestId(),
-				SerializationType.Hession, ResponseStatus.SendFailed,
+		RemotingResponseMessage responseMessage = remotingMessageFactory.createResponse(
+				new IDGenerator().nextRequestId(), SerializationType.Hessian, ResponseStatus.SendFailed,
 				new UnknownHostException("testCreateSendFailResponseMessage"));
 
 		Assertions.assertNotNull(responseMessage);
 		Assertions.assertEquals(responseMessage.getMessageType(), MessageType.response);
 		Assertions.assertEquals(responseMessage.getResponseStatus(), ResponseStatus.SendFailed);
-		Assertions.assertEquals(responseMessage.getSerializationType(), SerializationType.Hession);
+		Assertions.assertEquals(responseMessage.getSerializationType(), SerializationType.Hessian);
 		Assertions.assertArrayEquals(responseMessage.getProtocolIdentifier().getCodes(),
 				RemotingProtocolId.PROTOCOL_CODE);
 
@@ -51,8 +51,8 @@ public class RemotingMessageFactoryTest {
 	public void testCreateTimeoutResponseMessage() {
 		RemotingMessageFactory remotingMessageFactory = new RemotingMessageFactory();
 
-		RemotingResponseMessage responseMessage = remotingMessageFactory.createResponse(IDGenerator.nextRequestId(),
-				SerializationType.Hession, ResponseStatus.Timeout);
+		RemotingResponseMessage responseMessage = remotingMessageFactory
+			.createResponse(new IDGenerator().nextRequestId(), SerializationType.Hessian, ResponseStatus.Timeout);
 		Assertions.assertNotNull(responseMessage);
 		Assertions.assertEquals(responseMessage.getResponseStatus(), ResponseStatus.Timeout);
 		Assertions.assertEquals(responseMessage.getBody(), null);
@@ -63,8 +63,8 @@ public class RemotingMessageFactoryTest {
 	public void testCreateConnectionClosedMessage() throws UnknownHostException {
 		RemotingMessageFactory remotingMessageFactory = new RemotingMessageFactory();
 
-		RemotingResponseMessage responseMessage = remotingMessageFactory.createResponse(IDGenerator.nextRequestId(),
-				SerializationType.Hession, ResponseStatus.ConnectionClosed);
+		RemotingResponseMessage responseMessage = remotingMessageFactory.createResponse(
+				new IDGenerator().nextRequestId(), SerializationType.Hessian, ResponseStatus.ConnectionClosed);
 		Assertions.assertNotNull(responseMessage);
 		Assertions.assertEquals(responseMessage.getResponseStatus(), ResponseStatus.ConnectionClosed);
 		Assertions.assertEquals(responseMessage.getBody(), null);
@@ -75,7 +75,7 @@ public class RemotingMessageFactoryTest {
 		RemotingMessageFactory remotingMessageFactory = new RemotingMessageFactory();
 
 		RemotingRequestMessage requestMessage = remotingMessageFactory
-			.createHeartbeatRequest(IDGenerator.nextRequestId(), SerializationType.Hession);
+			.createHeartbeatRequest(new IDGenerator().nextRequestId(), SerializationType.Hessian);
 		Assertions.assertNotNull(requestMessage);
 		Assertions.assertEquals(requestMessage.getMessageType(), MessageType.heartbeatRequest);
 		Assertions.assertArrayEquals(requestMessage.getProtocolIdentifier().getCodes(),

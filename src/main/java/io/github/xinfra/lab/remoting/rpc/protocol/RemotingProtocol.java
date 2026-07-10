@@ -1,21 +1,21 @@
 package io.github.xinfra.lab.remoting.rpc.protocol;
 
-import io.github.xinfra.lab.remoting.rpc.handler.RequestHandlerRegistry;
 import io.github.xinfra.lab.remoting.rpc.codec.RemotingMessageCodec;
 import io.github.xinfra.lab.remoting.rpc.message.RemotingMessageFactory;
-import io.github.xinfra.lab.remoting.rpc.message.RemotingMessageHandler;
+import io.github.xinfra.lab.remoting.rpc.message.RemotingRequestMessageHandler;
+import io.github.xinfra.lab.remoting.rpc.message.RpcMessageDispatcher;
 
 public class RemotingProtocol implements RpcProtocol {
 
 	private final RemotingMessageCodec remotingMessageCodec;
 
-	private final RemotingMessageHandler remotingMessageHandler;
+	private final RpcMessageDispatcher rpcMessageDispatcher;
 
 	private final RemotingMessageFactory remotingMessageFactory;
 
-	public RemotingProtocol(RequestHandlerRegistry requestHandlerRegistry) {
+	public RemotingProtocol(RemotingRequestMessageHandler requestMessageHandler) {
 		this.remotingMessageCodec = new RemotingMessageCodec();
-		this.remotingMessageHandler = new RemotingMessageHandler(requestHandlerRegistry);
+		this.rpcMessageDispatcher = new RpcMessageDispatcher(requestMessageHandler);
 		this.remotingMessageFactory = new RemotingMessageFactory();
 	}
 
@@ -30,8 +30,8 @@ public class RemotingProtocol implements RpcProtocol {
 	}
 
 	@Override
-	public RemotingMessageHandler getMessageHandler() {
-		return this.remotingMessageHandler;
+	public RpcMessageDispatcher getMessageHandler() {
+		return this.rpcMessageDispatcher;
 	}
 
 	@Override

@@ -24,8 +24,6 @@ Read in order, or skip to whatever you need.
 | 6 | [Reconnect](reconnect.md) | State machine, backoff, listeners |
 | 7 | [Extending](extending.md) | Custom backoff, listeners, protocols |
 | 8 | [FAQ](faq.md) | Common questions and footguns |
-| 9 | [Design Debt](design-debt.md) | Honest architectural critique for contributors |
-| 10 | [Roadmap](roadmap.md) | Project roadmap toward 1.0 |
 
 ## Project status
 

@@ -20,13 +20,13 @@ client.shutdown();
 
 ### 四种调用模式
 
-每种调用前四个参数都一样：`(RequestApi, request, InetSocketAddress, CallOptions)`。区别只在响应怎么交付。
+每种调用前四个参数都一样：`(path, request, InetSocketAddress, CallOptions)`。区别只在响应怎么交付。
 
 #### `blockingCall` —— 同步等
 
 ```java
 String result = client.blockingCall(
-        RequestApi.of("echo"),
+        "echo",
         new EchoRequest("hi"),
         address,
         CallOptions.defaults());
@@ -38,7 +38,7 @@ String result = client.blockingCall(
 
 ```java
 RemotingFuture<String> future = client.futureCall(
-        RequestApi.of("echo"),
+        "echo",
         new EchoRequest("hi"),
         address,
         CallOptions.defaults());
@@ -51,7 +51,7 @@ boolean done = future.isDone();
 
 ```java
 client.asyncCall(
-        RequestApi.of("echo"),
+        "echo",
         new EchoRequest("hi"),
         address,
         CallOptions.defaults(),
@@ -66,7 +66,7 @@ client.asyncCall(
 #### `oneway` —— 发完不管
 
 ```java
-client.oneway(RequestApi.of("notify"), new Notify("..."), address, CallOptions.defaults());
+client.oneway("notify", new Notify("..."), address, CallOptions.defaults());
 ```
 
 不返回响应、不追踪 `InvokeFuture`。适合不关心对端是否收到的事件型场景。
@@ -79,22 +79,20 @@ serverConfig.setPort(8989);
 
 RemotingServer server = new RemotingServer(serverConfig);
 
-server.registerRequestHandler(
-        RequestApi.of("echo"),
-        (EchoRequest req) -> "echo: " + req.getMessage());
+server.registerRequestHandler("echo",
+        BlockingRequestHandler.of((EchoRequest req) -> "echo: " + req.getMessage()));
 
 server.startup();
 ```
 
 ### 异步 handler
 
-`RequestHandler<T, R>` 有一个 default 的 `asyncHandle(request, ResponseObserver<R>)`，允许稍后完成。要非阻塞处理就覆盖它：
+`RequestHandler<T, R>` 只有一个方法 `void handle(T, ResponseObserver<R>)`。
+需要非阻塞处理时直接实现它：
 
 ```java
-server.registerRequestHandler(RequestApi.of("slow"), new RequestHandler<SlowReq, String>() {
-    @Override public String handle(SlowReq req) { throw new UnsupportedOperationException(); }
-
-    @Override public void asyncHandle(SlowReq req, ResponseObserver<String> obs) {
+server.registerRequestHandler("slow", new RequestHandler<SlowReq, String>() {
+    @Override public void handle(SlowReq req, ResponseObserver<String> obs) {
         someService.fetchAsync(req).whenComplete((res, err) -> {
             if (err != null) obs.onError(err);
             else             obs.complete(res);
@@ -107,6 +105,13 @@ server.registerRequestHandler(RequestApi.of("slow"), new RequestHandler<SlowReq,
 
 handler 的 `getExecutor()` 返回非空时，框架会把 handler 调用派发到这个 executor，不再用服务端默认的。
 
+同步场景用 `BlockingRequestHandler`：
+
+```java
+server.registerRequestHandler("echo", BlockingRequestHandler.of(
+        (EchoRequest req) -> "echo:" + req.getMessage()));
+```
+
 ### 服务端反向调用
 
 `RemotingServer` 暴露的 call 方法跟 client 一模一样（`blockingCall` / `futureCall` / `asyncCall` / `oneway`）。客户端连上来之后，服务端可以反过来给该客户端 push 请求：
@@ -118,7 +123,7 @@ serverConfig.setManageConnection(true);          // ← 反向调用必须开
 RemotingServer server = new RemotingServer(serverConfig);
 
 // 之后拿到客户端的 InetSocketAddress...
-server.oneway(RequestApi.of("notify"), new Notify("hello"), clientAddress, callOptions);
+server.oneway("notify", new Notify("hello"), clientAddress, callOptions);
 ```
 
 `manageConnection=true` 让服务端把入站连接留在 `ServerConnectionManager` 里。不开就只能收请求，不能主动发。
@@ -126,7 +131,8 @@ server.oneway(RequestApi.of("notify"), new Notify("hello"), clientAddress, callO
 客户端要给服务端可能 push 的 path 注册 handler：
 
 ```java
-client.registerRequestHandler(RequestApi.of("notify"), (Notify n) -> { /* ... */ });
+client.registerRequestHandler("notify", BlockingRequestHandler.of(
+        (Notify n) -> { /* ... */ return null; }));
 ```
 
 ## CallOptions

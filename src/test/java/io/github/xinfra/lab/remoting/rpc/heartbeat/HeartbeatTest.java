@@ -49,7 +49,7 @@ public class HeartbeatTest {
 
 		RpcProtocol protocol = (RpcProtocol) connection.getProtocol();
 		RequestMessage heartbeatRequestMessage = protocol.getMessageFactory()
-			.createHeartbeatRequest(IDGenerator.nextRequestId(), SerializationType.Hession);
+			.createHeartbeatRequest(new IDGenerator().nextRequestId(), SerializationType.Hessian);
 
 		CallOptions callOptions = CallOptions.defaults();
 		ResponseMessage responseMessage = call.blockingCall(heartbeatRequestMessage, connection, callOptions);

@@ -4,13 +4,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class IDGenerator {
 
-	private IDGenerator() {
-	};
+	private final AtomicInteger counter = new AtomicInteger(0);
 
-	private static AtomicInteger requestIdGenerator = new AtomicInteger(0);
-
-	public static Integer nextRequestId() {
-		return requestIdGenerator.getAndIncrement();
+	public int nextRequestId() {
+		return counter.getAndIncrement();
 	}
 
 }

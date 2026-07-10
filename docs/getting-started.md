@@ -57,11 +57,10 @@ public class EchoRequest implements Serializable {
 
 ## 3. Start a server
 
-Handlers are keyed by a `RequestApi`. The path string is the route the client uses
+Handlers are registered by path. The path string is the route the client uses
 to address the handler.
 
 ```java
-import io.github.xinfra.lab.remoting.rpc.handler.RequestApi;
 import io.github.xinfra.lab.remoting.rpc.server.RemotingServer;
 import io.github.xinfra.lab.remoting.rpc.server.RemotingServerConfig;
 
@@ -69,24 +68,23 @@ RemotingServerConfig serverConfig = new RemotingServerConfig();
 serverConfig.setPort(8989);
 
 RemotingServer server = new RemotingServer(serverConfig);
-server.registerRequestHandler(
-        RequestApi.of("echo"),
-        (EchoRequest req) -> "echo: " + req.getMessage());
+server.registerRequestHandler("echo",
+        BlockingRequestHandler.of((EchoRequest req) -> "echo: " + req.getMessage()));
 server.startup();
 
 System.out.println("server listening on " + server.getLocalAddress());
 ```
 
-`RequestHandler<T, R>` has a single abstract method `R handle(T request)` so it is a
-lambda target. For non-blocking work, override the default
-`asyncHandle(request, observer)` and call `observer.complete(result)` later.
+`RequestHandler<T, R>` has a single method `void handle(T, ResponseObserver<R>)`.
+For synchronous handlers, use `BlockingRequestHandler.of(fn)` or extend
+`BlockingRequestHandler<T, R>`. For non-blocking work, implement `RequestHandler`
+directly and call `observer.complete(result)` when ready.
 
 ## 4. Send a request
 
 ```java
 import io.github.xinfra.lab.remoting.rpc.client.CallOptions;
 import io.github.xinfra.lab.remoting.rpc.client.RemotingClient;
-import io.github.xinfra.lab.remoting.rpc.handler.RequestApi;
 
 import java.net.InetSocketAddress;
 
@@ -94,10 +92,9 @@ RemotingClient client = new RemotingClient();
 client.startup();
 
 InetSocketAddress address = new InetSocketAddress("127.0.0.1", 8989);
-RequestApi echo = RequestApi.of("echo");
 
 String result = client.blockingCall(
-        echo,
+        "echo",
         new EchoRequest("hello"),
         address,
         CallOptions.defaults());

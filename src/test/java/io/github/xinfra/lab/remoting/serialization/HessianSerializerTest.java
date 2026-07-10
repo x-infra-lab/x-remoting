@@ -9,11 +9,11 @@ import org.junit.jupiter.api.Test;
 
 import java.io.Serializable;
 
-public class HessionSerializerTest {
+public class HessianSerializerTest {
 
 	@Test
 	public void testSerialize() throws SerializeException, DeserializeException {
-		HessionSerializer serializer = new HessionSerializer();
+		HessianSerializer serializer = new HessianSerializer();
 
 		User user = new User();
 		user.setName("joe");

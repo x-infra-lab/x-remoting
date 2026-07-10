@@ -20,7 +20,7 @@ organized into two logical layers via packages:
    │                        RPC layer (rpc.*)                            │
    │   RemotingClient / RemotingServer  (blockingCall / futureCall /     │
    │                                     asyncCall / oneway)             │
-   │   RequestHandler / RequestApi / RemotingProtocol / Codec            │
+   │   RequestHandler / RpcMessageDispatcher / RemotingProtocol / Codec   │
    │                                                                     │
    └──────────────────────────────────┬──────────────────────────────────┘
                                       │
@@ -66,7 +66,7 @@ organized into two logical layers via packages:
 | `Heartbeater` | rpc | Sends heartbeats, counts failures via `HeartbeatState`, closes the link |
 | `InFlightRequests` | rpc | Per-connection outstanding `InvokeFuture` map (channel attribute) |
 | `RemotingClient` / `RemotingServer` | rpc | RPC entry points — what most users touch |
-| `RequestHandler` / `RequestApi` / `RequestHandlerRegistry` | rpc | Server-side dispatch by path |
+| `RpcMessageDispatcher` / `RemotingRequestMessageHandler` | rpc | Message dispatch by type, then by path |
 | `CallOptions` / `RemotingCallBack` / `RemotingFuture` | rpc | Per-call options and async result types |
 
 ## How a request flows

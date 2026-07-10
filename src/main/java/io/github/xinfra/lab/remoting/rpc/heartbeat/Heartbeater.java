@@ -16,4 +16,7 @@ public interface Heartbeater {
 
 	void enableHeartBeat(InetSocketAddress socketAddress);
 
+	default void shutdown() {
+	}
+
 }

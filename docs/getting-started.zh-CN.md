@@ -53,10 +53,9 @@ public class EchoRequest implements Serializable {
 
 ## 3. 启动服务端
 
-Handler 用 `RequestApi` 作为 key；客户端通过这个 path 字符串路由请求。
+Handler 按 path 注册；客户端通过这个 path 字符串路由请求。
 
 ```java
-import io.github.xinfra.lab.remoting.rpc.handler.RequestApi;
 import io.github.xinfra.lab.remoting.rpc.server.RemotingServer;
 import io.github.xinfra.lab.remoting.rpc.server.RemotingServerConfig;
 
@@ -64,22 +63,22 @@ RemotingServerConfig serverConfig = new RemotingServerConfig();
 serverConfig.setPort(8989);
 
 RemotingServer server = new RemotingServer(serverConfig);
-server.registerRequestHandler(
-        RequestApi.of("echo"),
-        (EchoRequest req) -> "echo: " + req.getMessage());
+server.registerRequestHandler("echo",
+        BlockingRequestHandler.of((EchoRequest req) -> "echo: " + req.getMessage()));
 server.startup();
 
 System.out.println("server listening on " + server.getLocalAddress());
 ```
 
-`RequestHandler<T, R>` 只有一个抽象方法 `R handle(T request)`，可以直接写 lambda。需要非阻塞处理时覆盖 default 的 `asyncHandle(request, observer)`，稍后再调 `observer.complete(result)`。
+`RequestHandler<T, R>` 只有一个方法 `void handle(T, ResponseObserver<R>)`。
+同步场景用 `BlockingRequestHandler.of(fn)` 或继承 `BlockingRequestHandler<T, R>`。
+需要非阻塞处理时直接实现 `RequestHandler`，在合适时机调 `observer.complete(result)`。
 
 ## 4. 发送请求
 
 ```java
 import io.github.xinfra.lab.remoting.rpc.client.CallOptions;
 import io.github.xinfra.lab.remoting.rpc.client.RemotingClient;
-import io.github.xinfra.lab.remoting.rpc.handler.RequestApi;
 
 import java.net.InetSocketAddress;
 
@@ -87,10 +86,9 @@ RemotingClient client = new RemotingClient();
 client.startup();
 
 InetSocketAddress address = new InetSocketAddress("127.0.0.1", 8989);
-RequestApi echo = RequestApi.of("echo");
 
 String result = client.blockingCall(
-        echo,
+        "echo",
         new EchoRequest("hello"),
         address,
         CallOptions.defaults());

@@ -11,6 +11,8 @@ import io.github.xinfra.lab.remoting.serialization.SerializationType;
 
 public class RemotingResponseMessage extends RemotingMessage implements ResponseMessage {
 
+	private final MessageType messageType;
+
 	final ResponseStatus status;
 
 	private static final Integer protocolCodeLength = RemotingProtocolId.PROTOCOL_CODE.length;
@@ -33,8 +35,19 @@ public class RemotingResponseMessage extends RemotingMessage implements Response
 			+ requestIdLength + serializationTypeLength + statusLength + headerLengthLength + bodyLengthLength;
 
 	public RemotingResponseMessage(int id, SerializationType serializationType, ResponseStatus status) {
+		this(id, MessageType.response, serializationType, status);
+	}
+
+	public RemotingResponseMessage(int id, MessageType messageType, SerializationType serializationType,
+			ResponseStatus status) {
 		super(id, serializationType);
+		this.messageType = messageType;
 		this.status = status;
+	}
+
+	@Override
+	public MessageType getMessageType() {
+		return messageType;
 	}
 
 	@Override

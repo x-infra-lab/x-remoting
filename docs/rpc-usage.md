@@ -23,14 +23,14 @@ The no-arg constructor uses `ConnectionFactoryConfig.defaults()`,
 
 ### Four call patterns
 
-Each call takes the same prefix: `(RequestApi, request, InetSocketAddress, CallOptions)`.
+Each call takes the same prefix: `(path, request, InetSocketAddress, CallOptions)`.
 What differs is how the response gets delivered.
 
 #### `blockingCall` — wait inline
 
 ```java
 String result = client.blockingCall(
-        RequestApi.of("echo"),
+        "echo",
         new EchoRequest("hi"),
         address,
         CallOptions.defaults());
@@ -45,7 +45,7 @@ error response from the server.
 
 ```java
 RemotingFuture<String> future = client.futureCall(
-        RequestApi.of("echo"),
+        "echo",
         new EchoRequest("hi"),
         address,
         CallOptions.defaults());
@@ -58,7 +58,7 @@ boolean done = future.isDone();
 
 ```java
 client.asyncCall(
-        RequestApi.of("echo"),
+        "echo",
         new EchoRequest("hi"),
         address,
         CallOptions.defaults(),
@@ -74,7 +74,7 @@ The callback runs on the connection's executor
 #### `oneway` — fire and forget
 
 ```java
-client.oneway(RequestApi.of("notify"), new Notify("..."), address, CallOptions.defaults());
+client.oneway("notify", new Notify("..."), address, CallOptions.defaults());
 ```
 
 No response is delivered and no `InvokeFuture` is tracked. Best for events where
@@ -88,23 +88,20 @@ serverConfig.setPort(8989);
 
 RemotingServer server = new RemotingServer(serverConfig);
 
-server.registerRequestHandler(
-        RequestApi.of("echo"),
-        (EchoRequest req) -> "echo: " + req.getMessage());
+server.registerRequestHandler("echo",
+        BlockingRequestHandler.of((EchoRequest req) -> "echo: " + req.getMessage()));
 
 server.startup();
 ```
 
 ### Async handler
 
-`RequestHandler<T, R>` has a default `asyncHandle(request, ResponseObserver<R>)` that
-defers completion. Override it for non-blocking work:
+`RequestHandler<T, R>` has a single method `void handle(T, ResponseObserver<R>)`.
+For non-blocking work, implement it directly:
 
 ```java
-server.registerRequestHandler(RequestApi.of("slow"), new RequestHandler<SlowReq, String>() {
-    @Override public String handle(SlowReq req) { throw new UnsupportedOperationException(); }
-
-    @Override public void asyncHandle(SlowReq req, ResponseObserver<String> obs) {
+server.registerRequestHandler("slow", new RequestHandler<SlowReq, String>() {
+    @Override public void handle(SlowReq req, ResponseObserver<String> obs) {
         someService.fetchAsync(req).whenComplete((res, err) -> {
             if (err != null) obs.onError(err);
             else             obs.complete(res);
@@ -117,6 +114,13 @@ server.registerRequestHandler(RequestApi.of("slow"), new RequestHandler<SlowReq,
 
 When the handler returns a custom `Executor` from `getExecutor()`, the framework
 dispatches the handler invocation onto that executor instead of the server's default.
+
+For synchronous handlers, use `BlockingRequestHandler`:
+
+```java
+server.registerRequestHandler("echo", BlockingRequestHandler.of(
+        (EchoRequest req) -> "echo: " + req.getMessage()));
+```
 
 ### Server-to-client calls
 
@@ -131,7 +135,7 @@ serverConfig.setManageConnection(true);          // ← required for reverse cal
 RemotingServer server = new RemotingServer(serverConfig);
 
 // later, given an InetSocketAddress reachable on the client...
-server.oneway(RequestApi.of("notify"), new Notify("hello"), clientAddress, callOptions);
+server.oneway("notify", new Notify("hello"), clientAddress, callOptions);
 ```
 
 `manageConnection=true` makes the server retain accepted connections in its
@@ -141,7 +145,7 @@ cannot initiate calls.
 The client side must register handlers for the routes the server may push to:
 
 ```java
-client.registerRequestHandler(RequestApi.of("notify"), (Notify n) -> { /* ... */ });
+client.registerRequestHandler("notify", (Notify n) -> { /* ... */ });
 ```
 
 ## CallOptions

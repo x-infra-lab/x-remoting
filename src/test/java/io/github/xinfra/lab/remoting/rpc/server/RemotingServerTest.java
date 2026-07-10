@@ -8,6 +8,7 @@ import io.github.xinfra.lab.remoting.rpc.client.RemotingCallBack;
 import io.github.xinfra.lab.remoting.rpc.client.RemotingFuture;
 import io.github.xinfra.lab.remoting.rpc.handler.EchoRequest;
 import io.github.xinfra.lab.remoting.rpc.handler.EchoRequestHandler;
+import io.github.xinfra.lab.remoting.server.ServerConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -19,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
-import static io.github.xinfra.lab.remoting.rpc.handler.RequestApis.echoApi;
+import static io.github.xinfra.lab.remoting.rpc.handler.RequestApis.echoPath;
 
 public class RemotingServerTest {
 
@@ -33,13 +34,12 @@ public class RemotingServerTest {
 	public static void beforeAll() {
 		remotingClient = new RemotingClient();
 		remotingClient.startup();
-		remotingClient.registerRequestHandler(echoApi, new EchoRequestHandler());
+		remotingClient.registerRequestHandler(echoPath, new EchoRequestHandler());
 
-		RemotingServerConfig config = new RemotingServerConfig();
-		config.setManageConnection(true);
+		ServerConfig config = ServerConfig.builder().manageConnection(true).build();
 		remotingServer = new RemotingServer(config);
 		remotingServer.startup();
-		remotingServer.registerRequestHandler(echoApi, new EchoRequestHandler());
+		remotingServer.registerRequestHandler(echoPath, new EchoRequestHandler());
 	}
 
 	@AfterAll
@@ -57,11 +57,11 @@ public class RemotingServerTest {
 		InetSocketAddress serverAddress = remotingServer.getLocalAddress();
 		String msg = "hello x-remoting";
 		EchoRequest request = new EchoRequest(msg);
-		String result = remotingClient.blockingCall(echoApi, request, serverAddress, callOptions);
+		String result = remotingClient.blockingCall(echoPath, request, serverAddress, callOptions);
 		Assertions.assertEquals(result, "echo:" + msg);
 
 		Connection connection = remotingClient.getConnectionManager().get(serverAddress);
-		result = remotingServer.blockingCall(echoApi, request, clientLocalAddress(connection), callOptions);
+		result = remotingServer.blockingCall(echoPath, request, clientLocalAddress(connection), callOptions);
 		Assertions.assertEquals(result, "echo:" + msg);
 	}
 
@@ -70,13 +70,13 @@ public class RemotingServerTest {
 		InetSocketAddress serverAddress = remotingServer.getLocalAddress();
 		String msg = "hello x-remoting";
 		EchoRequest request = new EchoRequest(msg);
-		RemotingFuture<String> future = remotingClient.futureCall(echoApi, request, serverAddress, callOptions);
+		RemotingFuture<String> future = remotingClient.futureCall(echoPath, request, serverAddress, callOptions);
 
 		String result = future.get(3, TimeUnit.SECONDS);
 		Assertions.assertEquals(result, "echo:" + msg);
 
 		Connection connection = remotingClient.getConnectionManager().get(serverAddress);
-		future = remotingServer.futureCall(echoApi, request, clientLocalAddress(connection), callOptions);
+		future = remotingServer.futureCall(echoPath, request, clientLocalAddress(connection), callOptions);
 		result = future.get(3, TimeUnit.SECONDS);
 		Assertions.assertEquals(result, "echo:" + msg);
 	}
@@ -89,7 +89,7 @@ public class RemotingServerTest {
 
 		CountDownLatch countDownLatch = new CountDownLatch(1);
 		AtomicReference<String> result = new AtomicReference<>();
-		remotingClient.asyncCall(echoApi, request, serverAddress, callOptions, new RemotingCallBack<String>() {
+		remotingClient.asyncCall(echoPath, request, serverAddress, callOptions, new RemotingCallBack<String>() {
 			@Override
 			public void onException(Throwable t) {
 				countDownLatch.countDown();
@@ -108,7 +108,7 @@ public class RemotingServerTest {
 		Connection connection = remotingClient.getConnectionManager().get(serverAddress);
 		CountDownLatch countDownLatch2 = new CountDownLatch(1);
 		AtomicReference<String> result2 = new AtomicReference<>();
-		remotingServer.asyncCall(echoApi, request, clientLocalAddress(connection), callOptions,
+		remotingServer.asyncCall(echoPath, request, clientLocalAddress(connection), callOptions,
 				new RemotingCallBack<String>() {
 					@Override
 					public void onException(Throwable t) {
@@ -133,10 +133,10 @@ public class RemotingServerTest {
 		String msg = "hello x-remoting";
 		EchoRequest request = new EchoRequest(msg);
 
-		remotingClient.oneway(echoApi, request, serverAddress, callOptions);
+		remotingClient.oneway(echoPath, request, serverAddress, callOptions);
 
 		Connection connection = remotingClient.getConnectionManager().get(serverAddress);
-		remotingServer.oneway(echoApi, request, clientLocalAddress(connection), callOptions);
+		remotingServer.oneway(echoPath, request, clientLocalAddress(connection), callOptions);
 
 		TimeUnit.SECONDS.sleep(2);
 	}

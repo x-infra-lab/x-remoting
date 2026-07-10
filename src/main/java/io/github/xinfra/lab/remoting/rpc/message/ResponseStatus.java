@@ -31,6 +31,8 @@ public interface ResponseStatus {
 
 	ResponseStatus ServiceUnavailable = () -> (short) 11;
 
+	ResponseStatus Goaway = () -> (short) 12;
+
 	static ResponseStatus valueOf(short status) {
 		switch (status) {
 			case 0:
@@ -57,6 +59,8 @@ public interface ResponseStatus {
 				return ResourceExhausted;
 			case 11:
 				return ServiceUnavailable;
+			case 12:
+				return Goaway;
 			default:
 				throw new IllegalArgumentException("Unknown status: " + status);
 		}

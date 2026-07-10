@@ -1,9 +1,12 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import io.github.xinfra.lab.remoting.common.Validate;
+import org.apache.commons.lang3.Validate;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
 
 public class ServerConnectionManager extends AbstractConnectionManager {
 
@@ -22,6 +25,14 @@ public class ServerConnectionManager extends AbstractConnectionManager {
 			return null;
 		}
 		return connections.get();
+	}
+
+	public void forEachConnection(Consumer<Connection> action) {
+		for (Connections conns : connectionsMap.values()) {
+			for (Connection conn : new ArrayList<>(conns.connections)) {
+				action.accept(conn);
+			}
+		}
 	}
 
 	@Override

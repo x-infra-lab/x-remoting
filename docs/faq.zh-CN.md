@@ -1,6 +1,6 @@
 # FAQ
 
-> [📖 索引](README.zh-CN.md) · 上一篇：[← 扩展](extending.zh-CN.md) · 下一篇：[设计债 →](design-debt.zh-CN.md) · [🇬🇧 English](faq.md)
+> [📖 索引](README.zh-CN.md) · 上一篇：[← 扩展](extending.zh-CN.md) · [🇬🇧 English](faq.md)
 
 ## 公开 API 为什么用 `InetSocketAddress` 而不是 `SocketAddress`？
 
@@ -76,4 +76,4 @@ Netty `EventLoopGroup` 是 daemon（Netty 默认），但 `RemotingClient-Reconn
 
 ---
 
-> [📖 索引](README.zh-CN.md) · 上一篇：[← 扩展](extending.zh-CN.md) · 下一篇：[设计债 →](design-debt.zh-CN.md)
+> [📖 索引](README.zh-CN.md) · 上一篇：[← 扩展](extending.zh-CN.md)

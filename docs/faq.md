@@ -1,6 +1,6 @@
 # FAQ
 
-> [📖 Index](README.md) · Previous: [← Extending](extending.md) · Next: [Design Debt →](design-debt.md) · [🇨🇳 中文](faq.zh-CN.md)
+> [📖 Index](README.md) · Previous: [← Extending](extending.md) · [🇨🇳 中文](faq.zh-CN.md)
 
 ## Why does the public API take `InetSocketAddress` instead of `SocketAddress`?
 
@@ -114,4 +114,4 @@ cleanly.
 
 ---
 
-> [📖 Index](README.md) · Previous: [← Extending](extending.md) · Next: [Design Debt →](design-debt.md)
+> [📖 Index](README.md) · Previous: [← Extending](extending.md)

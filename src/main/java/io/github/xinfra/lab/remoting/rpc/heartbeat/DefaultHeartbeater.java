@@ -1,10 +1,13 @@
 package io.github.xinfra.lab.remoting.rpc.heartbeat;
 
+import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.rpc.client.Call;
 import io.github.xinfra.lab.remoting.rpc.client.CallOptions;
 import io.github.xinfra.lab.remoting.rpc.client.IDGenerator;
+import io.github.xinfra.lab.remoting.rpc.client.InvokeCallBack;
 import io.github.xinfra.lab.remoting.rpc.message.RequestMessage;
+import io.github.xinfra.lab.remoting.rpc.message.ResponseMessage;
 import io.github.xinfra.lab.remoting.rpc.message.ResponseStatus;
 import io.github.xinfra.lab.remoting.rpc.protocol.RpcProtocol;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
@@ -13,6 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 import java.net.InetSocketAddress;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 @Slf4j
 public class DefaultHeartbeater implements Heartbeater {
@@ -21,11 +27,17 @@ public class DefaultHeartbeater implements Heartbeater {
 
 	private final Set<InetSocketAddress> disabledSocketAddresses = ConcurrentHashMap.newKeySet();
 
-	private Call call;
+	private final Call call;
 
-	public DefaultHeartbeater() {
+	private final IDGenerator idGenerator;
+
+	private final ExecutorService heartbeatExecutor;
+
+	public DefaultHeartbeater(IDGenerator idGenerator) {
+		this.idGenerator = idGenerator;
 		this.call = new Call() {
 		};
+		this.heartbeatExecutor = Executors.newSingleThreadExecutor(new NamedThreadFactory("Heartbeat-Callback", true));
 	}
 
 	@Override
@@ -34,8 +46,12 @@ public class DefaultHeartbeater implements Heartbeater {
 			log.debug("heartbeat is disabled. connection:{}", connection);
 			return;
 		}
-		if (disabledSocketAddresses.contains(connection.remoteAddress())) {
+		if (disabledSocketAddresses.contains(connection.inetRemoteAddress())) {
 			log.debug("heartbeat is disabled for socket address:{}", connection.remoteAddress());
+			return;
+		}
+		if (!connection.getChannel().isWritable()) {
+			log.debug("skip heartbeat, channel not writable. remote address:{}", connection.remoteAddress());
 			return;
 		}
 		HeartbeatState hbState = HeartbeatState.getOrCreate(connection);
@@ -49,24 +65,30 @@ public class DefaultHeartbeater implements Heartbeater {
 
 		RpcProtocol protocol = (RpcProtocol) connection.getProtocol();
 		RequestMessage heartbeatRequestMessage = protocol.getMessageFactory()
-			.createHeartbeatRequest(IDGenerator.nextRequestId(), SerializationType.Hession);
+			.createHeartbeatRequest(idGenerator.nextRequestId(), SerializationType.Hessian);
 
 		CallOptions callOptions = CallOptions.builder().timeoutMills(hbState.getTimeoutMills()).build();
-		call.asyncCall(heartbeatRequestMessage, connection, callOptions, responseMessage -> {
+		call.asyncCall(heartbeatRequestMessage, connection, callOptions, new InvokeCallBack() {
+			@Override
+			public void onMessage(ResponseMessage responseMessage) {
+				HeartbeatState state = HeartbeatState.of(connection);
+				if (state == null) {
+					return;
+				}
+				if (responseMessage.getResponseStatus() == ResponseStatus.OK) {
+					log.debug("heartbeat success. remote address:{}", connection.remoteAddress());
+					state.resetFailCount();
+				}
+				else {
+					int failCount = state.incrementFailCount();
+					log.warn("heartbeat fail {} times. remote address:{}", failCount, connection.remoteAddress());
+				}
+			}
 
-			HeartbeatState state = HeartbeatState.of(connection);
-			if (state == null) {
-				return;
+			@Override
+			public Executor getExecutor() {
+				return heartbeatExecutor;
 			}
-			if (responseMessage.getResponseStatus() == ResponseStatus.OK) {
-				log.debug("heartbeat success. remote address:{}", connection.remoteAddress());
-				state.resetFailCount();
-			}
-			else {
-				int failCount = state.incrementFailCount();
-				log.warn("heartbeat fail {} times. remote address:{}", failCount, connection.remoteAddress());
-			}
-
 		});
 
 	}
@@ -89,6 +111,11 @@ public class DefaultHeartbeater implements Heartbeater {
 	@Override
 	public void enableHeartBeat(InetSocketAddress socketAddress) {
 		disabledSocketAddresses.remove(socketAddress);
+	}
+
+	@Override
+	public void shutdown() {
+		heartbeatExecutor.shutdown();
 	}
 
 }

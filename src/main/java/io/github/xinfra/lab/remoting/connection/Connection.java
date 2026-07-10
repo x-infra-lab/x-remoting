@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import io.github.xinfra.lab.remoting.common.Validate;
+import org.apache.commons.lang3.Validate;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -10,6 +10,7 @@ import io.netty.util.Timer;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -20,6 +21,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class Connection {
 
 	public static final AttributeKey<Connection> CONNECTION = AttributeKey.valueOf("connection");
+
+	public static final AttributeKey<Boolean> GOAWAY = AttributeKey.valueOf("connection.goaway");
 
 	@Getter
 	private final Channel channel;
@@ -57,6 +60,10 @@ public class Connection {
 
 	public SocketAddress remoteAddress() {
 		return channel.remoteAddress();
+	}
+
+	public InetSocketAddress inetRemoteAddress() {
+		return (InetSocketAddress) channel.remoteAddress();
 	}
 
 	public ChannelFuture close() {

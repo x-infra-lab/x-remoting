@@ -31,9 +31,9 @@ public class RemotingMessageDecoderTest {
 		MessageHeaders.StringKey headerKey = MessageHeaders.Key.stringKey("test-key");
 		String headerValue = "test-value";
 		header.put(headerKey, headerValue);
-		Integer requestId = IDGenerator.nextRequestId();
+		Integer requestId = new IDGenerator().nextRequestId();
 		RemotingRequestMessage requestMessage = new RemotingRequestMessage(requestId, MessageType.request,
-				SerializationType.Hession);
+				SerializationType.Hessian);
 
 		requestMessage.setPath("/test");
 		requestMessage.setHeaders(header);
@@ -72,8 +72,8 @@ public class RemotingMessageDecoderTest {
 		MessageHeaders.StringKey headerKey = MessageHeaders.Key.stringKey("test-key");
 		String headerValue = "test-value";
 		header.put(headerKey, headerValue);
-		Integer requestId = IDGenerator.nextRequestId();
-		RemotingResponseMessage responseMessage = new RemotingResponseMessage(requestId, SerializationType.Hession,
+		Integer requestId = new IDGenerator().nextRequestId();
+		RemotingResponseMessage responseMessage = new RemotingResponseMessage(requestId, SerializationType.Hessian,
 				ResponseStatus.OK);
 		responseMessage.setHeaders(header);
 		responseMessage.setBody(new RemotingMessageBody(content));
@@ -107,9 +107,9 @@ public class RemotingMessageDecoderTest {
 		String content = "this is rpc content";
 		DefaultMessageHeaders header = new DefaultMessageHeaders();
 		header.put(MessageHeaders.Key.stringKey("test-key"), "test-value");
-		Integer requestId = IDGenerator.nextRequestId();
+		Integer requestId = new IDGenerator().nextRequestId();
 		RemotingRequestMessage requestMessage = new RemotingRequestMessage(requestId, MessageType.request,
-				SerializationType.Hession);
+				SerializationType.Hessian);
 		requestMessage.setPath("/test");
 		requestMessage.setHeaders(header);
 		requestMessage.setBody(new RemotingMessageBody(content));
@@ -142,8 +142,8 @@ public class RemotingMessageDecoderTest {
 		String content = "this is rpc content";
 		DefaultMessageHeaders header = new DefaultMessageHeaders();
 		header.put(MessageHeaders.Key.stringKey("test-key"), "test-value");
-		Integer requestId = IDGenerator.nextRequestId();
-		RemotingResponseMessage responseMessage = new RemotingResponseMessage(requestId, SerializationType.Hession,
+		Integer requestId = new IDGenerator().nextRequestId();
+		RemotingResponseMessage responseMessage = new RemotingResponseMessage(requestId, SerializationType.Hessian,
 				ResponseStatus.OK);
 		responseMessage.setHeaders(header);
 		responseMessage.setBody(new RemotingMessageBody(content));
@@ -176,8 +176,8 @@ public class RemotingMessageDecoderTest {
 		String content = "this is rpc content";
 		DefaultMessageHeaders header = new DefaultMessageHeaders();
 		header.put(MessageHeaders.Key.stringKey("test-key"), "test-value");
-		Integer requestId = IDGenerator.nextRequestId();
-		RemotingResponseMessage responseMessage = new RemotingResponseMessage(requestId, SerializationType.Hession,
+		Integer requestId = new IDGenerator().nextRequestId();
+		RemotingResponseMessage responseMessage = new RemotingResponseMessage(requestId, SerializationType.Hessian,
 				ResponseStatus.OK);
 		responseMessage.setHeaders(header);
 		responseMessage.setBody(new RemotingMessageBody(content));

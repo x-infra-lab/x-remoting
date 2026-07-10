@@ -4,7 +4,6 @@ import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.connection.ConnectionManager;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
-import io.github.xinfra.lab.remoting.rpc.handler.RequestApi;
 import io.github.xinfra.lab.remoting.rpc.message.MessageFactory;
 import io.github.xinfra.lab.remoting.rpc.message.RemotingMessageBody;
 import io.github.xinfra.lab.remoting.rpc.message.RemotingRequestMessage;
@@ -20,25 +19,28 @@ public class RemotingCall implements Call {
 
 	protected ConnectionManager connectionManager;
 
-	public RemotingCall(ConnectionManager connectionManager) {
+	private final IDGenerator idGenerator;
+
+	public RemotingCall(ConnectionManager connectionManager, IDGenerator idGenerator) {
 		this.connectionManager = connectionManager;
+		this.idGenerator = idGenerator;
 	}
 
-	public <R> R blockingCall(RequestApi requestApi, Object request, InetSocketAddress socketAddress,
-			CallOptions callOptions) throws InterruptedException, RemotingException {
+	public <R> R blockingCall(String path, Object request, InetSocketAddress socketAddress, CallOptions callOptions)
+			throws InterruptedException, RemotingException {
 
 		Connection connection = connectionManager.get(socketAddress);
 		connectionManager.check(connection);
 		RpcProtocol protocol = (RpcProtocol) connection.getProtocol();
 		MessageFactory messageFactory = protocol.getMessageFactory();
-		RequestMessage requestMessage = buildRequestMessage(messageFactory, requestApi, request, callOptions);
+		RequestMessage requestMessage = buildRequestMessage(messageFactory, path, request, callOptions);
 
 		RemotingResponseMessage responseMessage = (RemotingResponseMessage) blockingCall(requestMessage, connection,
 				callOptions);
 		return RemotingResponses.getResponseObject(responseMessage);
 	}
 
-	public <R> RemotingFuture<R> futureCall(RequestApi requestApi, Object request, InetSocketAddress socketAddress,
+	public <R> RemotingFuture<R> futureCall(String path, Object request, InetSocketAddress socketAddress,
 			CallOptions callOptions) throws RemotingException {
 
 		Connection connection = connectionManager.get(socketAddress);
@@ -46,26 +48,26 @@ public class RemotingCall implements Call {
 
 		RpcProtocol protocol = (RpcProtocol) connection.getProtocol();
 		MessageFactory messageFactory = protocol.getMessageFactory();
-		RequestMessage requestMessage = buildRequestMessage(messageFactory, requestApi, request, callOptions);
+		RequestMessage requestMessage = buildRequestMessage(messageFactory, path, request, callOptions);
 
 		InvokeFuture<?> invokeFuture = futureCall(requestMessage, connection, callOptions);
 		return new RemotingFuture<R>(invokeFuture);
 	}
 
-	public <R> void asyncCall(RequestApi requestApi, Object request, InetSocketAddress socketAddress,
-			CallOptions callOptions, RemotingCallBack<R> remotingCallBack) throws RemotingException {
+	public <R> void asyncCall(String path, Object request, InetSocketAddress socketAddress, CallOptions callOptions,
+			RemotingCallBack<R> remotingCallBack) throws RemotingException {
 
 		Connection connection = connectionManager.get(socketAddress);
 		connectionManager.check(connection);
 
 		RpcProtocol protocol = (RpcProtocol) connection.getProtocol();
 		MessageFactory messageFactory = protocol.getMessageFactory();
-		RequestMessage requestMessage = buildRequestMessage(messageFactory, requestApi, request, callOptions);
+		RequestMessage requestMessage = buildRequestMessage(messageFactory, path, request, callOptions);
 
 		asyncCall(requestMessage, connection, callOptions, remotingCallBack);
 	}
 
-	public void oneway(RequestApi requestApi, Object request, InetSocketAddress socketAddress, CallOptions callOptions)
+	public void oneway(String path, Object request, InetSocketAddress socketAddress, CallOptions callOptions)
 			throws RemotingException {
 
 		Connection connection = connectionManager.get(socketAddress);
@@ -73,16 +75,16 @@ public class RemotingCall implements Call {
 
 		RpcProtocol protocol = (RpcProtocol) connection.getProtocol();
 		MessageFactory messageFactory = protocol.getMessageFactory();
-		RequestMessage requestMessage = buildRequestMessage(messageFactory, requestApi, request, callOptions);
+		RequestMessage requestMessage = buildRequestMessage(messageFactory, path, request, callOptions);
 		Requests.markOnewayRequest(requestMessage);
 		oneway(requestMessage, connection, callOptions);
 	}
 
-	private RequestMessage buildRequestMessage(MessageFactory messageFactory, RequestApi requestApi, Object request,
+	private RequestMessage buildRequestMessage(MessageFactory messageFactory, String path, Object request,
 			CallOptions callOptions) throws SerializeException {
-		RemotingRequestMessage requestMessage = messageFactory.createRequest(IDGenerator.nextRequestId(),
+		RemotingRequestMessage requestMessage = messageFactory.createRequest(idGenerator.nextRequestId(),
 				callOptions.getSerializationType());
-		requestMessage.setPath(requestApi.path());
+		requestMessage.setPath(path);
 		requestMessage.setHeaders(callOptions.getHeaders());
 		requestMessage.setBody(new RemotingMessageBody(request));
 		requestMessage.serialize();

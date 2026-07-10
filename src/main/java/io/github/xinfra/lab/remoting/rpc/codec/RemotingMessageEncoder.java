@@ -62,7 +62,13 @@ public class RemotingMessageEncoder implements MessageEncoder {
 			}
 		}
 		catch (Exception e) {
-			log.error("RemotingMessageEncoder encode fail.", e);
+			Object remoteAddress = null;
+			try {
+				remoteAddress = ctx.channel().remoteAddress();
+			}
+			catch (Exception ignored) {
+			}
+			log.error("RemotingMessageEncoder encode fail. remoteAddress:{}", remoteAddress, e);
 			throw new CodecException("RemotingMessageEncoder encode fail.", e);
 		}
 	}

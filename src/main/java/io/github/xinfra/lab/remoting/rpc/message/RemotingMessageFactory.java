@@ -34,4 +34,9 @@ public class RemotingMessageFactory implements MessageFactory {
 		return remotingResponseMessage;
 	}
 
+	@Override
+	public RemotingResponseMessage createGoaway(SerializationType serializationType) {
+		return new RemotingResponseMessage(0, MessageType.goaway, serializationType, ResponseStatus.Goaway);
+	}
+
 }

@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import io.github.xinfra.lab.remoting.common.Validate;
+import org.apache.commons.lang3.Validate;
 import io.netty.util.Timer;
 import lombok.Getter;
 

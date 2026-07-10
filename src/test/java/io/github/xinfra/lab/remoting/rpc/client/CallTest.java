@@ -62,7 +62,7 @@ public class CallTest {
 		messageFactory = mock(MessageFactory.class);
 		testProtocol.setMessageFactory(messageFactory);
 
-		requestId = IDGenerator.nextRequestId();
+		requestId = new IDGenerator().nextRequestId();
 		call = new Call() {
 		};
 	}

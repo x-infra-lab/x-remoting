@@ -13,4 +13,6 @@ public interface MessageFactory {
 	<T extends ResponseMessage> T createResponse(int id, SerializationType serializationType, ResponseStatus status,
 			Throwable t);
 
+	<T extends ResponseMessage> T createGoaway(SerializationType serializationType);
+
 }

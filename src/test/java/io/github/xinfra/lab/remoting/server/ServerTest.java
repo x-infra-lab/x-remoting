@@ -49,9 +49,7 @@ public class ServerTest {
 
 	@Test
 	public void testBaseRemotingServer1() throws RemotingException, InterruptedException, TimeoutException {
-		ServerConfig config = new ServerConfig();
-		config.setPort(findAvailableTcpPort());
-		config.setManageConnection(false);
+		ServerConfig config = ServerConfig.builder().port(findAvailableTcpPort()).manageConnection(false).build();
 
 		AbstractServer server = new AbstractServer(config) {
 			@Override
@@ -85,9 +83,7 @@ public class ServerTest {
 
 	@Test
 	public void testBaseRemotingServer2() throws RemotingException, InterruptedException, TimeoutException {
-		ServerConfig config = new ServerConfig();
-		config.setPort(findAvailableTcpPort());
-		config.setManageConnection(true);
+		ServerConfig config = ServerConfig.builder().port(findAvailableTcpPort()).manageConnection(true).build();
 
 		AbstractServer server = new AbstractServer(config) {
 			@Override

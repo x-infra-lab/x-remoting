@@ -30,7 +30,7 @@ public class InvokeFutureTest {
 
 	@BeforeEach
 	public void before() {
-		final int requestId = IDGenerator.nextRequestId();
+		final int requestId = new IDGenerator().nextRequestId();
 		RequestMessage requestMessage = mock(RequestMessage.class);
 		doReturn(requestId).when(requestMessage).getId();
 		invokeFuture = new InvokeFuture<>(requestMessage);

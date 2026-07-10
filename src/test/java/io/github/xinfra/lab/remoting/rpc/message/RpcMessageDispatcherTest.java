@@ -3,7 +3,6 @@ package io.github.xinfra.lab.remoting.rpc.message;
 import io.github.xinfra.lab.remoting.rpc.client.IDGenerator;
 import io.github.xinfra.lab.remoting.rpc.client.InFlightRequests;
 import io.github.xinfra.lab.remoting.rpc.client.InvokeFuture;
-import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
 import io.github.xinfra.lab.remoting.common.Wait;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.exception.DeserializeException;
@@ -11,7 +10,6 @@ import io.github.xinfra.lab.remoting.exception.SerializeException;
 import io.github.xinfra.lab.remoting.rpc.protocol.RemotingProtocol;
 import io.github.xinfra.lab.remoting.rpc.handler.EchoRequest;
 import io.github.xinfra.lab.remoting.rpc.handler.EchoRequestHandler;
-import io.github.xinfra.lab.remoting.rpc.handler.RequestHandlerRegistry;
 import io.github.xinfra.lab.remoting.message.MessageHandler;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
 import io.netty.channel.ChannelHandlerContext;
@@ -32,7 +30,7 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static io.github.xinfra.lab.remoting.connection.Connection.CONNECTION;
-import static io.github.xinfra.lab.remoting.rpc.handler.RequestApis.echoApi;
+import static io.github.xinfra.lab.remoting.rpc.handler.RequestApis.echoPath;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
@@ -45,11 +43,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 @Slf4j
-public class RemotingRequestMessageTypeHandlerTest {
+public class RpcMessageDispatcherTest {
 
 	private RemotingProtocol protocol;
 
-	private RequestHandlerRegistry handlerRegistry;
+	private RemotingRequestMessageHandler requestMessageHandler;
 
 	private ExecutorService executorService;
 
@@ -57,8 +55,8 @@ public class RemotingRequestMessageTypeHandlerTest {
 
 	@BeforeEach
 	public void beforeEach() {
-		handlerRegistry = new RequestHandlerRegistry();
-		protocol = new RemotingProtocol(handlerRegistry);
+		requestMessageHandler = new RemotingRequestMessageHandler();
+		protocol = new RemotingProtocol(requestMessageHandler);
 		executorService = Executors.newSingleThreadExecutor();
 		timer = new HashedWheelTimer();
 	}
@@ -71,14 +69,13 @@ public class RemotingRequestMessageTypeHandlerTest {
 
 	@Test
 	public void testHandleRequest() throws SerializeException, InterruptedException, TimeoutException {
-		// build a requestMessage
 		String content = "this is rpc content";
 		EchoRequest echoRequest = new EchoRequest(content);
 
-		Integer requestId = IDGenerator.nextRequestId();
+		Integer requestId = new IDGenerator().nextRequestId();
 		RemotingRequestMessage requestMessage = new RemotingRequestMessage(requestId, MessageType.request,
-				SerializationType.Hession);
-		requestMessage.setPath(echoApi.path());
+				SerializationType.Hessian);
+		requestMessage.setPath(echoPath);
 		requestMessage.setHeaders(new DefaultMessageHeaders());
 		requestMessage.setBody(new RemotingMessageBody(echoRequest));
 		requestMessage.serialize();
@@ -86,7 +83,7 @@ public class RemotingRequestMessageTypeHandlerTest {
 		MessageHandler messageHandler = protocol.getMessageHandler();
 		EchoRequestHandler echoRequestHandler = new EchoRequestHandler();
 		echoRequestHandler = spy(echoRequestHandler);
-		handlerRegistry.register(echoApi, echoRequestHandler);
+		requestMessageHandler.register(echoPath, echoRequestHandler);
 
 		ChannelHandlerContext context = mock(ChannelHandlerContext.class);
 		EmbeddedChannel channel = spy(new EmbeddedChannel());
@@ -106,8 +103,7 @@ public class RemotingRequestMessageTypeHandlerTest {
 			}
 		}, 30, 100);
 
-		verify(echoRequestHandler, times(1)).asyncHandle(any(), any());
-		// verify response
+		verify(echoRequestHandler, times(1)).handle(any(), any());
 		verify(channel, times(1)).writeAndFlush(argThat(new ArgumentMatcher<RemotingResponseMessage>() {
 			@Override
 			public boolean matches(RemotingResponseMessage responseMessage) {
@@ -125,7 +121,6 @@ public class RemotingRequestMessageTypeHandlerTest {
 	@Test
 	public void testHandleRequestWithCustomExecutor()
 			throws SerializeException, InterruptedException, TimeoutException {
-		// custom thread pool
 		final AtomicBoolean threadPoolExecuted = new AtomicBoolean(false);
 		ExecutorService executor = Executors.newSingleThreadExecutor(new ThreadFactory() {
 			@Override
@@ -140,24 +135,22 @@ public class RemotingRequestMessageTypeHandlerTest {
 			}
 		});
 
-		// build a requestMessage
 		String content = "this is rpc content";
 		EchoRequest echoRequest = new EchoRequest(content);
 
-		Integer requestId = IDGenerator.nextRequestId();
+		Integer requestId = new IDGenerator().nextRequestId();
 		RemotingRequestMessage requestMessage = new RemotingRequestMessage(requestId, MessageType.request,
-				SerializationType.Hession);
-		requestMessage.setPath(echoApi.path());
+				SerializationType.Hessian);
+		requestMessage.setPath(echoPath);
 		requestMessage.setHeaders(new DefaultMessageHeaders());
 		requestMessage.setBody(new RemotingMessageBody(echoRequest));
 		requestMessage.serialize();
 
 		MessageHandler messageHandler = protocol.getMessageHandler();
 		EchoRequestHandler echoRequestHandler = new EchoRequestHandler();
-		// set custom thread pool
 		echoRequestHandler.setExecutor(executor);
 		echoRequestHandler = spy(echoRequestHandler);
-		handlerRegistry.register(echoApi, echoRequestHandler);
+		requestMessageHandler.register(echoPath, echoRequestHandler);
 
 		ChannelHandlerContext context = mock(ChannelHandlerContext.class);
 		EmbeddedChannel channel = spy(new EmbeddedChannel());
@@ -177,8 +170,7 @@ public class RemotingRequestMessageTypeHandlerTest {
 			}
 		}, 30, 100);
 
-		verify(echoRequestHandler, times(1)).asyncHandle(any(), any());
-		// verify response
+		verify(echoRequestHandler, times(1)).handle(any(), any());
 		verify(channel, times(1)).writeAndFlush(argThat(new ArgumentMatcher<RemotingResponseMessage>() {
 			@Override
 			public boolean matches(RemotingResponseMessage responseMessage) {
@@ -197,15 +189,14 @@ public class RemotingRequestMessageTypeHandlerTest {
 	@Test
 	public void testHandleRequestDeserializeFailed()
 			throws SerializeException, InterruptedException, TimeoutException, DeserializeException {
-		// build a requestMessage
 		String content = "this is rpc content";
 		EchoRequest echoRequest = new EchoRequest(content);
 
-		Integer requestId = IDGenerator.nextRequestId();
+		Integer requestId = new IDGenerator().nextRequestId();
 		RemotingRequestMessage requestMessage = new RemotingRequestMessage(requestId, MessageType.request,
-				SerializationType.Hession);
+				SerializationType.Hessian);
 
-		requestMessage.setPath(echoApi.path());
+		requestMessage.setPath(echoPath);
 		requestMessage.setBody(new RemotingMessageBody(echoRequest));
 		requestMessage.serialize();
 
@@ -215,7 +206,7 @@ public class RemotingRequestMessageTypeHandlerTest {
 		MessageHandler messageHandler = protocol.getMessageHandler();
 		EchoRequestHandler echoRequestHandler = new EchoRequestHandler();
 		echoRequestHandler = spy(echoRequestHandler);
-		handlerRegistry.register(echoApi, echoRequestHandler);
+		requestMessageHandler.register(echoPath, echoRequestHandler);
 
 		ChannelHandlerContext context = mock(ChannelHandlerContext.class);
 		EmbeddedChannel channel = spy(new EmbeddedChannel());
@@ -235,15 +226,13 @@ public class RemotingRequestMessageTypeHandlerTest {
 			}
 		}, 30, 100);
 
-		verify(echoRequestHandler, times(0)).asyncHandle(any(), any());
-		// verify response
+		verify(echoRequestHandler, times(0)).handle(any(), any());
 		verify(channel, times(1)).writeAndFlush(argThat(new ArgumentMatcher<RemotingResponseMessage>() {
 			@Override
 			public boolean matches(RemotingResponseMessage responseMessage) {
 				if (responseMessage.getResponseStatus() != ResponseStatus.DeserializeException) {
 					return false;
 				}
-				// todo: check response body
 				return true;
 			}
 		}));
@@ -252,22 +241,21 @@ public class RemotingRequestMessageTypeHandlerTest {
 	@Test
 	public void testRequestHandlerNotFound()
 			throws SerializeException, InterruptedException, TimeoutException, DeserializeException {
-		// build a requestMessage
 		String content = "this is rpc content";
 		EchoRequest echoRequest = new EchoRequest(content);
 
-		Integer requestId = IDGenerator.nextRequestId();
+		Integer requestId = new IDGenerator().nextRequestId();
 		RemotingRequestMessage requestMessage = new RemotingRequestMessage(requestId, MessageType.request,
-				SerializationType.Hession);
+				SerializationType.Hessian);
 
-		requestMessage.setPath(echoApi.path() + "not found");
+		requestMessage.setPath(echoPath + "not found");
 		requestMessage.setBody(new RemotingMessageBody(echoRequest));
 		requestMessage.serialize();
 
 		MessageHandler messageHandler = protocol.getMessageHandler();
 		EchoRequestHandler echoRequestHandler = new EchoRequestHandler();
 		echoRequestHandler = spy(echoRequestHandler);
-		handlerRegistry.register(echoApi, echoRequestHandler);
+		requestMessageHandler.register(echoPath, echoRequestHandler);
 
 		ChannelHandlerContext context = mock(ChannelHandlerContext.class);
 		EmbeddedChannel channel = spy(new EmbeddedChannel());
@@ -287,15 +275,13 @@ public class RemotingRequestMessageTypeHandlerTest {
 			}
 		}, 30, 100);
 
-		verify(echoRequestHandler, times(0)).asyncHandle(any(), any());
-		// verify response
+		verify(echoRequestHandler, times(0)).handle(any(), any());
 		verify(channel, times(1)).writeAndFlush(argThat(new ArgumentMatcher<RemotingResponseMessage>() {
 			@Override
 			public boolean matches(RemotingResponseMessage responseMessage) {
 				if (responseMessage.getResponseStatus() != ResponseStatus.NotFound) {
 					return false;
 				}
-				// todo: check response body
 				return true;
 			}
 		}));
@@ -304,23 +290,22 @@ public class RemotingRequestMessageTypeHandlerTest {
 	@Test
 	public void testRequestHandlerException()
 			throws SerializeException, InterruptedException, TimeoutException, DeserializeException {
-		// build a requestMessage
 		String content = "this is rpc content";
 		EchoRequest echoRequest = new EchoRequest(content);
 
-		Integer requestId = IDGenerator.nextRequestId();
+		Integer requestId = new IDGenerator().nextRequestId();
 		RemotingRequestMessage requestMessage = new RemotingRequestMessage(requestId, MessageType.request,
-				SerializationType.Hession);
+				SerializationType.Hessian);
 
-		requestMessage.setPath(echoApi.path());
+		requestMessage.setPath(echoPath);
 		requestMessage.setBody(new RemotingMessageBody(echoRequest));
 		requestMessage.serialize();
 
 		MessageHandler messageHandler = protocol.getMessageHandler();
 		EchoRequestHandler echoRequestHandler = new EchoRequestHandler();
 		echoRequestHandler = spy(echoRequestHandler);
-		handlerRegistry.register(echoApi, echoRequestHandler);
-		doThrow(new IllegalArgumentException("test exception")).when(echoRequestHandler).handle(any());
+		requestMessageHandler.register(echoPath, echoRequestHandler);
+		doThrow(new IllegalArgumentException("test exception")).when(echoRequestHandler).handleRequest(any());
 
 		ChannelHandlerContext context = mock(ChannelHandlerContext.class);
 		EmbeddedChannel channel = spy(new EmbeddedChannel());
@@ -340,15 +325,13 @@ public class RemotingRequestMessageTypeHandlerTest {
 			}
 		}, 30, 100);
 
-		verify(echoRequestHandler, times(1)).asyncHandle(any(), any());
-		// verify response
+		verify(echoRequestHandler, times(1)).handle(any(), any());
 		verify(channel, times(1)).writeAndFlush(argThat(new ArgumentMatcher<RemotingResponseMessage>() {
 			@Override
 			public boolean matches(RemotingResponseMessage responseMessage) {
 				if (responseMessage.getResponseStatus() != ResponseStatus.Error) {
 					return false;
 				}
-				// todo: check response body
 				if (!(responseMessage.getBody().getBodyValue() instanceof IllegalArgumentException)) {
 					return false;
 				}
@@ -359,10 +342,9 @@ public class RemotingRequestMessageTypeHandlerTest {
 
 	@Test
 	public void testHandleHeartbeatRequest() throws SerializeException, InterruptedException, TimeoutException {
-		// build a requestMessage
-		Integer requestId = IDGenerator.nextRequestId();
+		Integer requestId = new IDGenerator().nextRequestId();
 		RemotingRequestMessage requestMessage = new RemotingRequestMessage(requestId, MessageType.heartbeatRequest,
-				SerializationType.Hession);
+				SerializationType.Hessian);
 
 		requestMessage.serialize();
 
@@ -386,15 +368,12 @@ public class RemotingRequestMessageTypeHandlerTest {
 			}
 		}, 30, 100);
 
-		// todo @joecqupt verify message type handler
-		// verify response
 		verify(channel, times(1)).writeAndFlush(argThat(new ArgumentMatcher<RemotingResponseMessage>() {
 			@Override
 			public boolean matches(RemotingResponseMessage responseMessage) {
 				if (responseMessage.getResponseStatus() != ResponseStatus.OK) {
 					return false;
 				}
-				// todo: check response body
 				return true;
 			}
 		}));
@@ -402,10 +381,9 @@ public class RemotingRequestMessageTypeHandlerTest {
 
 	@Test
 	public void testHandleResponse() throws SerializeException, InterruptedException, TimeoutException {
-		// build a response
 		String content = "this is rpc content";
-		Integer requestId = IDGenerator.nextRequestId();
-		RemotingResponseMessage responseMessage = new RemotingResponseMessage(requestId, SerializationType.Hession,
+		Integer requestId = new IDGenerator().nextRequestId();
+		RemotingResponseMessage responseMessage = new RemotingResponseMessage(requestId, SerializationType.Hessian,
 				ResponseStatus.OK);
 		responseMessage.setBody(new RemotingMessageBody(content));
 		responseMessage.serialize();
@@ -443,10 +421,9 @@ public class RemotingRequestMessageTypeHandlerTest {
 	@Test
 	public void testHandleResponseCallbackException()
 			throws SerializeException, InterruptedException, TimeoutException {
-		// build a response
 		String content = "this is rpc content";
-		Integer requestId = IDGenerator.nextRequestId();
-		RemotingResponseMessage responseMessage = new RemotingResponseMessage(requestId, SerializationType.Hession,
+		Integer requestId = new IDGenerator().nextRequestId();
+		RemotingResponseMessage responseMessage = new RemotingResponseMessage(requestId, SerializationType.Hessian,
 				ResponseStatus.OK);
 		responseMessage.setBody(new RemotingMessageBody(content));
 		responseMessage.serialize();
@@ -465,7 +442,6 @@ public class RemotingRequestMessageTypeHandlerTest {
 
 		doThrow(new RuntimeException("testHandleResponseCallbackException")).when(future).executeCallBack(any());
 
-		// no exception throw out
 		messageHandler.handleMessage(context, responseMessage);
 
 		Wait.untilIsTrue(() -> {
@@ -485,11 +461,11 @@ public class RemotingRequestMessageTypeHandlerTest {
 	}
 
 	@Test
-	public void testRegisterUserProcessor1() {
+	public void testRegisterRequestHandler() {
 		EchoRequestHandler echoRequestHandler = new EchoRequestHandler();
-		handlerRegistry.register(echoApi, echoRequestHandler);
+		requestMessageHandler.register(echoPath, echoRequestHandler);
 
-		Assertions.assertEquals(echoRequestHandler, handlerRegistry.lookup(echoApi.path()));
+		Assertions.assertEquals(echoRequestHandler, requestMessageHandler.lookup(echoPath));
 	}
 
 }

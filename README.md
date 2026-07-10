@@ -29,8 +29,6 @@ Quick links:
 * [Reconnect](./docs/reconnect.md) ([中文](./docs/reconnect.zh-CN.md))
 * [Extending](./docs/extending.md) ([中文](./docs/extending.zh-CN.md))
 * [FAQ](./docs/faq.md) ([中文](./docs/faq.zh-CN.md))
-* [Design Debt](./docs/design-debt.md) ([中文](./docs/design-debt.zh-CN.md)) — architectural critique for contributors
-* [Roadmap](./docs/roadmap.md) ([中文](./docs/roadmap.zh-CN.md)) — project roadmap toward 1.0
 
 
 ## License

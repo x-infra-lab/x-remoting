@@ -22,9 +22,9 @@ public class RemotingMessageTest {
 		MessageHeaders.StringKey headerKey = MessageHeaders.Key.stringKey("test-key");
 		String headerValue = "test-value";
 		header.put(headerKey, headerValue);
-		Integer requestId = IDGenerator.nextRequestId();
+		Integer requestId = new IDGenerator().nextRequestId();
 		RemotingRequestMessage requestMessage = new RemotingRequestMessage(requestId, MessageType.request,
-				SerializationType.Hession);
+				SerializationType.Hessian);
 		requestMessage.setPath("/test");
 		requestMessage.setHeaders(header);
 		requestMessage.setBody(new RemotingMessageBody(content));
@@ -36,7 +36,7 @@ public class RemotingMessageTest {
 
 		// deserialize
 		RemotingRequestMessage requestMessage2 = new RemotingRequestMessage(requestId, MessageType.request,
-				SerializationType.Hession);
+				SerializationType.Hessian);
 		requestMessage2.setPathData(requestMessage.getPathData());
 
 		requestMessage2
@@ -57,8 +57,8 @@ public class RemotingMessageTest {
 		String headerValue = "test-value";
 		header.put(headerKey, headerValue);
 
-		Integer requestId = IDGenerator.nextRequestId();
-		RemotingResponseMessage responseMessage = new RemotingResponseMessage(requestId, SerializationType.Hession,
+		Integer requestId = new IDGenerator().nextRequestId();
+		RemotingResponseMessage responseMessage = new RemotingResponseMessage(requestId, SerializationType.Hessian,
 				ResponseStatus.OK);
 
 		responseMessage.setHeaders(header);
@@ -68,7 +68,7 @@ public class RemotingMessageTest {
 		Assertions.assertNotNull(responseMessage.getHeaders().getData());
 		Assertions.assertNotNull(responseMessage.getBody().getData());
 
-		RemotingResponseMessage responseMessage2 = new RemotingResponseMessage(requestId, SerializationType.Hession,
+		RemotingResponseMessage responseMessage2 = new RemotingResponseMessage(requestId, SerializationType.Hessian,
 				ResponseStatus.OK);
 
 		responseMessage2
@@ -82,16 +82,16 @@ public class RemotingMessageTest {
 
 	@Test
 	public void testExceptionRpcResponse1() throws SerializeException, DeserializeException {
-		int requestId = IDGenerator.nextRequestId();
+		int requestId = new IDGenerator().nextRequestId();
 		RemotingMessageFactory remotingMessageFactory = new RemotingMessageFactory();
 		RemotingResponseMessage responseMessage = remotingMessageFactory.createResponse(requestId,
-				SerializationType.Hession, ResponseStatus.Error, new RuntimeException("testCreateExceptionResponse1"));
+				SerializationType.Hessian, ResponseStatus.Error, new RuntimeException("testCreateExceptionResponse1"));
 		responseMessage.serialize();
 
 		Assertions.assertNull(responseMessage.getHeaders());
 		Assertions.assertNotNull(responseMessage.getBody().getData());
 
-		RemotingResponseMessage responseMessage2 = new RemotingResponseMessage(requestId, SerializationType.Hession,
+		RemotingResponseMessage responseMessage2 = new RemotingResponseMessage(requestId, SerializationType.Hessian,
 				ResponseStatus.OK);
 		responseMessage2.setBody(new RemotingMessageBody(ArraysUtils.concat(responseMessage.getBody().getData())));
 		responseMessage2.deserialize();

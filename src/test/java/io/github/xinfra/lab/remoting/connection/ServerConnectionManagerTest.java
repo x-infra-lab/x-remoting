@@ -71,11 +71,11 @@ public class ServerConnectionManagerTest {
 	public void testAdd() throws RemotingException {
 		Connection connection1 = mock(Connection.class);
 		InetSocketAddress socketAddress1 = new InetSocketAddress("localhost", 8080);
-		doReturn(socketAddress1).when(connection1).remoteAddress();
+		doReturn(socketAddress1).when(connection1).inetRemoteAddress();
 
 		Connection connection2 = mock(Connection.class);
 		InetSocketAddress socketAddress2 = new InetSocketAddress("localhost", 8081);
-		doReturn(socketAddress2).when(connection2).remoteAddress();
+		doReturn(socketAddress2).when(connection2).inetRemoteAddress();
 
 		connectionManager.add(connection1);
 		connectionManager.add(connection2);
@@ -92,11 +92,11 @@ public class ServerConnectionManagerTest {
 	public void testShutdown() {
 		Connection connection1 = mock(Connection.class);
 		InetSocketAddress socketAddress1 = new InetSocketAddress("localhost", 8080);
-		doReturn(socketAddress1).when(connection1).remoteAddress();
+		doReturn(socketAddress1).when(connection1).inetRemoteAddress();
 
 		Connection connection2 = mock(Connection.class);
 		InetSocketAddress socketAddress2 = new InetSocketAddress("localhost", 8081);
-		doReturn(socketAddress2).when(connection2).remoteAddress();
+		doReturn(socketAddress2).when(connection2).inetRemoteAddress();
 
 		connectionManager.add(connection1);
 		connectionManager.add(connection2);

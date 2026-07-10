@@ -3,10 +3,10 @@ package io.github.xinfra.lab.remoting.quickstart;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.rpc.client.CallOptions;
 import io.github.xinfra.lab.remoting.rpc.client.RemotingClient;
+import io.github.xinfra.lab.remoting.rpc.handler.BlockingRequestHandler;
 import io.github.xinfra.lab.remoting.rpc.handler.EchoRequest;
-import io.github.xinfra.lab.remoting.rpc.handler.RequestApi;
 import io.github.xinfra.lab.remoting.rpc.server.RemotingServer;
-import io.github.xinfra.lab.remoting.rpc.server.RemotingServerConfig;
+import io.github.xinfra.lab.remoting.server.ServerConfig;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
@@ -18,10 +18,9 @@ public class QuickStartTest {
 
 	@BeforeAll
 	public static void beforeAll() {
-		RemotingServerConfig config = new RemotingServerConfig();
-		config.setPort(0);
+		ServerConfig config = ServerConfig.builder().port(0).build();
 		server = new RemotingServer(config);
-		server.registerRequestHandler(RequestApi.of("echo"), (EchoRequest req) -> "echo:" + req.getMsg());
+		server.registerRequestHandler("echo", BlockingRequestHandler.of((EchoRequest req) -> "echo:" + req.getMsg()));
 		server.startup();
 	}
 
@@ -35,8 +34,8 @@ public class QuickStartTest {
 		RemotingClient client = new RemotingClient();
 		client.startup();
 		try {
-			String result = client.blockingCall(RequestApi.of("echo"), new EchoRequest("hello"),
-					server.getLocalAddress(), CallOptions.defaults());
+			String result = client.blockingCall("echo", new EchoRequest("hello"), server.getLocalAddress(),
+					CallOptions.defaults());
 			Assertions.assertEquals("echo:hello", result);
 		}
 		finally {

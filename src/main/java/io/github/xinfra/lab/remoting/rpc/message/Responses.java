@@ -41,7 +41,7 @@ public class Responses {
 			responseMessage.serialize();
 		}
 		catch (Throwable t) {
-			log.error("responseMessage serialize fail.", t);
+			log.error("responseMessage serialize fail. id:{}", responseMessage.getId(), t);
 
 			ResponseStatus status = t instanceof SerializeException ? ResponseStatus.SerializeException
 					: ResponseStatus.Error;
