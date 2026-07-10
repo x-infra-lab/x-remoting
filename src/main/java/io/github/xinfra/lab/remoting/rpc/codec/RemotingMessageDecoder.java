@@ -44,20 +44,23 @@ public class RemotingMessageDecoder implements MessageDecoder {
 				SerializationType serializationType = SerializationManager.valueOf(serializationTypeCode);
 
 				ResponseStatus responseStatus = null;
-				if (messageType == response) {
+				if (messageType == response || messageType == goaway) {
 					short status = in.readShort();
 					responseStatus = ResponseStatus.valueOf(status);
 				}
 
-				short pathDataLength = 0;
+				int pathDataLength = 0;
 				if (messageType == request || messageType == heartbeatRequest) {
-					pathDataLength = in.readShort();
+					pathDataLength = in.readUnsignedShort();
 				}
 
-				short headerDataLength = in.readShort();
+				int headerDataLength = in.readUnsignedShort();
 				int bodyDataLength = in.readInt();
+				if (bodyDataLength < 0) {
+					throw new CodecException("negative body length: " + bodyDataLength);
+				}
 
-				int remainLength = pathDataLength + headerDataLength + bodyDataLength;
+				long remainLength = (long) pathDataLength + headerDataLength + bodyDataLength;
 
 				if (remainLength <= in.readableBytes()) {
 					RemotingMessage remotingMessage;
@@ -72,11 +75,13 @@ public class RemotingMessageDecoder implements MessageDecoder {
 						}
 						remotingMessage = remotingRequestMessage;
 					}
-					else if (messageType == response) {
-						remotingMessage = new RemotingResponseMessage(requestId, serializationType, responseStatus);
+					else if (messageType == response || messageType == goaway) {
+						remotingMessage = new RemotingResponseMessage(requestId, messageType, serializationType,
+								responseStatus);
 					}
 					else {
-						log.warn("MessageType not support:{}", messageType);
+						log.warn("MessageType not support:{} remoteAddress:{}", messageType,
+								ctx.channel().remoteAddress());
 						throw new CodecException("MessageType not support:" + messageType);
 					}
 
@@ -99,7 +104,13 @@ public class RemotingMessageDecoder implements MessageDecoder {
 			}
 		}
 		catch (Exception e) {
-			log.error("RemotingMessageDecoder encode fail.", e);
+			Object remoteAddress = null;
+			try {
+				remoteAddress = ctx.channel().remoteAddress();
+			}
+			catch (Exception ignored) {
+			}
+			log.error("RemotingMessageDecoder decode fail. remoteAddress:{}", remoteAddress, e);
 			throw new CodecException("RemotingMessageDecoder decode fail.", e);
 		}
 	}

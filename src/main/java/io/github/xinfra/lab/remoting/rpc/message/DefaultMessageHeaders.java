@@ -2,6 +2,7 @@ package io.github.xinfra.lab.remoting.rpc.message;
 
 import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
+import io.github.xinfra.lab.remoting.serialization.ClassFilter;
 import io.github.xinfra.lab.remoting.serialization.Serializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -79,7 +80,7 @@ public class DefaultMessageHeaders implements MessageHeaders {
 
 	@Override
 	public boolean contains(Key<?> key) {
-		return headers.contains(new HeaderKey(key.getName(), key.getType().getName()));
+		return headers.containsKey(new HeaderKey(key.getName(), key.getType().getName()));
 	}
 
 	@Override
@@ -98,6 +99,11 @@ public class DefaultMessageHeaders implements MessageHeaders {
 				byte[] keyData = pair.getName().getBytes(StandardCharsets.UTF_8);
 				byte[] valueTypeData = pair.getTypeName().getBytes(StandardCharsets.UTF_8);
 				byte[] valueData = serializer.serialize(value);
+
+				if (keyData.length > Short.MAX_VALUE || valueTypeData.length > Short.MAX_VALUE
+						|| valueData.length > Short.MAX_VALUE) {
+					throw new SerializeException("header field too large");
+				}
 
 				int headerDataLength = HEADER_SIZE + keyData.length + valueTypeData.length + valueData.length;
 				byte[] data = new byte[headerDataLength];
@@ -133,9 +139,9 @@ public class DefaultMessageHeaders implements MessageHeaders {
 				}
 
 				while (byteBuf.readableBytes() >= HEADER_SIZE) {
-					short keyLength = byteBuf.readShort();
-					short valueTypeLength = byteBuf.readShort();
-					short valueLength = byteBuf.readShort();
+					int keyLength = byteBuf.readUnsignedShort();
+					int valueTypeLength = byteBuf.readUnsignedShort();
+					int valueLength = byteBuf.readUnsignedShort();
 					int dataLength = keyLength + valueTypeLength + valueLength;
 					if (byteBuf.readableBytes() < dataLength) {
 						log.error("Invalid header getData:{}", headerData);
@@ -149,15 +155,18 @@ public class DefaultMessageHeaders implements MessageHeaders {
 
 					// lazy deserialization
 					headers.put(new HeaderKey(key, valueType), new Supplier<Object>() {
-						private Object value;
+						private volatile Object value;
 
 						@Override
 						public Object get() {
+							Object v = value;
+							if (v != null) {
+								return v;
+							}
 							try {
-								if (value != null) {
-									return value;
-								}
-								return serializer.deserialize(valueData, (Class<?>) Class.forName(valueType));
+								v = serializer.deserialize(valueData, ClassFilter.loadClass(valueType));
+								value = v;
+								return v;
 							}
 							catch (Exception e) {
 								log.error("Deserialize header value failed", e);

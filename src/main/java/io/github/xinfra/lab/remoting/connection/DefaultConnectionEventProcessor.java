@@ -2,7 +2,7 @@ package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
-import io.github.xinfra.lab.remoting.common.Validate;
+import org.apache.commons.lang3.Validate;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -44,8 +44,7 @@ public class DefaultConnectionEventProcessor extends AbstractLifeCycle implement
 			this.dispatcher = userDispatcher;
 		}
 		else {
-			this.dispatcher = Executors
-				.newSingleThreadExecutor(new NamedThreadFactory("RemotingClient-Connection-Event"));
+			this.dispatcher = Executors.newSingleThreadExecutor(new NamedThreadFactory("Connection-Event", true));
 		}
 	}
 

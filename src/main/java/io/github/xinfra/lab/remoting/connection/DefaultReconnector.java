@@ -2,7 +2,7 @@ package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
-import io.github.xinfra.lab.remoting.common.Validate;
+import org.apache.commons.lang3.Validate;
 import io.netty.util.HashedWheelTimer;
 import io.netty.util.Timeout;
 import io.netty.util.Timer;
@@ -45,9 +45,9 @@ public class DefaultReconnector extends AbstractLifeCycle implements Reconnector
 	@Override
 	public void startup() {
 		super.startup();
-		this.timer = new HashedWheelTimer(new NamedThreadFactory("RemotingClient-Reconnect-Timer"));
+		this.timer = new HashedWheelTimer(new NamedThreadFactory("RemotingClient-Reconnect-Timer", true));
 		this.executor = Executors.newFixedThreadPool(Math.max(1, config.getWorkerThreads()),
-				new NamedThreadFactory("RemotingClient-Reconnect-Worker"));
+				new NamedThreadFactory("RemotingClient-Reconnect-Worker", true));
 	}
 
 	@Override

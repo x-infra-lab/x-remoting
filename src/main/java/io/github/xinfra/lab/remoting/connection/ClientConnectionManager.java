@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import io.github.xinfra.lab.remoting.common.Validate;
+import org.apache.commons.lang3.Validate;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.netty.channel.ChannelHandler;
@@ -77,6 +77,7 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 
 	@Override
 	public void shutdown() {
+		reconnector.shutdown();
 		super.shutdown();
 		try {
 			connectionFactory.close();
@@ -84,7 +85,6 @@ public class ClientConnectionManager extends AbstractConnectionManager {
 		catch (IOException e) {
 			log.warn("connectionFactory close ex", e);
 		}
-		reconnector.shutdown();
 	}
 
 }

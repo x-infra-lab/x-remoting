@@ -1,7 +1,7 @@
 package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
-import io.github.xinfra.lab.remoting.common.Validate;
+import org.apache.commons.lang3.Validate;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import lombok.extern.slf4j.Slf4j;
 
@@ -66,7 +66,11 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 		ensureStarted();
 		Validate.notNull(connection, "connection can not be null");
 
-		InetSocketAddress socketAddress = (InetSocketAddress) connection.remoteAddress();
+		InetSocketAddress socketAddress = connection.inetRemoteAddress();
+		if (socketAddress == null) {
+			connection.close();
+			return;
+		}
 		Connections connections = connectionsMap.get(socketAddress);
 		if (connections == null) {
 			connection.close();
@@ -76,7 +80,13 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 		if (connections.invalidate(connection)) {
 			Reconnector r = reconnector();
 			if (r != null && r.isStarted()) {
-				r.onUnhealthy(socketAddress);
+				Boolean goaway = connection.getChannel().attr(Connection.GOAWAY).get();
+				if (Boolean.TRUE.equals(goaway)) {
+					r.cancel(socketAddress);
+				}
+				else {
+					r.onUnhealthy(socketAddress);
+				}
 			}
 		}
 		// Lazily drop the empty bucket. Only remove if the mapping still points to the
@@ -92,7 +102,7 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 		ensureStarted();
 		Validate.notNull(connection, "connection can not be null");
 
-		InetSocketAddress socketAddress = (InetSocketAddress) connection.remoteAddress();
+		InetSocketAddress socketAddress = connection.inetRemoteAddress();
 		connectionsMap.compute(socketAddress, (k, existing) -> {
 			Connections cs = (existing != null) ? existing : new Connections(connectionSelectStrategy);
 			cs.add(connection);
@@ -113,9 +123,14 @@ public abstract class AbstractConnectionManager extends AbstractLifeCycle implem
 
 	@Override
 	public void shutdown() {
-		List<InetSocketAddress> addresses = new ArrayList<>(connectionsMap.keySet());
-		for (InetSocketAddress address : addresses) {
-			disconnect(address);
+		for (InetSocketAddress address : new ArrayList<>(connectionsMap.keySet())) {
+			Connections connections = connectionsMap.remove(address);
+			if (connections != null) {
+				if (reconnector() != null) {
+					reconnector().cancel(address);
+				}
+				connections.close();
+			}
 		}
 		super.shutdown();
 		connectionEventProcessor.shutdown();

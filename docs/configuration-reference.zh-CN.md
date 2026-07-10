@@ -14,8 +14,7 @@ client.setConnectionFactoryConfig(factory);
 client.setConnectionManagerConfig(manager);
 client.setReconnectConfig(reconnect);
 
-RemotingServerConfig server = new RemotingServerConfig();
-server.setPort(8989);
+ServerConfig server = ServerConfig.builder().port(8989).build();
 ```
 
 ## `ConnectionFactoryConfig`
@@ -101,7 +100,9 @@ ReconnectConfig reconnect = ReconnectConfig.builder()
 | `connectionManagerConfig` | `null` → `ConnectionManagerConfig.defaults()` | 传给 `ClientConnectionManager` |
 | `reconnectConfig`         | `null` → `ReconnectConfig.defaults()`         | 传给 `ClientConnectionManager` |
 
-## `RemotingServerConfig`（继承 `ServerConfig`）
+## `ServerConfig`
+
+不可变，通过 `ServerConfig.builder()...build()` 或 `ServerConfig.defaults()` 构造。
 
 | 字段                  | 默认值  | 作用                                              |
 |----------------------|---------|--------------------------------------------------|
@@ -112,18 +113,16 @@ ReconnectConfig reconnect = ReconnectConfig.builder()
 | `idleReaderTimeout` (ms) | 0 | 读 idle 阈值（0 = 关）                              |
 | `idleWriterTimeout` (ms) | 0 | 写 idle 阈值（0 = 关）                              |
 | `idleAllTimeout` (ms)    | 90000 | all-idle 阈值                                   |
-| `serializationType`  | `Hession` | 响应消息的默认序列化器                          |
-| `executor`           | `null` → cached 池 | handler 执行池                       |
+| `executor`           | `null` → fixed 池（`cores×2`） | handler 执行池              |
 | `timer`              | `null` → 内置 `HashedWheelTimer` | 服务端 timeout 调度       |
 
 ```java
-RemotingServerConfig server = new RemotingServerConfig();
-server.setPort(8989);
-server.setManageConnection(true);
-server.setIdleAllTimeout(60_000);
+ServerConfig server = ServerConfig.builder()
+        .port(8989)
+        .manageConnection(true)
+        .idleAllTimeout(60_000)
+        .build();
 ```
-
-`ServerConfig` 暂时还是 `@Data`（可变 + setter）—— 是 builder 改造之前的设计，可能在后续版本迁移。
 
 ## `CallOptions`（per-call）
 
@@ -132,8 +131,17 @@ server.setIdleAllTimeout(60_000);
 | 字段                | 默认值                  | 作用                                  |
 |--------------------|------------------------|--------------------------------------|
 | `timeoutMills`     | 3000                   | per-call 超时                         |
-| `serializationType` | `Hession`             | per-call 序列化器覆盖                |
+| `serializationType` | `Hessian`             | per-call 序列化器覆盖（`Hessian` 或 `Fury`） |
 | `headers`          | 空 `DefaultMessageHeaders` | 自定义消息 header                |
+
+### 序列化类型
+
+| `SerializationType` | Code | 库 | 备注 |
+|---------------------|------|----|------|
+| `Hessian`           | 1    | [Hessian](http://hessian.caucho.com/) | 默认；紧凑二进制，跨语言支持好 |
+| `Fury`              | 2    | [Apache Fury](https://fury.apache.org/) | 更高吞吐，仅 Java |
+
+通过 `SerializationType.create(code)` + `SerializationManager.registerSerializer(serializer)` 注册自定义序列化器。
 
 ---
 

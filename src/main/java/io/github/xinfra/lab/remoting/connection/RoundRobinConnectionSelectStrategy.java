@@ -17,7 +17,7 @@ public class RoundRobinConnectionSelectStrategy implements ConnectionSelectStrat
 			return connections.get(0);
 		}
 
-		int i = Math.abs(counter.getAndIncrement());
+		int i = counter.getAndIncrement() & Integer.MAX_VALUE;
 		return connections.get(i % connections.size());
 	}
 

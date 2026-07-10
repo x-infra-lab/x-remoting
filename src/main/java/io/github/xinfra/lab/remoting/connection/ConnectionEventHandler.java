@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.connection;
 
-import io.github.xinfra.lab.remoting.common.Validate;
+import org.apache.commons.lang3.Validate;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
@@ -48,6 +48,11 @@ public class ConnectionEventHandler extends ChannelDuplexHandler {
 	@Override
 	public void channelInactive(ChannelHandlerContext ctx) throws Exception {
 		Connection connection = ctx.channel().attr(CONNECTION).get();
+		if (connection == null) {
+			ctx.channel().close();
+			super.channelInactive(ctx);
+			return;
+		}
 		if (connectionManager != null && connectionManager.isStarted()) {
 			connectionManager.close(connection);
 		}
@@ -60,7 +65,7 @@ public class ConnectionEventHandler extends ChannelDuplexHandler {
 	public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
 		if (evt instanceof ConnectionEvent) {
 			Connection connection = ctx.channel().attr(CONNECTION).get();
-			if (connectionEventProcessor.isStarted()) {
+			if (connection != null && connectionEventProcessor.isStarted()) {
 				connectionEventProcessor.handleEvent((ConnectionEvent) evt, connection);
 			}
 		}
@@ -78,7 +83,12 @@ public class ConnectionEventHandler extends ChannelDuplexHandler {
 				remoteAddress, cause);
 
 		Connection connection = ctx.channel().attr(CONNECTION).get();
-		connection.close();
+		if (connection != null) {
+			connection.close();
+		}
+		else {
+			ctx.channel().close();
+		}
 	}
 
 }

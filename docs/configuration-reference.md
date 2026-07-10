@@ -15,8 +15,7 @@ client.setConnectionFactoryConfig(factory);
 client.setConnectionManagerConfig(manager);
 client.setReconnectConfig(reconnect);
 
-RemotingServerConfig server = new RemotingServerConfig();
-server.setPort(8989);
+ServerConfig server = ServerConfig.builder().port(8989).build();
 ```
 
 ## `ConnectionFactoryConfig`
@@ -106,7 +105,9 @@ construction.
 | `connectionManagerConfig` | `null` → `ConnectionManagerConfig.defaults()` | Passed to `ClientConnectionManager` |
 | `reconnectConfig`         | `null` → `ReconnectConfig.defaults()`         | Passed to `ClientConnectionManager` |
 
-## `RemotingServerConfig` (extends `ServerConfig`)
+## `ServerConfig`
+
+Immutable, constructed via `ServerConfig.builder()...build()` or `ServerConfig.defaults()`.
 
 | Field                | Default | Effect                                              |
 |----------------------|---------|-----------------------------------------------------|
@@ -117,19 +118,16 @@ construction.
 | `idleReaderTimeout` (ms) | 0 | Read idle threshold (0 disables)                      |
 | `idleWriterTimeout` (ms) | 0 | Write idle threshold (0 disables)                     |
 | `idleAllTimeout` (ms)    | 90000 | All-idle threshold                                  |
-| `serializationType`  | `Hession` | Default serializer for response messages          |
-| `executor`           | `null` → cached pool | Where handlers run                     |
+| `executor`           | `null` → fixed pool (`cores×2`) | Where handlers run              |
 | `timer`              | `null` → owned `HashedWheelTimer` | Where server-side timeouts schedule |
 
 ```java
-RemotingServerConfig server = new RemotingServerConfig();
-server.setPort(8989);
-server.setManageConnection(true);
-server.setIdleAllTimeout(60_000);
+ServerConfig server = ServerConfig.builder()
+        .port(8989)
+        .manageConnection(true)
+        .idleAllTimeout(60_000)
+        .build();
 ```
-
-`ServerConfig` is still `@Data` (mutable + setters) for backward compatibility — it
-predates the builder refactor. It may move to a builder in a future release.
 
 ## `CallOptions` (per-call)
 
@@ -139,8 +137,17 @@ Passed on each call:
 | Field                | Default                  | Effect                                  |
 |----------------------|--------------------------|-----------------------------------------|
 | `timeoutMills`       | 3000                     | Per-call timeout                        |
-| `serializationType`  | `Hession`                | Per-call serializer override            |
+| `serializationType`  | `Hessian`                | Per-call serializer override (`Hessian` or `Fury`) |
 | `headers`            | empty `DefaultMessageHeaders` | Custom message headers              |
+
+### Serialization types
+
+| `SerializationType` | Code | Library | Notes |
+|---------------------|------|---------|-------|
+| `Hessian`           | 1    | [Hessian](http://hessian.caucho.com/) | Default; compact binary, wide language support |
+| `Fury`              | 2    | [Apache Fury](https://fury.apache.org/) | Higher throughput, Java-only |
+
+Register custom serializers via `SerializationType.create(code)` + `SerializationManager.registerSerializer(serializer)`.
 
 ---
 

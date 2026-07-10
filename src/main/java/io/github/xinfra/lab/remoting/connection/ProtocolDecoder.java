@@ -41,6 +41,7 @@ public class ProtocolDecoder extends ByteToMessageDecoder {
 		catch (Exception e) {
 			log.warn("ProtocolDecoder decode fail. ex:", e);
 			in.skipBytes(in.readableBytes());
+			ctx.close();
 			throw e;
 		}
 	}

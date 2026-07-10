@@ -16,10 +16,7 @@ public class AbstractLifeCycle implements LifeCycle {
 
 	@Override
 	public void shutdown() {
-		if (started.compareAndSet(true, false)) {
-			return;
-		}
-		throw new IllegalStateException(String.format("Component(%s) has shutdown", getClass().getSimpleName()));
+		started.compareAndSet(true, false);
 	}
 
 	@Override

@@ -3,8 +3,7 @@ package io.github.xinfra.lab.remoting.server;
 import io.github.xinfra.lab.remoting.common.AbstractLifeCycle;
 import io.github.xinfra.lab.remoting.common.EpollUtils;
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
-import io.github.xinfra.lab.remoting.common.Resource;
-import io.github.xinfra.lab.remoting.common.Validate;
+import org.apache.commons.lang3.Validate;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.connection.ConnectionEventHandler;
 import io.github.xinfra.lab.remoting.connection.ConnectionEventProcessor;
@@ -41,46 +40,9 @@ public abstract class AbstractServer extends AbstractLifeCycle implements Server
 
 	private Executor executor;
 
-	private Resource<ExecutorService> defaultExecutorResource = new Resource<ExecutorService>() {
+	private ExecutorService defaultExecutor;
 
-		ExecutorService defaultExecutor;
-
-		@Override
-		public ExecutorService get() {
-			if (defaultExecutor == null) {
-				defaultExecutor = Executors
-					.newCachedThreadPool(new NamedThreadFactory("RemotingServer-Default-Executor"));
-			}
-			return defaultExecutor;
-		}
-
-		@Override
-		public void close() {
-			if (defaultExecutor != null) {
-				defaultExecutor.shutdown();
-			}
-		}
-	};
-
-	private Resource<Timer> defaultTimerResource = new Resource<Timer>() {
-
-		Timer defaultTimer;
-
-		@Override
-		public Timer get() {
-			if (defaultTimer == null) {
-				defaultTimer = new HashedWheelTimer(new NamedThreadFactory("RemotingServer-Timer"));
-			}
-			return defaultTimer;
-		}
-
-		@Override
-		public void close() {
-			if (defaultTimer != null) {
-				defaultTimer.stop();
-			}
-		}
-	};
+	private Timer defaultTimer;
 
 	private Timer timer;
 
@@ -88,11 +50,9 @@ public abstract class AbstractServer extends AbstractLifeCycle implements Server
 
 	private Channel serverChannel;
 
-	private final EventLoopGroup bossGroup = EpollUtils.newEventLoopGroup(1,
-			new NamedThreadFactory("RemotingServer-IO-Boss"));
+	private EventLoopGroup bossGroup;
 
-	private final EventLoopGroup workerGroup = EpollUtils.newEventLoopGroup(
-			Runtime.getRuntime().availableProcessors() * 2, new NamedThreadFactory("RemotingServer-IO-Worker"));
+	private EventLoopGroup workerGroup;
 
 	private static final Class<? extends ServerChannel> serverChannelClass = EpollUtils.serverChannelClass();
 
@@ -109,21 +69,23 @@ public abstract class AbstractServer extends AbstractLifeCycle implements Server
 	private ConnectionEventProcessor connectionEventProcessor;
 
 	public AbstractServer(ServerConfig config) {
-		Validate.notNull(config, "RemotingServerConfig can not be null");
-		Validate.inclusiveBetween(0, 0xFFFF, config.getPort(), "port out of range: " + config.getPort());
+		Validate.notNull(config, "ServerConfig can not be null");
 
 		this.config = config;
 		if (config.getExecutor() != null) {
 			this.executor = config.getExecutor();
 		}
 		else {
-			this.executor = defaultExecutorResource.get();
+			this.defaultExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors() * 2,
+					new NamedThreadFactory("RemotingServer-Default-Executor", true));
+			this.executor = this.defaultExecutor;
 		}
 		if (config.getTimer() != null) {
 			this.timer = config.getTimer();
 		}
 		else {
-			this.timer = defaultTimerResource.get();
+			this.defaultTimer = new HashedWheelTimer(new NamedThreadFactory("RemotingServer-Timer", true));
+			this.timer = this.defaultTimer;
 		}
 
 		this.handler = new ProtocolHandler();
@@ -140,37 +102,42 @@ public abstract class AbstractServer extends AbstractLifeCycle implements Server
 	@Override
 	public void startup() {
 		super.startup();
-		if (this.connectionManager != null) {
-			this.connectionManager.startup();
-		}
-		if (this.connectionEventProcessor != null) {
-			this.connectionEventProcessor.startup();
-		}
-		this.serverBootstrap = new ServerBootstrap();
-		this.serverBootstrap.group(bossGroup, workerGroup)
-			.channel(serverChannelClass)
-			.childOption(ChannelOption.SO_KEEPALIVE, true)
-			.childHandler(new ChannelInitializer<SocketChannel>() {
-				@Override
-				protected void initChannel(SocketChannel channel) throws Exception {
-					ChannelPipeline pipeline = channel.pipeline();
-
-					pipeline.addLast("getEncoder", new ProtocolEncoder());
-					pipeline.addLast("getDecoder", new ProtocolDecoder());
-
-					if (config.isIdleSwitch()) {
-						pipeline.addLast("idleStateHandler", new IdleStateHandler(config.getIdleReaderTimeout(),
-								config.getIdleWriterTimeout(), config.getIdleAllTimeout(), TimeUnit.MILLISECONDS));
-						pipeline.addLast("serverIdleHandler", serverIdleHandler);
-					}
-					pipeline.addLast("handler", handler);
-					pipeline.addLast("connectionEventHandler", connectionEventHandler);
-
-					createConnection(channel);
-				}
-			});
-
 		try {
+			if (this.connectionManager != null) {
+				this.connectionManager.startup();
+			}
+			if (this.connectionEventProcessor != null) {
+				this.connectionEventProcessor.startup();
+			}
+
+			this.bossGroup = EpollUtils.newEventLoopGroup(1, new NamedThreadFactory("RemotingServer-IO-Boss", true));
+			this.workerGroup = EpollUtils.newEventLoopGroup(Runtime.getRuntime().availableProcessors() * 2,
+					new NamedThreadFactory("RemotingServer-IO-Worker", true));
+
+			this.serverBootstrap = new ServerBootstrap();
+			this.serverBootstrap.group(bossGroup, workerGroup)
+				.channel(serverChannelClass)
+				.childOption(ChannelOption.SO_KEEPALIVE, true)
+				.childHandler(new ChannelInitializer<SocketChannel>() {
+					@Override
+					protected void initChannel(SocketChannel channel) throws Exception {
+						ChannelPipeline pipeline = channel.pipeline();
+
+						pipeline.addLast("getEncoder", new ProtocolEncoder());
+						pipeline.addLast("getDecoder", new ProtocolDecoder());
+
+						if (config.isIdleSwitch()) {
+							pipeline.addLast("idleStateHandler", new IdleStateHandler(config.getIdleReaderTimeout(),
+									config.getIdleWriterTimeout(), config.getIdleAllTimeout(), TimeUnit.MILLISECONDS));
+							pipeline.addLast("serverIdleHandler", serverIdleHandler);
+						}
+						pipeline.addLast("handler", handler);
+						pipeline.addLast("connectionEventHandler", connectionEventHandler);
+
+						createConnection(channel);
+					}
+				});
+
 			if (config.getHostName() == null) {
 				this.localAddress = new InetSocketAddress(config.getPort());
 			}
@@ -181,13 +148,13 @@ public abstract class AbstractServer extends AbstractLifeCycle implements Server
 			if (!channelFuture.isSuccess()) {
 				throw channelFuture.cause();
 			}
-			// need update
 			if (config.getPort() == 0) {
 				this.localAddress = (InetSocketAddress) channelFuture.channel().localAddress();
 			}
 			serverChannel = channelFuture.channel();
 		}
 		catch (Throwable throwable) {
+			shutdown();
 			throw new RuntimeException("serverBootstrap bind fail. ", throwable);
 		}
 	}
@@ -205,16 +172,24 @@ public abstract class AbstractServer extends AbstractLifeCycle implements Server
 		if (serverChannel != null) {
 			serverChannel.close();
 		}
-		bossGroup.shutdownGracefully();
-		workerGroup.shutdownGracefully();
 		if (connectionManager != null) {
 			connectionManager.shutdown();
 		}
 		if (this.connectionEventProcessor != null) {
 			this.connectionEventProcessor.shutdown();
 		}
-		defaultExecutorResource.close();
-		defaultTimerResource.close();
+		if (bossGroup != null) {
+			bossGroup.shutdownGracefully().syncUninterruptibly();
+		}
+		if (workerGroup != null) {
+			workerGroup.shutdownGracefully().syncUninterruptibly();
+		}
+		if (defaultExecutor != null) {
+			defaultExecutor.shutdown();
+		}
+		if (defaultTimer != null) {
+			defaultTimer.stop();
+		}
 	}
 
 	@Override

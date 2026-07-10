@@ -2,8 +2,7 @@ package io.github.xinfra.lab.remoting.connection;
 
 import io.github.xinfra.lab.remoting.common.EpollUtils;
 import io.github.xinfra.lab.remoting.common.NamedThreadFactory;
-import io.github.xinfra.lab.remoting.common.Resource;
-import io.github.xinfra.lab.remoting.common.Validate;
+import org.apache.commons.lang3.Validate;
 import io.github.xinfra.lab.remoting.exception.RemotingException;
 import io.github.xinfra.lab.remoting.protocol.Protocol;
 import io.netty.bootstrap.Bootstrap;
@@ -38,51 +37,13 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 
 	private ConnectionFactoryConfig connectionFactoryConfig;
 
-	private final EventLoopGroup workerGroup = EpollUtils.newEventLoopGroup(Runtime.getRuntime().availableProcessors(),
-			new NamedThreadFactory("RemotingClient-Client-IO-Worker"));
+	private final EventLoopGroup workerGroup;
 
-	private Resource<ExecutorService> defaultExecutorResource = new Resource<ExecutorService>() {
-
-		ExecutorService defaultExecutor;
-
-		@Override
-		public ExecutorService get() {
-			if (defaultExecutor == null) {
-				defaultExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(),
-						new NamedThreadFactory("RemotingClient-Client-Default-Executor"));
-			}
-			return defaultExecutor;
-		}
-
-		@Override
-		public void close() {
-			if (defaultExecutor != null) {
-				defaultExecutor.shutdown();
-			}
-		}
-	};
+	private ExecutorService defaultExecutor;
 
 	private ExecutorService executor;
 
-	private Resource<Timer> defaultTimerResource = new Resource<Timer>() {
-
-		Timer defaultTimer;
-
-		@Override
-		public Timer get() {
-			if (defaultTimer == null) {
-				defaultTimer = new HashedWheelTimer(new NamedThreadFactory("RemotingClient-Client-Timer"));
-			}
-			return defaultTimer;
-		}
-
-		@Override
-		public void close() {
-			if (defaultTimer != null) {
-				defaultTimer.stop();
-			}
-		}
-	};
+	private Timer defaultTimer;
 
 	private Timer timer;
 
@@ -100,19 +61,24 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 		Validate.notNull(protocol, "getProtocol can not be null");
 		Validate.notNull(channelHandlerSuppliers, "channelHandlers can not be null");
 		Validate.notNull(connectionFactoryConfig, "connectionFactoryConfig can not be null");
+		this.workerGroup = EpollUtils.newEventLoopGroup(Runtime.getRuntime().availableProcessors(),
+				new NamedThreadFactory("RemotingClient-IO-Worker", true));
 		this.protocol = protocol;
 		this.connectionFactoryConfig = connectionFactoryConfig;
 		if (connectionFactoryConfig.getExecutor() != null) {
 			this.executor = connectionFactoryConfig.getExecutor();
 		}
 		else {
-			this.executor = defaultExecutorResource.get();
+			this.defaultExecutor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(),
+					new NamedThreadFactory("RemotingClient-Default-Executor", true));
+			this.executor = this.defaultExecutor;
 		}
 		if (connectionFactoryConfig.getTimer() != null) {
 			this.timer = connectionFactoryConfig.getTimer();
 		}
 		else {
-			this.timer = defaultTimerResource.get();
+			this.defaultTimer = new HashedWheelTimer(new NamedThreadFactory("RemotingClient-Timer", true));
+			this.timer = this.defaultTimer;
 		}
 
 		bootstrap = new Bootstrap();
@@ -178,9 +144,13 @@ public class DefaultConnectionFactory implements ConnectionFactory {
 
 	@Override
 	public void close() throws IOException {
-		workerGroup.shutdownGracefully();
-		defaultExecutorResource.close();
-		defaultTimerResource.close();
+		workerGroup.shutdownGracefully().syncUninterruptibly();
+		if (defaultExecutor != null) {
+			defaultExecutor.shutdown();
+		}
+		if (defaultTimer != null) {
+			defaultTimer.stop();
+		}
 	}
 
 }

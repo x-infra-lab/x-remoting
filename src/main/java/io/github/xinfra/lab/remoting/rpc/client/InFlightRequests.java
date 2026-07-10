@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.rpc.client;
 
-import io.github.xinfra.lab.remoting.common.Validate;
+import org.apache.commons.lang3.Validate;
 import io.github.xinfra.lab.remoting.connection.Connection;
 import io.github.xinfra.lab.remoting.rpc.message.MessageFactory;
 import io.github.xinfra.lab.remoting.rpc.message.ResponseMessage;
@@ -22,12 +22,16 @@ public class InFlightRequests {
 	}
 
 	public static InFlightRequests getOrCreate(Connection connection) {
-		InFlightRequests existing = connection.getChannel().attr(KEY).get();
+		io.netty.util.Attribute<InFlightRequests> attr = connection.getChannel().attr(KEY);
+		InFlightRequests existing = attr.get();
 		if (existing != null) {
 			return existing;
 		}
 		InFlightRequests ifr = new InFlightRequests();
-		connection.getChannel().attr(KEY).set(ifr);
+		InFlightRequests prev = attr.setIfAbsent(ifr);
+		if (prev != null) {
+			return prev;
+		}
 		RpcProtocol protocol = (RpcProtocol) connection.getProtocol();
 		Executor executor = connection.getExecutor();
 		connection.addCloseHook(() -> ifr.cancelAll(protocol, executor));

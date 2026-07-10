@@ -2,6 +2,7 @@ package io.github.xinfra.lab.remoting.rpc.message;
 
 import io.github.xinfra.lab.remoting.exception.DeserializeException;
 import io.github.xinfra.lab.remoting.exception.SerializeException;
+import io.github.xinfra.lab.remoting.serialization.ClassFilter;
 import io.github.xinfra.lab.remoting.serialization.Serializer;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -87,18 +88,21 @@ public class RemotingMessageBody implements MessageBody {
 			if (bodyData == null) {
 				return;
 			}
+			ByteBuf byteBuf = Unpooled.wrappedBuffer(bodyData);
 			try {
-				ByteBuf byteBuf = Unpooled.wrappedBuffer(bodyData);
 				version = byteBuf.readByte();
 				short typeLength = byteBuf.readShort();
 				String typeName = byteBuf.readCharSequence(typeLength, StandardCharsets.UTF_8).toString();
 				int bodyDataLength = byteBuf.readableBytes();
 				byte[] valueData = new byte[bodyDataLength];
 				byteBuf.readBytes(valueData);
-				bodyValue = serializer.deserialize(valueData, (Class<?>) Class.forName(typeName));
+				bodyValue = serializer.deserialize(valueData, ClassFilter.loadClass(typeName));
 			}
-			catch (ClassNotFoundException e) {
-				throw new DeserializeException("Deserialize body value failed", e);
+			catch (DeserializeException e) {
+				throw e;
+			}
+			finally {
+				byteBuf.release();
 			}
 		}
 	}

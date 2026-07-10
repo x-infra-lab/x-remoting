@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.rpc.client;
 
-import io.github.xinfra.lab.remoting.common.Validate;
+import org.apache.commons.lang3.Validate;
 import io.github.xinfra.lab.remoting.rpc.message.RequestMessage;
 import io.github.xinfra.lab.remoting.rpc.message.ResponseMessage;
 import io.netty.util.Timeout;
@@ -33,6 +33,8 @@ public class InvokeFuture<T extends ResponseMessage> implements Future<ResponseM
 	private volatile InvokeCallBack invokeCallBack;
 
 	protected final AtomicBoolean callBackExecuted = new AtomicBoolean(false);
+
+	private final AtomicBoolean completed = new AtomicBoolean(false);
 
 	private final ClassLoader classLoader;
 
@@ -97,9 +99,10 @@ public class InvokeFuture<T extends ResponseMessage> implements Future<ResponseM
 	}
 
 	public void complete(ResponseMessage responseMessage) {
-		Validate.isTrue(this.responseMessage == null, "requestId: %s InvokeFuture already finished.", requestId);
-		this.responseMessage = responseMessage;
-		countDownLatch.countDown();
+		if (completed.compareAndSet(false, true)) {
+			this.responseMessage = responseMessage;
+			countDownLatch.countDown();
+		}
 	}
 
 	public boolean cancelTimeout() {

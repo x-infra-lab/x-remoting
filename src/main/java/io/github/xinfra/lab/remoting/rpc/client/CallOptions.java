@@ -1,6 +1,6 @@
 package io.github.xinfra.lab.remoting.rpc.client;
 
-import io.github.xinfra.lab.remoting.common.Validate;
+import org.apache.commons.lang3.Validate;
 import io.github.xinfra.lab.remoting.rpc.message.DefaultMessageHeaders;
 import io.github.xinfra.lab.remoting.serialization.SerializationType;
 import lombok.Getter;
@@ -33,7 +33,7 @@ public final class CallOptions {
 
 		private int timeoutMills = 3000;
 
-		private SerializationType serializationType = SerializationType.Hession;
+		private SerializationType serializationType = SerializationType.Hessian;
 
 		private DefaultMessageHeaders headers = new DefaultMessageHeaders();
 
@@ -51,6 +51,7 @@ public final class CallOptions {
 		}
 
 		public Builder headers(DefaultMessageHeaders headers) {
+			Validate.notNull(headers, "headers must not be null");
 			this.headers = headers;
 			return this;
 		}
