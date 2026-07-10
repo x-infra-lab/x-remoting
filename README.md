@@ -15,9 +15,21 @@ x-remoting was born to allow middleware developers to focus more on implementing
 * Customizable protocol framework
 * Private protocol custom implementation - RPC communication
 
-## Documents
-* [Getting Started](./docs/getting-started.md)
+## Documentation
+
+📖 **[Full documentation index](./docs/README.md)** · **[中文文档](./docs/README.zh-CN.md)**
+
+Quick links:
+
+* [Getting Started](./docs/getting-started.md) ([中文](./docs/getting-started.zh-CN.md))
+* [Architecture](./docs/architecture.md) ([中文](./docs/architecture.zh-CN.md))
+* [RPC Usage](./docs/rpc-usage.md) ([中文](./docs/rpc-usage.zh-CN.md))
+* [Configuration Reference](./docs/configuration-reference.md) ([中文](./docs/configuration-reference.zh-CN.md))
+* [Connection Manager](./docs/connection-manager.md) ([中文](./docs/connection-manager.zh-CN.md))
+* [Reconnect](./docs/reconnect.md) ([中文](./docs/reconnect.zh-CN.md))
+* [Extending](./docs/extending.md) ([中文](./docs/extending.zh-CN.md))
+* [FAQ](./docs/faq.md) ([中文](./docs/faq.zh-CN.md))
 
 
 ## License
-x-remoting is licensed under the [the Apache 2 License](https://github.com/MicroRaft/MicroRaft/blob/master/LICENSE).
+x-remoting is licensed under the [the Apache 2 License](https://github.com/x-infra-lab/x-remoting/blob/master/LICENSE).
